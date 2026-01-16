@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Budget Tracking Interface - Dark Mode</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#ffc72e", // Sunset Gold
+            "background-light": "#fdfdfd",
+            "background-dark": "#121212",
+            "card-dark": "#1e1e1e",
+            "text-light": "#ffffff",
+            "text-dark": "#1f2937",
+            "text-muted-dark": "#a0a0a0",
+            "border-dark": "#2d2d2d",
+            "deep-sea-blue": "#005792",
+            "ocean-teal": "#00a89d",
+            "sunset-gold": "#ffc107",
+            "palm-green": "#28a745",
+            "alert-orange": "#fd7e14",
+            "charcoal-gray": "#333333",
+            "light-gray": "#aaaaaa"
+          },
+          fontFamily: {
+            "display": ["Plus Jakarta Sans", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "1rem",
+            "xl": "1.5rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .material-symbols-outlined.filled {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden pb-24">
+<div class="sticky top-0 z-10 flex items-center bg-background-dark p-4 pb-2 justify-between border-b border-border-dark">
+<div class="text-text-light flex size-12 shrink-0 items-center justify-center -ml-3">
+<span class="material-symbols-outlined text-2xl">arrow_back_ios_new</span>
+</div>
+<h1 class="text-text-light text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Hawaii Trip Budget</h1>
+<div class="flex size-12 shrink-0 items-center"></div>
+</div>
+<main class="flex-grow p-4 space-y-6">
+<div class="bg-card-dark rounded-xl p-4 shadow-sm">
+<div class="flex justify-between items-center mb-2">
+<span class="text-text-light font-semibold">$8,500</span>
+<span class="text-text-muted-dark text-sm">of $10,000</span>
+</div>
+<div class="w-full bg-gray-700 rounded-full h-2.5">
+<div class="bg-alert-orange h-2.5 rounded-full" style="width: 85%"></div>
+</div>
+<p class="text-alert-orange text-sm font-medium mt-2">Approaching budget limit</p>
+</div>
+<div class="bg-card-dark rounded-xl p-4 shadow-sm">
+<h2 class="text-text-light text-base font-bold mb-4">By Category</h2>
+<div class="flex flex-col md:flex-row items-center gap-6">
+<div class="relative w-36 h-36 flex-shrink-0">
+<svg class="w-full h-full" viewBox="0 0 36 36">
+<path class="stroke-current text-gray-700" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3"></path>
+<path class="stroke-current text-deep-sea-blue" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="35, 100" stroke-linecap="round" stroke-width="3"></path>
+<path class="stroke-current text-ocean-teal" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="30, 100" stroke-linecap="round" stroke-width="3" transform="rotate(126 18 18)"></path>
+<path class="stroke-current text-sunset-gold" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="20, 100" stroke-linecap="round" stroke-width="3" transform="rotate(234 18 18)"></path>
+<path class="stroke-current text-palm-green" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="15, 100" stroke-linecap="round" stroke-width="3" transform="rotate(306 18 18)"></path>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-xs text-text-muted-dark">Remaining</span>
+<span class="text-lg font-bold text-text-light">$1,500</span>
+</div>
+</div>
+<div class="w-full space-y-3">
+<div class="flex items-center justify-between text-sm">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-deep-sea-blue"></span>
+<span class="text-gray-300">Lodging</span>
+</div>
+<span class="font-medium text-text-light">35%</span>
+</div>
+<div class="flex items-center justify-between text-sm">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-ocean-teal"></span>
+<span class="text-gray-300">Flights</span>
+</div>
+<span class="font-medium text-text-light">30%</span>
+</div>
+<div class="flex items-center justify-between text-sm">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-sunset-gold"></span>
+<span class="text-gray-300">Food</span>
+</div>
+<span class="font-medium text-text-light">20%</span>
+</div>
+<div class="flex items-center justify-between text-sm">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-palm-green"></span>
+<span class="text-gray-300">Activities</span>
+</div>
+<span class="font-medium text-text-light">15%</span>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-card-dark rounded-xl p-4 shadow-sm">
+<h2 class="text-text-light text-base font-bold mb-4">Recent Expenses</h2>
+<div class="space-y-4">
+<div class="flex items-center">
+<div class="flex-grow">
+<p class="font-semibold text-text-light">Resort Booking</p>
+<p class="text-sm text-text-muted-dark">Paid by John · Split: All members</p>
+</div>
+<div class="text-right flex items-center">
+<p class="font-bold text-text-light mr-4">$3,500</p>
+<button class="text-text-muted-dark p-1"><span class="material-symbols-outlined text-xl">edit</span></button>
+<button class="text-text-muted-dark p-1"><span class="material-symbols-outlined text-xl">receipt_long</span></button>
+</div>
+</div>
+<div class="flex items-center">
+<div class="flex-grow">
+<p class="font-semibold text-text-light">Snorkeling Tour</p>
+<p class="text-sm text-text-muted-dark">Paid by Sarah · Split: Adults only</p>
+</div>
+<div class="text-right flex items-center">
+<p class="font-bold text-text-light mr-4">$450</p>
+<button class="text-text-muted-dark p-1"><span class="material-symbols-outlined text-xl">edit</span></button>
+<button class="text-text-muted-dark p-1"><span class="material-symbols-outlined text-xl">receipt_long</span></button>
+</div>
+</div>
+<div class="flex items-center">
+<div class="flex-grow">
+<p class="font-semibold text-text-light">Grocery Delivery</p>
+<p class="text-sm text-text-muted-dark">Paid by Mom · Split: All members</p>
+</div>
+<div class="text-right flex items-center">
+<p class="font-bold text-text-light mr-4">$120</p>
+<button class="text-text-muted-dark p-1"><span class="material-symbols-outlined text-xl">edit</span></button>
+<button class="text-text-muted-dark p-1"><span class="material-symbols-outlined text-xl">receipt_long</span></button>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-card-dark rounded-xl p-4 shadow-sm">
+<h2 class="text-text-light text-base font-bold mb-4">Cost Split by Person</h2>
+<div class="space-y-3">
+<div class="flex justify-between items-center">
+<span class="text-gray-300">John</span>
+<span class="font-semibold text-text-light">$2,125</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-gray-300">Sarah</span>
+<span class="font-semibold text-text-light">$2,125</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-gray-300">Mom</span>
+<span class="font-semibold text-text-light">$2,125</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-gray-300">Dad</span>
+<span class="font-semibold text-text-light">$2,125</span>
+</div>
+</div>
+</div>
+</main>
+<div class="fixed bottom-24 right-6 z-10">
+<button class="bg-sunset-gold text-text-dark w-14 h-14 rounded-full flex items-center justify-center shadow-lg">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</div>
+<nav class="fixed bottom-0 left-0 right-0 bg-card-dark border-t border-border-dark px-4 pt-2 pb-4">
+<div class="flex justify-around items-start">
+<a class="flex flex-col items-center space-y-1 text-text-muted-dark w-1/4" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-xs">Home</span>
+</a>
+<a class="flex flex-col items-center space-y-1 text-text-muted-dark w-1/4" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="text-xs">Family</span>
+</a>
+<a class="flex flex-col items-center space-y-1 text-primary w-1/4" href="#">
+<span class="material-symbols-outlined filled">luggage</span>
+<span class="text-xs font-semibold">Trips</span>
+</a>
+<a class="flex flex-col items-center space-y-1 text-text-muted-dark w-1/4" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-xs">Profile</span>
+</a>
+</div>
+</nav>
+</div>
+
+</body></html>

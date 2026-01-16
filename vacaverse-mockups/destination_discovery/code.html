@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VacaVerse - Destination Discovery - Dark Mode</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            font-size: 24px;
+        }
+    </style>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#20B2AA",
+              "background-light": "#F8F9FA",
+              "background-dark": "#0A1828",
+              "deep-sea-blue": "#003366",
+              "neutral-dark-grey": "#6c757d"
+            },
+            fontFamily: {
+              "display": ["Be Vietnam Pro", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.75rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<main class="flex-grow pb-24">
+<div class="flex items-center bg-background-dark p-4 pb-2 justify-between">
+<div class="flex size-12 shrink-0 items-center justify-start text-primary">
+<span class="material-symbols-outlined !text-4xl">travel_explore</span>
+</div>
+<h1 class="text-xl font-bold leading-tight tracking-tight text-white flex-1 text-center">Discover</h1>
+<div class="flex w-12 items-center justify-end">
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 bg-transparent text-white gap-2 text-base font-bold leading-normal tracking-[0.015em] min-w-0 p-0">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</div>
+<div class="px-4 py-3">
+<label class="flex flex-col min-w-40 h-14 w-full">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full shadow-sm">
+<div class="text-gray-400 flex border-none bg-gray-800 items-center justify-center pl-4 rounded-l-lg border-r-0">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border-none bg-gray-800 h-full placeholder:text-gray-400 px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal" placeholder="Where to next?" value=""/>
+</div>
+</label>
+</div>
+<div class="flex gap-3 px-4 py-2 overflow-x-auto">
+<div class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full bg-primary/30 px-4 shadow-sm">
+<span class="material-symbols-outlined text-cyan-200 !text-xl">beach_access</span>
+<p class="text-white text-sm font-medium leading-normal">Beach Escapes</p>
+</div>
+<div class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full bg-gray-800 px-4 shadow-sm">
+<span class="material-symbols-outlined text-gray-300 !text-xl">terrain</span>
+<p class="text-white text-sm font-medium leading-normal">Mountain</p>
+</div>
+<div class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full bg-gray-800 px-4 shadow-sm">
+<span class="material-symbols-outlined text-gray-300 !text-xl">location_city</span>
+<p class="text-white text-sm font-medium leading-normal">City Breaks</p>
+</div>
+<div class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full bg-gray-800 px-4 shadow-sm">
+<span class="material-symbols-outlined text-gray-300 !text-xl">museum</span>
+<p class="text-white text-sm font-medium leading-normal">Cultural</p>
+</div>
+</div>
+<div class="flex items-center justify-between gap-4 px-4 py-4">
+<h2 class="text-lg font-bold text-white">Popular Destinations</h2>
+<div class="flex items-center gap-2">
+<button class="flex items-center justify-center gap-2 rounded-full h-9 px-3 bg-gray-800 shadow-sm">
+<span class="material-symbols-outlined !text-lg text-gray-300">swap_vert</span>
+<span class="text-sm font-medium text-white">Sort</span>
+</button>
+<button class="flex items-center justify-center gap-2 rounded-full h-9 px-3 bg-gray-800 shadow-sm">
+<span class="material-symbols-outlined !text-lg text-gray-300">filter_list</span>
+<span class="text-sm font-medium text-white">Filter</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-[repeat(auto-fit,minmax(158px,1fr))] gap-4 px-4">
+<div class="flex flex-col gap-2 pb-2 bg-gray-800 rounded-xl shadow-md overflow-hidden">
+<div class="relative w-full">
+<div class="w-full bg-center bg-no-repeat aspect-[3/4] bg-cover" data-alt="A tropical beach with palm trees and turquoise water in Bali." style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD_AN5uFxmPK90uFGiNIG32m6gfp9C127zWeHGnpJiWekO0s82WaKVs5BjUa5RWR_OFZI5nv6-o8gQwpAhoqzHBFJUgiRShlXxN4o4Khqmy-MOhxpRDoe5difvmPEfVnte98tNB_WE79Tgdzsn7iNiKwQZBM3tPIModIIcYHLHE5dg-fRIHYq3c1lUWbONgaJj_LHBV2LF7HobJKO3PMBgzjAezkXyojH3PHN4et2ejsfefQWgHQnHccWiRRhM8DitqbD2iNNBzE20");'></div>
+<button class="absolute top-2 right-2 flex items-center justify-center size-8 rounded-full bg-black/30 backdrop-blur-sm text-white">
+<span class="material-symbols-outlined !text-xl">favorite_border</span>
+</button>
+</div>
+<div class="px-3 pt-1 pb-2">
+<p class="text-white text-base font-bold leading-normal">Bali, Indonesia</p>
+<p class="text-gray-400 text-sm font-normal leading-normal">Island of gods</p>
+<p class="text-cyan-300 text-sm font-medium leading-normal">$$</p>
+</div>
+</div>
+<div class="flex flex-col gap-2 pb-2 bg-gray-800 rounded-xl shadow-md overflow-hidden">
+<div class="relative w-full">
+<div class="w-full bg-center bg-no-repeat aspect-[3/4] bg-cover" data-alt="The Matterhorn mountain peak in the Swiss Alps against a blue sky." style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuATunVfMj_U1ngTgsY8XzWEHBRR6aFUXBF7PJGZ7VS1Id0d351YgL96a969PPo7A59d9V2666ZroRn9OLkBjd-ee5IUGnDogYuJVm4QOaLsjdu6m7PmwS9j91DDx2_jFJeiks3jDhloN-yYU26rkn8VGlrAIiPX8mmP41uCaRQnQvn5iNDEhyc8AElfpjLzYiiAAZoxfGVxAz6QJMRbjyXlo1_G0gK3jUpy8kJ1NLFnBYmS4RJV_LUAuz8285NOBSqc3-Kunio5W8I");'></div>
+<button class="absolute top-2 right-2 flex items-center justify-center size-8 rounded-full bg-black/30 backdrop-blur-sm text-white">
+<span class="material-symbols-outlined !text-xl text-red-400" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</button>
+</div>
+<div class="px-3 pt-1 pb-2">
+<p class="text-white text-base font-bold leading-normal">Swiss Alps</p>
+<p class="text-gray-400 text-sm font-normal leading-normal">Alpine scenery</p>
+<p class="text-cyan-300 text-sm font-medium leading-normal">$$$</p>
+</div>
+</div>
+<div class="flex flex-col gap-2 pb-2 bg-gray-800 rounded-xl shadow-md overflow-hidden">
+<div class="relative w-full">
+<div class="w-full bg-center bg-no-repeat aspect-[3/4] bg-cover" data-alt="An ancient Japanese temple with a pagoda roof surrounded by autumn foliage in Kyoto." style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBJ9oCR19aaj0BHObo5UtSmozZlHP83kjGetw2LPNQSmnWGZsdF6vBWyUwyiU5RG9CbrcwOvqzIzLW_tB8sqerNNMk5tm4d8eLiu_NkbWLbp3GGjdrXXO8Ri5UfIk4Uh20hNBcGU4rYV1cLyoFOLV6G0LoqnrRenj8IPpSeem4zyiSIBIfvhQmS-y1KpKChLbyXOdQpu3re7hr2qxbgbb_jcJ4NDAgjSwqEKWHITRdy8z2x14BBnNCfY19qILL_VkDDXBh3FbllQww");'></div>
+<button class="absolute top-2 right-2 flex items-center justify-center size-8 rounded-full bg-black/30 backdrop-blur-sm text-white">
+<span class="material-symbols-outlined !text-xl">favorite_border</span>
+</button>
+</div>
+<div class="px-3 pt-1 pb-2">
+<p class="text-white text-base font-bold leading-normal">Kyoto, Japan</p>
+<p class="text-gray-400 text-sm font-normal leading-normal">Tranquil gardens</p>
+<p class="text-cyan-300 text-sm font-medium leading-normal">$$$</p>
+</div>
+</div>
+<div class="flex flex-col gap-2 pb-2 bg-gray-800 rounded-xl shadow-md overflow-hidden">
+<div class="relative w-full">
+<div class="w-full bg-center bg-no-repeat aspect-[3/4] bg-cover" data-alt="Iconic white buildings with blue domes overlooking the sea in Santorini at sunset." style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB8UPXd8eBZbli4z0zpMk7aMf3Bxt91t2aOmStATKz4hEoptZ4XxBonNYujE6bCMtZRqWOjOm_4ymZHx9WSlg9oE9F2WNOaOEzqnJqhor8bOYDNZv7OCvSJeJpLvCfSjTElg12J68lEch1ToKY1oO-OxC42HpKTNpqxKB1yQc_dKEKYnRXwRJLjNZtbTjGBSge8ZpFh-MqjUXoUEiibcAMg4B8VT5NsV0mhoKZMDHQkFlhBtMOwxDu_XOc9EcrCrbkc7-81-QWyJ7A");'></div>
+<button class="absolute top-2 right-2 flex items-center justify-center size-8 rounded-full bg-black/30 backdrop-blur-sm text-white">
+<span class="material-symbols-outlined !text-xl">favorite_border</span>
+</button>
+</div>
+<div class="px-3 pt-1 pb-2">
+<p class="text-white text-base font-bold leading-normal">Santorini, Greece</p>
+<p class="text-gray-400 text-sm font-normal leading-normal">Iconic sunsets</p>
+<p class="text-cyan-300 text-sm font-medium leading-normal">$$$$</p>
+</div>
+</div>
+</div>
+</main>
+<div class="fixed bottom-0 left-0 right-0">
+<div class="flex border-t border-gray-700 bg-gray-900/80 backdrop-blur-lg px-2 pb-3 pt-2">
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-primary" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined">home</span>
+</div>
+<p class="text-primary text-xs font-bold leading-normal tracking-[0.015em]">Home</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-gray-400" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined">group</span>
+</div>
+<p class="text-gray-400 text-xs font-medium leading-normal tracking-[0.015em]">Family</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-gray-400" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined">luggage</span>
+</div>
+<p class="text-gray-400 text-xs font-medium leading-normal tracking-[0.015em]">Trips</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-gray-400" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined">person</span>
+</div>
+<p class="text-gray-400 text-xs font-medium leading-normal tracking-[0.015em]">Profile</p>
+</a>
+</div>
+</div>
+</div>
+
+</body></html>

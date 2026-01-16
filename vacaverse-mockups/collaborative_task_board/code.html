@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Collaborative Task Board - Dark Mode</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#ffc72e",
+            "deep-sea-blue": "#005792",
+            "bright-coral": "#FD7F68",
+            "sand": "#F8F7F2",
+            "high-priority": "#D9534F",
+            "medium-priority": "#F0AD4E",
+            "low-priority": "#5CB85C",
+            "background-light": "#F8F7F2",
+            "background-dark": "#1A1A1A",
+            "surface-dark": "#2C2C2E",
+            "text-dark-primary": "#FFFFFF",
+            "text-dark-secondary": "#A8A8A8",
+            "border-dark": "#3A3A3C",
+          },
+          fontFamily: {
+            "display": ["Plus Jakarta Sans", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "1rem",
+            "xl": "1.5rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+     .material-symbols-outlined.filled {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    body {
+      min-height: 100dvh;
+      background-color: #1A1A1A;}
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-dark text-text-dark-primary">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden pb-24">
+<div class="flex flex-col gap-2 bg-background-dark p-4 pb-2 sticky top-0 z-10">
+<div class="flex items-center h-12 justify-between">
+<div class="flex size-12 shrink-0 items-center justify-center">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="flex size-12 shrink-0 items-center justify-center">
+<img class="h-8 w-8 rounded-full object-cover" data-alt="User avatar 1" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDaPU-ZaA3hzKtlT3_Ihu3OrolVyo6zQg1tkmbE_VybX6RcWd13lxR-FZVQLUzbnSMGN6J2K-5OaP9aLeZqWV2CLV7baTgM-F_9gbKCO4clfRJuGxbBmKrAOoxSGDy-y4-gv986KWyIiqLGjQXzwAtEig0-wpchqWphQd-D-d42vC8HIo9BtI8pHpe0AvS7xaKa6zNN-2BAwbHc_sNIH3IJ9ySZXM5J8N1zjTbJvS6srVWzpS6vi-jHHXZm54JyZ6AREae0kTkfouE"/>
+</div>
+<div class="flex size-12 shrink-0 items-center justify-center">
+<img class="h-8 w-8 rounded-full object-cover" data-alt="User avatar 2" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDndzrANa92LMyfwPZFAJ5L960WCr9XThAa7hETSz2jTgvqNc9VTZdl8fQy1HBjjtA9SOzTnqa1n-ZpI5JRk___HNDE-twGaVkMxGIkbyjYHbUEZwEAwVguJTLUEFsVV0halhcB-lcYOBF0fv1QNfU5qwGsHH_vAOf9GJKcF4xVKNoABGGj5AKMFXYayilL6gEvNzFCXtwhC_8a6X59DiMh8FoPUgG7gcilA2ZoU8clBINO6AJtC9Ht1tAVx59kX8Kc3wZVcxQDLrI"/>
+</div>
+</div>
+</div>
+<p class="tracking-light text-[28px] font-bold leading-tight">Trip Tasks</p>
+</div>
+<div class="flex gap-2 p-4 pt-2 bg-background-dark sticky top-[108px] z-10">
+<button class="flex-1 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-black">All Tasks</button>
+<button class="flex-1 rounded-full bg-surface-dark px-4 py-2 text-sm font-medium text-text-dark-primary">My Tasks</button>
+<button class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-dark text-text-dark-primary">
+<span class="material-symbols-outlined text-xl">filter_list</span>
+</button>
+</div>
+<main class="flex-1 overflow-x-auto p-4 pt-0">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full min-w-[800px] md:min-w-full">
+<div class="flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<h2 class="text-base font-bold text-primary">TO DO</h2>
+<div class="flex h-6 w-6 items-center justify-center rounded-full bg-bright-coral text-xs font-bold text-white">3</div>
+</div>
+<div class="flex flex-col gap-3">
+<div class="rounded-xl border border-border-dark bg-surface-dark p-4 shadow-sm">
+<div class="flex items-start justify-between">
+<p class="font-semibold text-text-dark-primary">Book rental car</p>
+<div class="h-3 w-3 rounded-full bg-medium-priority mt-1.5" data-alt="Medium priority indicator"></div>
+</div>
+<div class="mt-3 flex items-center justify-between">
+<span class="text-xs text-text-dark-secondary">Due: May 15</span>
+<img class="h-6 w-6 rounded-full object-cover" data-alt="John's avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIPHEg6mWKcSGRuExUPUC5r74gQlKIbEW5o72ay4MRqAhIe1LsgBuW6UCZVSK_vNLBW9ohZ6XyS07RXU7cPMwWZbBSrgRsN5qY07x3b8DkTVssm8Qt5WGNUHyR_laraYA1OtLTDtHOH6xNIu7N9fsbgtkI0EjMpdDDhilJ_IsdP-Ur0Hm5tuoRJjVbUW-P0wStKrssflxe5Yyy0znywZ6iaeLoDQ4pRzieGh7wRHiLt0gbX3BmeRbCJ0lkShdH2OvUJJUCeTV6h_U"/>
+</div>
+</div>
+<div class="rounded-xl border border-border-dark bg-surface-dark p-4 shadow-sm">
+<div class="flex items-start justify-between">
+<p class="font-semibold text-text-dark-primary">Make dinner reservations</p>
+<div class="h-3 w-3 rounded-full bg-high-priority mt-1.5" data-alt="High priority indicator"></div>
+</div>
+<div class="mt-3 flex items-center justify-between">
+<span class="text-xs text-text-dark-secondary">Due: May 18</span>
+<img class="h-6 w-6 rounded-full object-cover" data-alt="Sarah's avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC75aCBAqWNwhFggNtb0S7U0WlOnjVBkqaIWGcQVKIYObyeFuA8E1inhB5TTogcGGMEyJJTdvHQlb-QSOQl55AFLUDKOcFmGI9PBLZDuVUgd02I-oJEhltrzl3wLihehXtzPy9Cr7NCHWpppioTHdqqSkD0LrODuuirSLFdeEopcaNiz6PBl9pzTpZdCaGz1XvX6VloUVne9EGsjtZ8aonUb01UjsjjJ0dJR-TQmNBZQKoOo-KyrrTeMGZFwnONLBGy6cIfC-8XpUY"/>
+</div>
+</div>
+<div class="rounded-xl border border-border-dark bg-surface-dark p-4 shadow-sm">
+<div class="flex items-start justify-between">
+<p class="font-semibold text-text-dark-primary">Purchase travel insurance</p>
+<div class="h-3 w-3 rounded-full bg-low-priority mt-1.5" data-alt="Low priority indicator"></div>
+</div>
+<div class="mt-3 flex items-center justify-between">
+<span class="text-xs text-text-dark-secondary">Due: June 1</span>
+<img class="h-6 w-6 rounded-full object-cover" data-alt="Dad's avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNl7GjvpesFEE9pwyw3qF9H9nYT8BT4DDjNTKYUNZcDnbPME0oji6W14ihP1bGE80-F0TM7PuiBkPmQRlU8L7_k6S6c-LbX1FlYLlrFQZtSY6KOjOt4-aaW4w58fgIs7yg4fQfmqgiot9DdLxEf5gALioR1zMTg8IVTRPh62KkqBtSDKRjZzPSWcRs7Jv9CgfFLRkDwrugG2udi8jvPoEV9KfwPQQAnt31AMPlbh7VLwiQv74CPirmbQVBBNBRmcMslru82jqa7xg"/>
+</div>
+</div>
+<button class="mt-1 flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border-dark p-3 text-sm font-semibold text-text-dark-secondary hover:bg-surface-dark">
+<span class="material-symbols-outlined text-lg">add</span>
+              Add Task
+            </button>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<h2 class="text-base font-bold text-primary">IN PROGRESS</h2>
+<div class="flex h-6 w-6 items-center justify-center rounded-full bg-bright-coral text-xs font-bold text-white">1</div>
+</div>
+<div class="flex flex-col gap-3">
+<div class="rounded-xl border border-border-dark bg-surface-dark p-4 shadow-sm">
+<div class="flex items-start justify-between">
+<p class="font-semibold text-text-dark-primary">Pack beach toys</p>
+<div class="h-3 w-3 rounded-full bg-low-priority mt-1.5" data-alt="Low priority indicator"></div>
+</div>
+<div class="mt-3 flex items-center justify-between">
+<span class="text-xs text-text-dark-secondary">Due: June 5</span>
+<img class="h-6 w-6 rounded-full object-cover" data-alt="Mom's avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB4aHw7ICFXAV9hheufcWaIJ4qjW3JDiWQNbtpcP861mth76BVTGNjVxvxYuTumM5AioHOj8kppP3hgiWZYvWnBLi1M4iTCDKg3vg_McquwZs9kq06IweNog6DMUUobgmbO3EHv49N14iXDO3BAPkaVJKpvXIqvXMNJ8v_sB-hklbpcR4Ccipv-MYiZ0YZFx4sHvtcKrpEl3fhCpflZ_nbQ0efe1T81WKxQqD3q7gN2Ncli88tQ8RRuAh4bcP7avxZu8AeLCowslNE"/>
+</div>
+</div>
+<div class="rounded-xl border-2 border-dashed border-border-dark bg-white/5 p-4 h-24"></div>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<h2 class="text-base font-bold text-primary">DONE</h2>
+<div class="flex h-6 w-6 items-center justify-center rounded-full bg-bright-coral text-xs font-bold text-white">1</div>
+</div>
+<div class="flex flex-col gap-3">
+<div class="rounded-xl border border-border-dark bg-surface-dark p-4 shadow-sm opacity-70">
+<div class="flex items-start justify-between">
+<p class="font-semibold text-text-dark-primary line-through">Plan snorkeling trip</p>
+<span class="material-symbols-outlined text-green-500">check_circle</span>
+</div>
+<div class="mt-3 flex items-center justify-between">
+<span class="text-xs text-text-dark-secondary line-through">Due: May 10</span>
+<img class="h-6 w-6 rounded-full object-cover" data-alt="John's avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuO6ytpcYVRzmZDmYWwiZEd6_NvNl485pnlypnn1y6WoDlZmeWMJeAOKRdeHpTM9iwkXudetlJB2I6UWLuojNTVV5v6osfU1zvWO2nrvX3bdAuEglBSaQZggzwm45HuEfJijAYeX4ySImgiteAa8LRtNkNjQ_vhL5P9QJhLo3Qu3RXF0Pd1pZ8C-HMdYWHPHmiRr_RoZvpfkGLTEQFZ3M4TW2BBgeTieeeU5W8gEAlbg-b6dTorrdAn9U26iDRIDmeBIRZcCNDgtI"/>
+</div>
+</div>
+<div class="rounded-xl border-2 border-dashed border-border-dark bg-white/5 p-4 h-24"></div>
+</div>
+</div>
+</div>
+</main>
+<div class="fixed bottom-24 right-6 block md:hidden z-20">
+<button class="flex h-14 w-14 items-center justify-center rounded-full bg-bright-coral text-white shadow-lg">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</div>
+<nav class="fixed bottom-0 left-0 right-0 z-30 flex h-20 items-center justify-around border-t border-border-dark bg-surface-dark px-2 pb-4 pt-2">
+<a class="flex flex-col items-center justify-center gap-1 w-1/4 text-text-dark-secondary" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-xs font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1 w-1/4 text-text-dark-secondary" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-xs font-medium">Family</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1 w-1/4 text-primary" href="#">
+<span class="material-symbols-outlined filled">luggage</span>
+<span class="text-xs font-semibold">Trips</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1 w-1/4 text-text-dark-secondary" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-xs font-medium">Profile</span>
+</a>
+</nav>
+</div>
+
+</body></html>

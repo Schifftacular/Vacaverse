@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Trip Itinerary Dashboard - Dark Mode</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#ffc72e",
+              "background-light": "#f8f8f5",
+              "background-dark": "#121212",
+              "surface-dark": "#1E1E1E",
+              "text-dark-primary": "#E0E0E0",
+              "text-dark-secondary": "#A0A0A0",
+              "border-dark": "#333333"
+            },
+            fontFamily: {
+              "display": ["Plus Jakarta Sans", "Noto Sans", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .material-symbols-outlined.filled {
+        font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<div class="@container">
+<div class="bg-cover bg-center flex flex-col justify-end overflow-hidden min-h-[218px] dark:bg-gray-800" data-alt="Tropical beach view with palm trees during sunset" style='background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 40%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuA8R1GEbnNMs6yLyf-tjA5Gib_kqsD9w6F3fjiujNzadpCaqtuTDGEhfdr0nkYgOFWslfFIAM0COpgM623_hAZNZdgBUlIKzY6CyB4qTVdbmY5LfW9Gql0740YqR0xkj3biSoUMCSljO8I-aA4eseBU1JySGtZSopagWWOsQGOakm7eoHqx_2CNjsZbKFgnYYNEiiOBWGWXWFOuCN1VEqNtj6OqzSnLETtGzHl58EGS1OdlpBUNP4OTVbKwAB9slfctmozdoCWf8wI");'>
+<div class="flex p-4"><p class="text-white tracking-light text-[28px] font-bold leading-tight">Hawaii Family Trip 2025</p></div>
+</div>
+</div>
+<p class="text-text-dark-secondary text-sm font-normal leading-normal pb-3 pt-3 px-4 text-center">June 15-22, 2025 • 45 days to go</p>
+<div class="pb-3 sticky top-0 bg-background-dark z-10">
+<div class="flex border-b border-border-dark px-4 justify-between">
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-primary text-primary pb-[13px] pt-4 flex-1" href="#">
+<p class="text-sm font-bold leading-normal tracking-[0.015em]">Itinerary</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-text-dark-secondary pb-[13px] pt-4 flex-1" href="#">
+<p class="text-sm font-bold leading-normal tracking-[0.015em]">Bookings</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-text-dark-secondary pb-[13px] pt-4 flex-1" href="#">
+<p class="text-sm font-bold leading-normal tracking-[0.015em]">Budget</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-text-dark-secondary pb-[13px] pt-4 flex-1" href="#">
+<p class="text-sm font-bold leading-normal tracking-[0.015em]">Tasks</p>
+</a>
+</div>
+</div>
+<div class="flex flex-wrap gap-4 p-4">
+<div class="flex min-w-0 flex-1 flex-col gap-2 rounded-xl p-4 border border-border-dark bg-surface-dark">
+<p class="text-text-dark-secondary text-base font-medium leading-normal">Budget Used</p>
+<p class="text-text-dark-primary tracking-light text-2xl font-bold leading-tight">72%</p>
+</div>
+<div class="flex min-w-0 flex-1 flex-col gap-2 rounded-xl p-4 border border-border-dark bg-surface-dark">
+<p class="text-text-dark-secondary text-base font-medium leading-normal">Tasks Complete</p>
+<p class="text-text-dark-primary tracking-light text-2xl font-bold leading-tight">85%</p>
+</div>
+<div class="flex min-w-0 flex-1 flex-col gap-2 rounded-xl p-4 border border-border-dark bg-surface-dark">
+<p class="text-text-dark-secondary text-base font-medium leading-normal">Bookings</p>
+<p class="text-text-dark-primary tracking-light text-2xl font-bold leading-tight">5/7</p>
+</div>
+</div>
+<div class="flex flex-col gap-4 px-4 pb-32">
+<div class="flex flex-col">
+<h3 class="text-text-dark-primary text-lg font-bold leading-tight tracking-[-0.015em] pb-2 pt-4">June 15</h3>
+<div class="flex flex-col gap-3 rounded-xl border border-border-dark bg-surface-dark p-4">
+<div class="flex items-center gap-4">
+<div class="flex flex-col items-center">
+<span class="material-symbols-outlined text-text-dark-secondary" data-icon="flight_land">flight_land</span>
+</div>
+<div class="flex-1">
+<p class="text-sm text-text-dark-secondary">2:30 PM</p>
+<p class="text-text-dark-primary font-medium">Airport pickup</p>
+</div>
+<div class="flex -space-x-2">
+<img class="inline-block h-8 w-8 rounded-full ring-2 ring-surface-dark" data-alt="Avatar of a man" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGXj8rw6xMdnTPj-8V1H9iRnis--tvSGAr9vhqGf8JF1DLnqbAAW2K-1Vl9mKuLiDwxfUChQQxl9I0Jtrr1ABo55yhZ0jjKrCIq12jpeu5oL64obvpMI6NjUcLRiFlyTtgySIWQHuMN5TbASTYzEkzYm6voJbDbeL_PSP5jDtxYVqaI9bmkBzYXLCfj8L6vNtmLcWH6c2byFJ6nSa0xXCIq6RiRZdvcTctP5LbYtpOtkxuEQlBJsWPrbSFjUvznJwGC0S33MVM8Zs"/>
+<img class="inline-block h-8 w-8 rounded-full ring-2 ring-surface-dark" data-alt="Avatar of a woman" src="https://lh3.googleusercontent.com/aida-public/AB6AXuARDG9Q241Pn5kOwZZwFuoN3n-P5hSgDEY8usmJPj1BwGMk5KjhVlLRHOz7MYZZwnK1pPROK0SkMqPto-yr5dH5mpjYPwDldw9UchRAzwzeNeMDbnD_IMwJPp_ii69EI3qFm366YvCrBtiX8Zc7fwFfGXjsNJ1oXlFgKcabzWqcd250spgNXCICKVHNNxgZ04DS48Oz78BvdmAxn11NxkFHb-1rWoad-L7ECtoZuUfwGqmSuzvCEj0gxpeJxPq5ELEqmpmy9kDqARI"/>
+</div>
+</div>
+<hr class="border-t border-border-dark"/>
+<div class="flex items-center gap-4">
+<div class="flex flex-col items-center">
+<span class="material-symbols-outlined text-text-dark-secondary" data-icon="hotel">hotel</span>
+</div>
+<div class="flex-1">
+<p class="text-sm text-text-dark-secondary">4:00 PM</p>
+<p class="text-text-dark-primary font-medium">Check-in at resort</p>
+</div>
+<div class="flex -space-x-2">
+<img class="inline-block h-8 w-8 rounded-full ring-2 ring-surface-dark" data-alt="Avatar of a man" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBVyiamcLbZV4ie1xoYVSbT1npi9V23RpPcXVU4tzD_8t4MgsEYJfUUMoxFZAwagdw5CeqLC6X5birL0gnu-soPeeoHOxdjqDDd4qh-VqgNaRPndvHGuOZA8Snlb3QDLBUNnydSgmDr0EF1d50Cz8ksjx_BhBnIGjdSALaKjyt1GXkmEciVTAImR7LRbASEZlIA-dEeChStQdeedKZ-ROomKz9NhhVU6a4xs3SJidy8PdU0n5fMgvBwqlpN06crnba8LsMzyJFhFdw"/>
+<img class="inline-block h-8 w-8 rounded-full ring-2 ring-surface-dark" data-alt="Avatar of a woman" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYmjyEmR_UThJwksqY_fkfii1J6LS0aetAiUV0CkABAnvwXDOzn0tME2Eqg9dhA31RBRs-zREDCJXPTzpKRPiHyYW39gT0b5keQVCVcD_8Z9ydT8svLcayUfWp9CWfyLqqLmZkKhKtHfgkk4Jcgwdwws7uRz8txW16xOB6ByzAIAa9LMW7tW5MML5YHMsvn3Cn4Am0XxfohtXaPG_taIH0P4gft3cs7JTMpskOtKiTM0b832CNrnX6EE4CaT-nIsfuFQVrZs5eryk"/>
+</div>
+</div>
+<hr class="border-t border-border-dark"/>
+<div class="flex items-center gap-4">
+<div class="flex flex-col items-center">
+<span class="material-symbols-outlined text-text-dark-secondary" data-icon="beach_access">beach_access</span>
+</div>
+<div class="flex-1">
+<p class="text-sm text-text-dark-secondary">6:00 PM</p>
+<p class="text-text-dark-primary font-medium">Sunset beach walk</p>
+</div>
+<div class="flex -space-x-2">
+<img class="inline-block h-8 w-8 rounded-full ring-2 ring-surface-dark" data-alt="Avatar of a man with glasses" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAK-uV_2JOalxNN8UqlIi8EIczSJZqdubQr1fm2mxTfaFmqVQd_XjCJPjhLS2OPLDWXZdVNbbu2N_hT7N7Jw2gip-PPMXUklNaIOkCG2IwLj-7A_qr5SpJY_LEZ495AG2uFaI3ZoHorwK9vofCIz0emU878uwxueW1WOmBjYpMMGr-5AxXv7LTgDZsL_fryT4PoHeg1MFRRAYuOgktdycx58y8YF5iS_NNe_DoLkjX3Jpgt2s8Dp7NksraDanzMGECL2Sg2qq5_PUQ"/>
+<img class="inline-block h-8 w-8 rounded-full ring-2 ring-surface-dark" data-alt="Avatar of a woman" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBK3I6HXm4MgUP2yMJzn8k_WjoEFwyTig9fK3hdjkkQuE0ukuHNBmUUX_DaqIVJOkPRNad9Ay5_V5ue38w9IOA21vvBLVY6EqN0ic0JtEuEP-1rvYuG1ZhpDHN-FitC8i9cq7NrTrJKMYVdPBt-4D5WlPw975Eg54GEl2F_91HhgzUc7xRgLbi4gTph7W--SMvicMrNrAUq3bvKojLq213VgQYQXB-GdotgTsKLVlp9co9-zwEpKa29uOKqpb4f0fMRNKy5tL1iLLA"/>
+<img class="inline-block h-8 w-8 rounded-full ring-2 ring-surface-dark" data-alt="Avatar of a woman with curly hair" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKeopGFWxKYjqfqkuCDtAfsXa3pGs4KSTtQAAON_-UTRIVC06gSz-WCy-NqPNhERVWXons2QxqtyS7pb2440XjzlDFpsSgzr_Cj4Gxv6SX4c90pMG49Obil-XqM_jDf7wYE1Z_4bfsn08aVlv5wime6IcQv8AmsFS9IfE3QReiwqb2buh569ZN3xcZj2k11Z2a5mucKFN9kawqqJhzkarRPXj03Q0NPRBdh7Ha1bIQtTDljAx4zat0OX1C-xT6cvjNDlxVstDtB3A"/>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col">
+<h3 class="text-text-dark-primary text-lg font-bold leading-tight tracking-[-0.015em] pb-2 pt-4">June 16</h3>
+<div class="flex flex-col gap-3 rounded-xl border border-border-dark bg-surface-dark p-4">
+<div class="flex items-center gap-4">
+<div class="flex flex-col items-center">
+<span class="material-symbols-outlined text-text-dark-secondary" data-icon="scuba_diving">scuba_diving</span>
+</div>
+<div class="flex-1">
+<p class="text-sm text-text-dark-secondary">9:00 AM</p>
+<p class="text-text-dark-primary font-medium">Snorkeling tour</p>
+</div>
+<div class="flex -space-x-2">
+<img class="inline-block h-8 w-8 rounded-full ring-2 ring-surface-dark" data-alt="Avatar of a man" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBqxxZe9zPsJ51FxlfnSi3XmezbwQEsB558-Tc_UKT8kpLnWqDrVHOA_q7bp2oBH76K5NCsR7Dj1AhpgEgZu6dO2GoW_YQUvNQY3fIl1rzpIh2Nb0Xspiw8iTm0835ITZA2SqUOmQ_8hZRU_cX7S2RPMeJxkrq-smN9l88Gl_U1ncHNujas0Vwao9fuY4xOFNHRJSd8yokkNpoztWf9agHOBJtTFINA8hLOhuuEUCJ-7PyHVhIyRwlWDh04slDqM-c9loUCxkVXkE"/>
+<img class="inline-block h-8 w-8 rounded-full ring-2 ring-surface-dark" data-alt="Avatar of a woman with curly hair" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZPEzohhr-NpKEzNpLQ_FxrWMUBb2jw61784zKTXfvINceXx0kyGPJ-cVXmhx1sVtULnoUQ2w7G2S4JHVT8kiu7vGc91L_a4SMjf3yrqun400fHYa8jL2lUR39Rru6AoDIXSxE3VW7AmQPoynC0JQymJCdhigm62YX3eKdNBug-BOSu2_eomSFU9A9ZzdAuantX4u3Il_bAJ_0NF8cFavYwOcxad-9_W0jY_Ch47IGthurwTkHxrF7_xHZ11YPAUM1RQCyr_l42n8"/>
+</div>
+</div>
+<hr class="border-t border-border-dark"/>
+<div class="flex items-center gap-4">
+<div class="flex flex-col items-center">
+<span class="material-symbols-outlined text-text-dark-secondary" data-icon="restaurant">restaurant</span>
+</div>
+<div class="flex-1">
+<p class="text-sm text-text-dark-secondary">1:00 PM</p>
+<p class="text-text-dark-primary font-medium">Lunch at beachside cafe</p>
+</div>
+<div class="flex -space-x-2">
+<img class="inline-block h-8 w-8 rounded-full ring-2 ring-surface-dark" data-alt="Avatar of a man with glasses" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_J5yt6-fBiBfHc3_pG9LtsEL5iyCIzH0mEKdjXwiM0qC_sGMuPdU4EvmJtsHGswohRQjn0_1jWpsIyoKgZ8UT5cmBHrddM0zojvMmSdSik28TM9bW-G4wCnPhj1T4P0jf98ekIcYr7jZ-Jf8_-nYG-NpxbTGlNqHTl_kiezfzjd4LEIZQkr1fKeiHqkPN7gQbEKjKWDxAZyQdPXJtKWxd2EXB_K1sEZKUyLLHQhgwolkRxxZdMSsPwB_b0V87kO863iyhmOqqgfM"/>
+<img class="inline-block h-8 w-8 rounded-full ring-2 ring-surface-dark" data-alt="Avatar of a woman" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMvel56kPcl6F-BiXgM0SIap2A1CPeub1sNe1r_eGK5P2jmyAcmveDknKQUQimCDiNTN2HNtHppwS5ClkzOKC1_dPnqlZ2wHYXcS-_aOpxmhxfrDLLZkfqq26RZhLKbsO4rcBw3dABK8sRNlXC0o1b5rIWClTLH0rwDDDq22PXnCZI_MJ3cOX1r2q_0HJGJpRHHeK3I3Iog8zXLc88doRoUKO8KclrOveHMrFMTGqbcInM_fZHs9fk7ms0F6vEyfFvAgG4GgRXfqg"/>
+<img class="inline-block h-8 w-8 rounded-full ring-2 ring-surface-dark" data-alt="Avatar of a woman with curly hair" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBpVyFOja3OIFsjF-3cy2R-QErRQAcwApCspC52r3qJC3Y2rWCMuG-h5d9GZ82SmkXtxm3eEXJilwHWoUojFBMjoWHYPSnDZcwHRN_zLpGwmFYvmCj2FD7ZxLoE-ILHjF5RgcCyhw5xDQuVPH9M93sLZ8DqNgKPjJx8og8y2Uz_OyY2TVYe8yMTVev8C5SkUlkoAcKFlzxppp5rSjYa_yrJ22z7ZA8s-_7y4xn-zis944sOxXLhAhArWf_rmGl3MdHggQvH1d43fE"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+<button class="fixed bottom-24 right-6 flex h-14 w-14 items-center justify-center rounded-full bg-primary shadow-lg z-20">
+<span class="material-symbols-outlined text-3xl text-black" data-icon="add">add</span>
+</button>
+<div class="fixed bottom-0 left-0 right-0 z-50 border-t border-border-dark bg-surface-dark">
+<div class="flex h-[84px] justify-around items-start pt-2.5">
+<a class="flex flex-col items-center justify-center gap-1.5 text-text-dark-secondary" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-xs">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1.5 text-text-dark-secondary" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-xs">Family</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1.5 text-primary" href="#">
+<span class="material-symbols-outlined filled">luggage</span>
+<span class="text-xs font-bold">Trips</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1.5 text-text-dark-secondary" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-xs">Profile</span>
+</a>
+</div>
+</div>
+</div>
+
+</body></html>

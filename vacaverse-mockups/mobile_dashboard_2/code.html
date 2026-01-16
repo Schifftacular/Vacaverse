@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VacaVerse Mobile Dashboard - Dark Mode</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<script>
+      tailwind.config = {
+          darkMode: "class",
+          theme: {
+              extend: {
+                  colors: {
+                      "primary": "#20B2AA",
+                      "accent-gold": "#FFD700",
+                      "background-light": "#FFFFFF",
+                      "background-dark": "#0D1B2A",
+                      "text-light": "#333333",
+                      "text-dark": "#E0E0E0",
+                      "text-secondary-light": "#888888",
+                      "text-secondary-dark": "#A0A0A0",
+                      "card-light": "#F8F8F8",
+                      "card-dark": "#1B263B",
+                      "urgent": "#FF6B6B"
+                  },
+                  fontFamily: {
+                      "display": ["Plus Jakarta Sans", "sans-serif"]
+                  },
+                  borderRadius: {
+                      "DEFAULT": "0.75rem",
+                      "lg": "1rem",
+                      "xl": "1.5rem",
+                      "full": "9999px"
+                  },
+              },
+          },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark font-display">
+<div class="relative mx-auto flex h-[812px] w-[375px] flex-col overflow-hidden border border-gray-700 shadow-lg rounded-xl">
+<div class="flex-1 overflow-y-auto pb-24">
+<header class="sticky top-0 z-10 flex items-center justify-between bg-background-dark/80 px-4 py-3 backdrop-blur-sm">
+<button class="flex size-10 items-center justify-center text-text-dark">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h2 class="text-xl font-bold tracking-tight text-text-dark">VacaVerse</h2>
+<button class="flex size-10 items-center justify-center">
+<img class="size-8 rounded-full" data-alt="User profile avatar of Sarah" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9bejLCeJdX5h9xRRImach1waqHPFqtpXNsF-4tV4-ai60mli2XdsNA42JbteSb25JzhUunlWD3jh7cf7ZzYgBoFp1B4P-fWaOum4LbyyZyyaivWUCOIyO4wu-_CxOeRMkngx0lD6SlQfjM4wDytfmqZC6VmLbYBXbnw2m8DEjQKPTwX_dlZRt_1rsiGHyORRJyGAvNnuXGyDQYV32Q5uM1TZC6VC7O2QTAKQPuQQ9I8JDCh6lKPapwYnXzIa2KXRPiiaXa5TwP-4"/>
+</button>
+</header>
+<main class="flex flex-col gap-6">
+<div class="px-4 pt-4">
+<h1 class="text-text-dark text-[32px] font-bold leading-tight tracking-[-0.02em]">Welcome back, Sarah! 👋</h1>
+</div>
+<div class="px-4">
+<div class="flex flex-col items-stretch justify-start rounded-xl bg-card-dark shadow-sm">
+<div class="relative w-full">
+<div class="w-full bg-center bg-no-repeat aspect-[16/9] bg-cover rounded-t-xl" data-alt="Tropical beach with palm trees and clear blue water" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAKAIAVx6xT4Ihu2MT6g3Zo7xEW_vvP5QiW7KqGYYsn3JwnsHjtY9H0xIb23ABATOzYafUeEcNJdIoj8khscA4Ia1L1JQg0Ytg1GX_o2w1CVjwilXcZ6Og9yKKIZQa6wIX64EjN3qZ_Mer6xfhZL5y82gJa9r7Y0P1ZtUwEOqvirkmPT68FBQS0baf953A_fad8HyMFb-mZN66cD5Upeibv7v8GDukx7tr6COuJXWFVnjcWxmioHR2C4V2X1RW5hxUIptxatUyFEu0");'></div>
+<div class="absolute bottom-3 right-3 rounded-full bg-accent-gold/90 px-4 py-1.5 text-xs font-bold text-background-dark backdrop-blur-sm">12 days away</div>
+</div>
+<div class="flex w-full grow flex-col items-stretch justify-center gap-2 p-4">
+<p class="text-text-dark text-lg font-bold leading-tight">Summer Beach Trip</p>
+<p class="text-text-secondary-dark text-sm font-normal leading-normal">August 15 - August 22</p>
+</div>
+</div>
+</div>
+<div>
+<h3 class="text-text-dark text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2">Next Activity</h3>
+<div class="px-4">
+<div class="flex items-center gap-4 rounded-xl bg-card-dark p-4 shadow-sm">
+<div class="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/20 text-primary">
+<span class="material-symbols-outlined fill">scuba_diving</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-text-dark text-base font-medium leading-normal">Snorkeling Reservation</p>
+<p class="text-text-secondary-dark text-sm font-normal leading-normal">Tomorrow, 10:00 AM</p>
+</div>
+<div class="ml-auto shrink-0 text-text-secondary-dark">
+<span class="material-symbols-outlined" style="font-size: 20px; font-variation-settings: 'wght' 300;">arrow_forward_ios</span>
+</div>
+</div>
+</div>
+</div>
+<div>
+<h3 class="text-text-dark text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2">Quick Tasks</h3>
+<div class="flex flex-col gap-2 px-4">
+<div class="flex items-center gap-3 rounded-xl bg-card-dark p-4 shadow-sm">
+<input class="size-5 shrink-0 cursor-pointer rounded border-gray-600 bg-gray-700 text-primary ring-offset-gray-800 focus:ring-primary" id="task1" type="checkbox"/>
+<label class="flex-1 text-sm font-medium text-text-dark" for="task1">Confirm flight check-in</label>
+<span class="rounded-full bg-urgent/20 px-2 py-0.5 text-xs font-bold text-urgent">Urgent</span>
+</div>
+<div class="flex items-center gap-3 rounded-xl bg-card-dark p-4 shadow-sm">
+<input checked="" class="size-5 shrink-0 cursor-pointer rounded border-gray-600 bg-gray-700 text-primary ring-offset-gray-800 focus:ring-primary" id="task2" type="checkbox"/>
+<label class="flex-1 text-sm font-medium text-text-secondary-dark line-through" for="task2">Pack sunscreen</label>
+</div>
+<div class="flex items-center gap-3 rounded-xl bg-card-dark p-4 shadow-sm">
+<input class="size-5 shrink-0 cursor-pointer rounded border-gray-600 bg-gray-700 text-primary ring-offset-gray-800 focus:ring-primary" id="task3" type="checkbox"/>
+<label class="flex-1 text-sm font-medium text-text-dark" for="task3">Book airport transfer</label>
+<span class="rounded-full bg-urgent/20 px-2 py-0.5 text-xs font-bold text-urgent">Urgent</span>
+</div>
+</div>
+</div>
+</main>
+</div>
+<nav class="absolute bottom-0 left-0 right-0 z-10 border-t border-gray-700/50 bg-card-dark/95 backdrop-blur-lg">
+<div class="mx-auto flex h-20 max-w-md items-center justify-around px-2">
+<a class="flex flex-col items-center gap-1.5 text-primary" href="#">
+<span class="material-symbols-outlined fill">home</span>
+<span class="text-xs font-bold">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1.5 text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="text-xs font-medium">Family</span>
+</a>
+<a class="flex flex-col items-center gap-1.5 text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined">flight_takeoff</span>
+<span class="text-xs font-medium">Trips</span>
+</a>
+<a class="flex flex-col items-center gap-1.5 text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-xs font-medium">Profile</span>
+</a>
+</div>
+</nav>
+</div>
+
+</body></html>

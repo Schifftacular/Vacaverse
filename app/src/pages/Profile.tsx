@@ -1,0 +1,177 @@
+import { useState } from 'react';
+import { Settings, ChevronRight, Bell, CreditCard, HelpCircle, LogOut, Shield, Moon, LogIn } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+
+const menuItems = [
+    { icon: Bell, label: 'Notifications', badge: 3 },
+    { icon: CreditCard, label: 'Payment Methods' },
+    { icon: Shield, label: 'Privacy & Security' },
+    { icon: Moon, label: 'Appearance' },
+    { icon: HelpCircle, label: 'Help & Support' },
+];
+
+export default function Profile() {
+    const { user, signInWithGoogle, signInWithEmail, signUpWithEmail, logout } = useAuth();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [isSignUp, setIsSignUp] = useState(false);
+    const [error, setError] = useState('');
+
+    const handleEmailAuth = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+        try {
+            if (isSignUp) {
+                await signUpWithEmail(email, password);
+            } else {
+                await signInWithEmail(email, password);
+            }
+        } catch (err: any) {
+            setError(err.message || 'Failed to authenticate');
+        }
+    };
+
+    if (!user) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] p-4 text-center">
+                <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mb-4 text-brand-teal">
+                    <LogIn size={32} />
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">{isSignUp ? 'Create Account' : 'Sign In'} to VacaVerse</h2>
+                <p className="text-gray-400 mb-6 max-w-xs">Sign in to manage your trips, collaborate with family, and save your preferences.</p>
+
+                <form onSubmit={handleEmailAuth} className="w-full max-w-xs flex flex-col gap-3 mb-4">
+                    {error && <div className="bg-red-500/20 text-red-200 p-2 rounded text-sm">{error}</div>}
+                    <input
+                        type="email"
+                        placeholder="Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-brand-teal"
+                        required
+                    />
+                    <input
+                        type="password"
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-brand-teal"
+                        required
+                    />
+                    <button
+                        type="submit"
+                        className="bg-brand-teal text-white py-3 rounded-full font-bold hover:bg-teal-600 transition-colors"
+                    >
+                        {isSignUp ? 'Sign Up' : 'Sign In'}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setIsSignUp(!isSignUp)}
+                        className="text-gray-400 text-sm hover:text-white"
+                    >
+                        {isSignUp ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}
+                    </button>
+                </form>
+
+                <div className="flex items-center gap-2 mb-4">
+                    <div className="h-px bg-gray-700 w-12"></div>
+                    <span className="text-gray-500 text-sm">Or</span>
+                    <div className="h-px bg-gray-700 w-12"></div>
+                </div>
+
+                <button
+                    onClick={() => signInWithGoogle()}
+                    className="flex items-center gap-3 bg-white text-black px-6 py-3 rounded-full font-bold hover:bg-gray-200 transition-colors"
+                >
+                    <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5" />
+                    Sign in with Google
+                </button>
+            </div>
+        );
+    }
+
+    return (
+        <div className="pb-8">
+            {/* Header */}
+            <div className="flex justify-between items-center p-4 bg-[#0f172a] sticky top-0 z-10">
+                <h1 className="text-2xl font-bold text-white">Profile</h1>
+                <button className="text-gray-400 hover:text-white">
+                    <Settings size={24} />
+                </button>
+            </div>
+
+            {/* Profile Card */}
+            <div className="px-4 mb-6">
+                <div className="bg-[#1e293b] rounded-2xl p-6 border border-gray-800 flex items-center gap-4">
+                    <div className="w-20 h-20 rounded-full bg-gray-700 overflow-hidden border-4 border-brand-teal">
+                        <img
+                            src={user.photoURL || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200"}
+                            alt="Avatar"
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+                    <div>
+                        <h2 className="text-xl font-bold text-white">{user.displayName || user.email?.split('@')[0] || "User"}</h2>
+                        <p className="text-gray-400">{user.email}</p>
+                        <button className="text-brand-teal text-sm font-medium mt-2">Edit Profile</button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Stats */}
+            <div className="px-4 mb-6">
+                <div className="grid grid-cols-3 gap-3">
+                    <div className="bg-[#1e293b] rounded-xl p-4 text-center border border-gray-800">
+                        <div className="text-2xl font-bold text-brand-teal">0</div>
+                        <div className="text-xs text-gray-400">Trips</div>
+                    </div>
+                    <div className="bg-[#1e293b] rounded-xl p-4 text-center border border-gray-800">
+                        <div className="text-2xl font-bold text-brand-teal">0</div>
+                        <div className="text-xs text-gray-400">Families</div>
+                    </div>
+                    <div className="bg-[#1e293b] rounded-xl p-4 text-center border border-gray-800">
+                        <div className="text-2xl font-bold text-brand-teal">0</div>
+                        <div className="text-xs text-gray-400">Memories</div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Menu Items */}
+            <div className="px-4">
+                <div className="bg-[#1e293b] rounded-2xl border border-gray-800 overflow-hidden">
+                    {menuItems.map((item, idx) => (
+                        <button
+                            key={item.label}
+                            className={`w-full flex items-center justify-between p-4 hover:bg-[#0f172a] transition-colors ${idx !== menuItems.length - 1 ? 'border-b border-gray-800' : ''
+                                }`}
+                        >
+                            <div className="flex items-center gap-3">
+                                <item.icon size={20} className="text-gray-400" />
+                                <span className="text-white">{item.label}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {item.badge && (
+                                    <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                                        {item.badge}
+                                    </span>
+                                )}
+                                <ChevronRight size={20} className="text-gray-500" />
+                            </div>
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Logout */}
+            <div className="px-4 mt-6">
+                <button
+                    onClick={() => logout()}
+                    className="w-full flex items-center justify-center gap-2 py-4 text-red-400 hover:text-red-300 transition-colors"
+                >
+                    <LogOut size={20} />
+                    <span>Log Out</span>
+                </button>
+            </div>
+        </div>
+    );
+}

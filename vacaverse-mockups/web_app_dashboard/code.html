@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VacaVerse Web App Dashboard - Dark Mode</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ffc72e",
+                        "background-light": "#f9f9f9",
+                        "background-dark": "#121212",
+                        "ocean-teal": "#68A8AD",
+                        "deep-sea-blue": "#003E51",
+                        "sunset-gold": "#FFC72E",
+                        "content-light": "#ffffff",
+                        "content-dark": "#1e1e1e",
+                        "text-light": "#333333",
+                        "text-dark": "#f0f0f0",
+                        "subtext-light": "#666666",
+                        "subtext-dark": "#a0a0a0"
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill-1 {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark font-display text-text-dark">
+<div class="relative flex min-h-screen w-full flex-col">
+<header class="sticky top-0 z-10 bg-gradient-to-b from-[#003E51] to-[#005269] px-4 pt-4 pb-4 shadow-sm">
+<div class="flex items-center justify-between">
+<h1 class="text-2xl font-bold text-white">VacaVerse</h1>
+<div class="size-10 rounded-full bg-cover bg-center" data-alt="User avatar placeholder" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAH863GlzB5B4v9OwVvKH1ioyebCDe5xPxHrGAGFq_PB3iYDVOaUgWbzNU30qIXYHpVqoDrO5yKD5OxzpePKDaswBSWADqi8ZTB2GzNKngdk86XxPJ91tP_fvBVEt589FAktMb2ey5vppXMkZgQTLTb53OaOgazDm7fiRIVKGJT0gIuEIxT_slCdEngkkzz1kwGXUwOeuHoogr5x-yg135JiJGiQ-dcWDQXPfa59lH9y1C3X3-nGLHU89NC9QVN7D7-JTFhh44ucVs');"></div>
+</div>
+</header>
+<main class="flex-1 space-y-6 p-4 pb-28">
+<section>
+<h2 class="text-xl font-bold text-ocean-teal px-1 pb-3">Upcoming Vacations</h2>
+<div class="flex overflow-x-auto [-ms-scrollbar-style:none] [scrollbar-width:none] [&amp;::-webkit-scrollbar]:hidden -mx-4 px-4">
+<div class="flex items-stretch gap-4">
+<div class="flex w-72 shrink-0 flex-col gap-4 rounded-xl bg-content-dark p-3 shadow-md">
+<div class="w-full aspect-[4/3] rounded-lg bg-cover bg-center" data-alt="Scenic view of a tropical beach in Hawaii" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBKgB1KfUGaS2tLda7OB14rYyAaI4P92qUnN1qgDIUfk7Z0ZsMN6LuIOFCuDHTpzvXJcPkXFlE6K2S_SJhHJy5_kbkjDgGuWNAitjSBdiPSKRCXnPut9LT86K3fxoOtII4tYJ-vfEjkbqO8B8oORqvmA86ZYYhIHEis3rBgRwYRn1j1WToJ1VEbBKUEbD8ikAjw80PkBKU6Vi5sLmJumaqn9yK656ODOlWQQYK5jLRx9K_amFB6KxxQAbNbzufrWhvlCWos-tQmo4c');"></div>
+<div>
+<p class="text-base font-bold text-text-dark">Hawaii 2024</p>
+<p class="text-sm text-subtext-dark">June 10 - June 20</p>
+</div>
+<div class="flex gap-2">
+<div class="flex flex-1 flex-col items-center">
+<p class="text-lg font-bold text-text-dark">15</p>
+<p class="text-xs text-subtext-dark">Days</p>
+</div>
+<div class="flex flex-1 flex-col items-center">
+<p class="text-lg font-bold text-text-dark">10</p>
+<p class="text-xs text-subtext-dark">Hours</p>
+</div>
+<div class="flex flex-1 flex-col items-center">
+<p class="text-lg font-bold text-text-dark">30</p>
+<p class="text-xs text-subtext-dark">Minutes</p>
+</div>
+</div>
+</div>
+<div class="flex w-72 shrink-0 flex-col gap-4 rounded-xl bg-content-dark p-3 shadow-md">
+<div class="w-full aspect-[4/3] rounded-lg bg-cover bg-center" data-alt="A snowy mountain landscape during the day" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAua3c-2Z0EXxoG9sx8Cn8-KZNOw0UCP7c_0qwNXFyTG4M0pb9BNcPZCtttMP07s-molrYc2yhLXztWsQ5OA7P2Vgr0KC0zj8iX-M7ozbI4EWzlx95Wqap7Z_G18LNbYPNKQFSJbxiSK0kGViS38n_zl0OdT47SEMQMAIvitHRRPC_i1orIahBnKlZLvks80s65J6hRNuEZsdfMNhnZM8WnURaZECXmTppb5SujdlldJpS0WUv8isPMh2otgYa5ZFta27k6Xrj-rmI');"></div>
+<div>
+<p class="text-base font-bold text-text-dark">Mountain Retreat</p>
+<p class="text-sm text-subtext-dark">July 5 - July 10</p>
+</div>
+<div class="flex gap-2">
+<div class="flex flex-1 flex-col items-center">
+<p class="text-lg font-bold text-text-dark">40</p>
+<p class="text-xs text-subtext-dark">Days</p>
+</div>
+<div class="flex flex-1 flex-col items-center">
+<p class="text-lg font-bold text-text-dark">08</p>
+<p class="text-xs text-subtext-dark">Hours</p>
+</div>
+<div class="flex flex-1 flex-col items-center">
+<p class="text-lg font-bold text-text-dark">15</p>
+<p class="text-xs text-subtext-dark">Minutes</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<div class="space-y-6">
+<div class="rounded-xl bg-content-dark p-4 shadow-md">
+<h3 class="text-lg font-bold text-ocean-teal mb-3">Upcoming Activities</h3>
+<ul class="space-y-4">
+<li class="flex items-center gap-4">
+<div class="flex size-10 items-center justify-center rounded-full bg-sunset-gold/20 text-sunset-gold">
+<span class="material-symbols-outlined">flight</span>
+</div>
+<div>
+<p class="font-medium text-text-dark">Flight to HNL</p>
+<p class="text-sm text-subtext-dark">June 10, 8:00 AM</p>
+</div>
+</li>
+<li class="flex items-center gap-4">
+<div class="flex size-10 items-center justify-center rounded-full bg-sunset-gold/20 text-sunset-gold">
+<span class="material-symbols-outlined">restaurant</span>
+</div>
+<div>
+<p class="font-medium text-text-dark">Luau Dinner</p>
+<p class="text-sm text-subtext-dark">June 11, 7:00 PM</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="rounded-xl bg-content-dark p-4 shadow-md">
+<h3 class="text-lg font-bold text-ocean-teal mb-3">My Tasks</h3>
+<ul class="space-y-3">
+<li class="flex items-center gap-3">
+<input checked="" class="h-5 w-5 rounded border-gray-600 bg-gray-700 text-sunset-gold focus:ring-sunset-gold/50" id="task1" type="checkbox"/>
+<label class="flex-1 text-subtext-dark line-through" for="task1">Book rental car</label>
+</li>
+<li class="flex items-center gap-3">
+<input class="h-5 w-5 rounded border-gray-600 bg-gray-700 text-sunset-gold focus:ring-sunset-gold/50" id="task2" type="checkbox"/>
+<label class="flex-1 text-text-dark" for="task2">Buy sunscreen</label>
+</li>
+<li class="flex items-center gap-3">
+<input class="h-5 w-5 rounded border-gray-600 bg-gray-700 text-sunset-gold focus:ring-sunset-gold/50" id="task3" type="checkbox"/>
+<label class="flex-1 text-text-dark" for="task3">Confirm hotel booking</label>
+</li>
+</ul>
+</div>
+<div class="rounded-xl bg-content-dark p-4 shadow-md">
+<h3 class="text-lg font-bold text-ocean-teal mb-4">Recent Activity</h3>
+<ul class="space-y-4">
+<li class="flex items-start gap-3">
+<div class="mt-1 size-8 shrink-0 rounded-full bg-cover bg-center" data-alt="Avatar of Jane" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDharYh1pUnHSOaFJe11Q-dnEF6c7KW8IwwO8BxMvysTxOvU1TT-ad3EkK5DWnX1N3QDyEe6JSwrk2LAmGjVdo5fjzrYuD7ObVXJCOa7qlTHh8EHBRpIJ7aQpEc6ZUi_3ELwUUpf55UReLWRzg9Lo2pbRzxom1rebc_FZQBjJR5MCUHEY5Z16tUk5sfkyvjP7BEiPEbzMas6P5vZo6kJPTYGtac4ENUSqzBL7PQ7wYP_z-So65rEA-3gYmX44YRG9A6JEvoSBGtYk4');"></div>
+<p class="text-sm text-text-dark"><span class="font-bold">Jane</span> added 'Snorkeling' to the Hawaii trip.</p>
+</li>
+<li class="flex items-start gap-3">
+<div class="mt-1 size-8 shrink-0 rounded-full bg-cover bg-center" data-alt="Avatar of Mark" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAhFz6wN4EKAKGlefA6braNAuhQnVnIBpwTTKBACHlf6Yl6MDRSzFaqnxa25xaxO1Wvk1GyL0X_HIX-SJEqRMIvXKQS30hzz2JfKEoeSJWaISPPZEtDrt_1vfifP39TVxyBEe5YSaFUhBN2yRD1h5tRlD_pn2VNmvNZX53nx-PQ2cFKVup7eV63DswGBsU0qEmZxnR5PpnWr1UxgMFX2NcKq2gqYgAgUwdQMC8WNqTjsclROh-4B1tB8FTLEsFOQlrirlr4GKdXZL4');"></div>
+<p class="text-sm text-text-dark"><span class="font-bold">Mark</span> booked the 'Mountain Cabin' for the retreat.</p>
+</li>
+</ul>
+</div>
+</div>
+</main>
+<div class="fixed bottom-24 right-4 z-20">
+<button class="flex h-14 w-14 items-center justify-center rounded-full bg-sunset-gold text-deep-sea-blue shadow-lg">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</div>
+<nav class="fixed bottom-0 left-0 right-0 z-10 border-t border-gray-800 bg-content-dark/80 backdrop-blur-lg">
+<div class="flex h-20 items-center justify-around px-4">
+<a class="flex flex-col items-center gap-1 text-ocean-teal" href="#">
+<span class="material-symbols-outlined fill-1">home</span>
+<span class="text-xs font-bold">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-subtext-dark" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="text-xs font-medium">Family</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-subtext-dark" href="#">
+<span class="material-symbols-outlined">luggage</span>
+<span class="text-xs font-medium">Trips</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-subtext-dark" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-xs font-medium">Profile</span>
+</a>
+</div>
+</nav>
+</div>
+</body></html>

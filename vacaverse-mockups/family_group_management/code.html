@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Family Group Management - Dark Mode</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ffc72e",
+                        "background-light": "#FDF8F5",
+                        "background-dark": "#121212",
+                        "surface-dark": "#1E1E1E",
+                        "deep-sea-blue": "#005792",
+                        "sunset-gold": "#FFC107"
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark font-display">
+<div class="relative flex min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<div class="flex flex-col gap-2 bg-background-dark p-4 pb-2 sticky top-0 z-10">
+<div class="flex items-center h-12 justify-between">
+<div class="flex size-12 shrink-0 items-center justify-start text-zinc-400">
+<span class="material-symbols-outlined text-3xl">menu</span>
+</div>
+<div class="flex w-12 items-center justify-end">
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 bg-transparent text-zinc-200 gap-2 text-base font-bold leading-normal tracking-[0.015em] min-w-0 p-0">
+<img class="h-10 w-10 object-cover rounded-full" data-alt="User avatar image" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBx6DgunBsV0axoYHBnYfQDDftSKKAefnNUH1OOfYETrKq3lWh3StuHqIe5rflweJrCKdNLHvWXWALDIkkPf1NsS7Mx3lNK1_kNPgwzjcVqRKb7ZEADCp6_lhfhd1W4Wxf4zjjnElX8019Pj6LvH1qhGsCe3jf4i452-iCm2mW_n39ck-XnMhfnh2utR98sSS1RwNVCKMyKIits5j-9hMUhI4SeuGS0ZOx_BTjfIYp5hpdT2KgWndeHpsJKqL6r0VNeFKfdFIHyuEM"/>
+</button>
+</div>
+</div>
+<p class="text-primary tracking-light text-[28px] font-bold leading-tight px-2">My Families</p>
+</div>
+<div class="px-4 py-3 bg-background-dark">
+<label class="flex flex-col min-w-40 h-12 w-full">
+<div class="flex w-full flex-1 items-stretch rounded-xl h-full">
+<div class="text-zinc-400 flex border-none bg-zinc-800 items-center justify-center pl-4 rounded-l-xl border-r-0">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-xl text-zinc-200 focus:outline-0 focus:ring-0 border-none bg-zinc-800 focus:border-none h-full placeholder:text-zinc-400 px-4 pl-2 text-base font-normal leading-normal" placeholder="Search for a family..." value=""/>
+</div>
+</label>
+</div>
+<div class="grid grid-cols-2 gap-4 p-4">
+<div class="relative bg-gradient-to-br from-rose-400 to-orange-300 flex flex-col gap-4 rounded-xl justify-end p-4 aspect-square text-white">
+<div class="absolute top-3 right-3 h-3 w-3 rounded-full bg-sunset-gold" data-alt="Notification dot"></div>
+<div>
+<p class="text-base font-bold leading-tight line-clamp-2">Smith Family</p>
+<p class="text-xs font-medium opacity-80">3 upcoming trips</p>
+</div>
+<div class="flex -space-x-2">
+<img class="inline-block h-8 w-8 rounded-full ring-2 ring-white/50" data-alt="Avatar 1" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkmjtK2BWP_srqHewKNhxoOV-qUqH3F0zpa7DX-7aI5oua3KxM5YdnwNvqH6-NpdUhY3KiOl0bicXklbYkkrpFyDv9QJuzjreX9UgWNvLFWHm4OFlEUVIT5nDU0F-7ORcnAe3YKAv_dsBNtsYjyOeWpkzbK284PGexRFVx5lFvBYqA_Mkc4zAsRRyF-CJ8AWdHuEsip7pu4SyfhM5-hupzZ3LytzyECVUuHJ1w7zgzihNjVh9773sWXIXoV0lthJAR9zQhOoY9syM"/>
+<img class="inline-block h-8 w-8 rounded-full ring-2 ring-white/50" data-alt="Avatar 2" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDc12nPl8QSAXZSevqxgjsj6waDHlA_epTtVCSic0iPmZqD89ZBBUIj2qtwln9vzdwFgLg1TLYA7iEZ9JeZEzJMDAv00VES8Jf8GMA7e6Z66j_4Z0ytH5uIF2jrRuwVfCOqVuasT_xlZU0qm6S_6ODWNr1aeXDGk8lBgZVBGR_zfO4cTE6CV_KoEzQGwaaPtIvwwD9l830XXBu01lWDqfinjClQfm88fpQLv72W8tyaI8VAjFhQoCxwK0jMPATSKKg2Gh7fIkxtZAw"/>
+<img class="inline-block h-8 w-8 rounded-full ring-2 ring-white/50" data-alt="Avatar 3" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmHR4pz9D-Rmye8FvLxKp-Pr_F_Z5erjRWH_FozYTqlR_HWMowmej617rtkrz5fBqQE5-bHmLVTZQIplzLOpbdlfDKXFNsG3veJQJfE_-2lTxnGNMEhe_zqiuqJQt_rUqfnAKAiPPW0tmVrXfDgBVycdgWc2E5lgKMQBVPHMtsbzU-yoKqqyc1velUHD06MggI8Ffl2kq2wfxESfimXlmC9NFWP_4_T0BEi-yRrb_U39pRhPSp3GSN35p5jmBuYRHZzCOGEjp2dDc"/>
+<div class="flex h-8 w-8 items-center justify-center rounded-full bg-white/30 text-xs font-semibold ring-2 ring-white/50 text-white">+5</div>
+</div>
+</div>
+<div class="bg-gradient-to-br from-teal-400 to-cyan-400 flex flex-col gap-4 rounded-xl justify-end p-4 aspect-square text-white">
+<div>
+<p class="text-base font-bold leading-tight line-clamp-2">Johnson Clan</p>
+<p class="text-xs font-medium opacity-80">1 upcoming trip</p>
+</div>
+<div class="flex -space-x-2">
+<img class="inline-block h-8 w-8 rounded-full ring-2 ring-white/50" data-alt="Avatar 4" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdDdD88YBlJZnah8ycSMxqMASB7gJ2vBcBFp9i9Hn0huh6pZW4SNJpx4lTyrb0xJWDJBVyRKxuY8b1aq6ZV_9iXXWB2MfhnGPjDZ83SQ_0eCk41NCHeIooXUnXigGL-QDONkInbWFeQo0JjyIaC9mebFIoIh48x4qoVEvLyDiaaE-fTOCROvZvgFoIAA_c0Np294RsNSe84QJs8mXIYeupNtgymSWbLt314_HfHAwHqgUtjslnWB6e0TfCxSnep2XNCEyJwI-kBHw"/>
+<img class="inline-block h-8 w-8 rounded-full ring-2 ring-white/50" data-alt="Avatar 5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcnQgChzGyrCjRtoCMGyVh8DG2WdIiqJwtxND2StmvR9BjFUgxlhgrgwEnkEIZPaUldRwsuRcMWVF2Pn1dhw5NHq2e9iJ-7agxM0Fh6wa8oS39xGryDTTlRV9bzfYhX1hELI3knLK_lnW79eHU1vhY1b2x549V5NXfeli1SOxtcN92dQWUmyYJ3qJ6vF5DRSoc-bSWcOw6G88z8TxqFOS1GAmVgr9OzC2O-EUMuRNA70oMn00eEYkTONstKhanrNVonTd0Qw6esSA"/>
+<img class="inline-block h-8 w-8 rounded-full ring-2 ring-white/50" data-alt="Avatar 6" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUs7qnyyfUR_fvwEkmj3uQkxQP0o2X9j7ecm-WljWATOtSJKe5GfbpBI0nBL5zII4HmFVqKLmU7nXZjRik0ynZ-Lle8g8_bEW5k0xkagzjWz7dLcmdNUXuDryz9BaCIVQ1WqzXf6oObKVACb4u6f0NP7_R3Ap_ztP4ahCH1jb_m7oCG3oykFLsyUPZYeL986_RBE_Kil5UuLjtJB0eAWDDfJsc5DSoAtoZK8iK_f8bBUpH-f55jeVee4XWJO_Ts_ujCYifjxVYxLM"/>
+<div class="flex h-8 w-8 items-center justify-center rounded-full bg-white/30 text-xs font-semibold ring-2 ring-white/50 text-white">+9</div>
+</div>
+</div>
+<div class="bg-gradient-to-br from-green-400 to-lime-300 flex flex-col gap-4 rounded-xl justify-end p-4 aspect-square text-zinc-900">
+<div>
+<p class="text-base font-bold leading-tight line-clamp-2">Work Friends</p>
+<p class="text-xs font-medium opacity-80">2 past trips</p>
+</div>
+<div class="flex -space-x-2">
+<img class="inline-block h-8 w-8 rounded-full ring-2 ring-white/50" data-alt="Avatar 7" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZxYofytjJRZAMWCfwabvimKGvXoAyH7FZ0kImITwQ9HMp8__JDDxyWQ0WDPH3BmCIRgTcqoMcX2XFAArSZX9mKVleZlftR89ku-Daa1YWpQ_XTMdZPjMAdvEsnIsdOV19FOYTC-f-_SmEalP_T4EPDybhCqtWngHZPN_VgCMA4W1ewGBWN86_NLZDrIjmPIFx2_HQYRt-NSnx8mObk9TEod_PJEsHzLvKJhQADI3yvP63JmzOKs7ah92_PRC9a9DWqY4EKuTkQ5s"/>
+<img class="inline-block h-8 w-8 rounded-full ring-2 ring-white/50" data-alt="Avatar 8" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDj3Xc9N751habm70Vh-aU_5g7pJBurdt58TJ2tfR-5RGe8bd-Mjs8x3iwhNxLlEyAHOzy3BI-rhA4wh3W5FPNRQzgw6Cs6EMz3yPQLBIqRK9NT-jGx42fQwmn2qaYwglBadfLQjm4Np6gylaGztzNLu39A817M4_b_qsNDeUdQuUlgIiBvqTcuGCUo_RB5f3Bh6WCfUb0T70Ye0Lmo-AVRHlKy7dzs9_c4xUkQ8HMaW5pf2N-wxNkXIT7MaHxiHsBl3tjrXVXB7Rs"/>
+<img class="inline-block h-8 w-8 rounded-full ring-2 ring-white/50" data-alt="Avatar 9" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqzKoXnEcb3hDzbXvkjioW_FPeQVezlUeEjtbwdCubxtM5uBYb4gvRLnZZPe4kK3M11CzT7nk0spoUG6k17jZWjry6KD8oyrUDe5aqo47KceQ1R6xd6ZP618-2DvxZG4Qe2gvc5rDZnnu8LK0PD7YZrn3pQzaX8rIgaNGfyLKejXcsvf2ZYquPKNwKm-6Ky8okrbQl4UlsjVdxm9RfWxj7T7oDyez4CE8jJFF8t0Vz_UkJkvVTLHHgN3IuV4AUzZYtYvKnOdJKBis"/>
+<div class="flex h-8 w-8 items-center justify-center rounded-full bg-black/10 text-xs font-semibold ring-2 ring-white/50 text-zinc-900">+3</div>
+</div>
+</div>
+<div class="bg-transparent border-2 border-dashed border-zinc-600 flex flex-col gap-2 rounded-xl justify-center items-center p-4 aspect-square text-zinc-400">
+<span class="material-symbols-outlined text-4xl">add</span>
+<p class="text-center text-sm font-semibold leading-tight">Create New Family</p>
+</div>
+</div>
+<div class="h-32"></div> 
+<div class="fixed bottom-24 right-6 z-20">
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-14 px-5 bg-sunset-gold text-zinc-900 shadow-lg text-base font-bold leading-normal tracking-[0.015em] min-w-0 gap-3 pl-5 pr-6">
+<span class="material-symbols-outlined">add</span>
+<span class="truncate">Join Family</span>
+</button>
+</div>
+<nav class="fixed bottom-0 left-0 right-0 z-30 flex h-20 justify-around border-t border-zinc-700 bg-surface-dark pb-3 pt-2">
+<a class="flex flex-col items-center justify-center gap-1 text-zinc-400 w-full" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-xs font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1 text-primary w-full" href="#">
+<span class="material-symbols-outlined filled">group</span>
+<span class="text-xs font-semibold">Family</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1 text-zinc-400 w-full" href="#">
+<span class="material-symbols-outlined">flight_takeoff</span>
+<span class="text-xs font-medium">Trips</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1 text-zinc-400 w-full" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-xs font-medium">Profile</span>
+</a>
+</nav>
+</div>
+
+</body></html>
