@@ -1,22 +1,7 @@
-import { collection, addDoc, serverTimestamp, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { supabase } from '../lib/supabase';
 
-const TRIPS_COLLECTION = 'trips';
-
-export const logActivity = async (
-    tripId: string,
-    userId: string,
-    action: string,
-    detail: string
-) => {
-    try {
-        await addDoc(
-            collection(db, TRIPS_COLLECTION, tripId, 'activity'),
-            { tripId, userId, action, detail, createdAt: serverTimestamp() }
-        );
-    } catch (error) {
-        console.error('Failed to log activity:', error);
-    }
+export const logActivity = async (tripId: string, userId: string, action: string, detail: string) => {
+    await supabase.from('activity').insert({ trip_id: tripId, user_id: userId, action, detail }).throwOnError();
 };
 
 export const subscribeToActivity = (
@@ -24,40 +9,60 @@ export const subscribeToActivity = (
     callback: (entries: any[]) => void,
     maxEntries = 20
 ) => {
-    const q = query(
-        collection(db, TRIPS_COLLECTION, tripId, 'activity'),
-        orderBy('createdAt', 'desc'),
-        limit(maxEntries)
-    );
-    return onSnapshot(q, (snapshot) => {
-        const entries = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
-        callback(entries);
-    });
+    // Initial fetch
+    supabase
+        .from('activity')
+        .select('*')
+        .eq('trip_id', tripId)
+        .order('created_at', { ascending: false })
+        .limit(maxEntries)
+        .then(({ data }) => callback(data || []));
+
+    // Realtime
+    const channel = supabase
+        .channel(`activity-${tripId}`)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'activity', filter: `trip_id=eq.${tripId}` },
+            () => {
+                supabase
+                    .from('activity')
+                    .select('*')
+                    .eq('trip_id', tripId)
+                    .order('created_at', { ascending: false })
+                    .limit(maxEntries)
+                    .then(({ data }) => callback(data || []));
+            })
+        .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
 };
 
 export const subscribeToComments = (
     tripId: string,
     callback: (comments: any[]) => void
 ) => {
-    const q = query(
-        collection(db, TRIPS_COLLECTION, tripId, 'comments'),
-        orderBy('createdAt', 'asc')
-    );
-    return onSnapshot(q, (snapshot) => {
-        const comments = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
-        callback(comments);
-    });
+    supabase
+        .from('comments')
+        .select('*')
+        .eq('trip_id', tripId)
+        .order('created_at', { ascending: true })
+        .then(({ data }) => callback(data || []));
+
+    const channel = supabase
+        .channel(`comments-${tripId}`)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comments', filter: `trip_id=eq.${tripId}` },
+            () => {
+                supabase
+                    .from('comments')
+                    .select('*')
+                    .eq('trip_id', tripId)
+                    .order('created_at', { ascending: true })
+                    .then(({ data }) => callback(data || []));
+            })
+        .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
 };
 
 export const addComment = async (tripId: string, userId: string, text: string) => {
-    await addDoc(
-        collection(db, TRIPS_COLLECTION, tripId, 'comments'),
-        { userId, text, createdAt: serverTimestamp() }
-    );
+    await supabase.from('comments').insert({ trip_id: tripId, user_id: userId, text }).throwOnError();
 };

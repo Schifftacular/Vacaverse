@@ -1,9 +1,20 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { db } from '../lib/firebase';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
 import { useFamily } from './FamilyContext';
-import type { Trip } from '../types';
+
+interface Trip {
+    id: string;
+    user_id: string;
+    family_id: string | null;
+    title: string;
+    start_date: string;
+    end_date: string;
+    image: string;
+    budget: number;
+    share_token?: string;
+    created_at: string;
+}
 
 interface TripContextType {
     trips: Trip[];
@@ -19,29 +30,33 @@ export const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!user) {
-            setTrips([]);
+        if (!user) { setTrips([]); setLoading(false); return; }
+
+        const fetchTrips = async () => {
+            let query = supabase.from('trips').select('*');
+
+            if (currentFamily) {
+                query = query.eq('family_id', currentFamily.id);
+            } else {
+                query = query.eq('user_id', user.id);
+            }
+
+            const { data } = await query.order('created_at', { ascending: false });
+            setTrips(data || []);
             setLoading(false);
-            return;
-        }
+        };
 
-        let q;
-        if (currentFamily) {
-            q = query(collection(db, 'trips'), where('familyId', '==', currentFamily.id));
-        } else {
-            q = query(collection(db, 'trips'), where('userId', '==', user.uid));
-        }
+        fetchTrips();
 
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const tripData: Trip[] = [];
-            snapshot.forEach((doc) => {
-                tripData.push({ id: doc.id, ...doc.data() } as Trip);
-            });
-            setTrips(tripData);
-            setLoading(false);
-        });
+        // Realtime subscription
+        const channel = supabase
+            .channel('trips-changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'trips' }, () => {
+                fetchTrips();
+            })
+            .subscribe();
 
-        return () => unsubscribe();
+        return () => { supabase.removeChannel(channel); };
     }, [user, currentFamily]);
 
     return (
@@ -53,8 +68,6 @@ export const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 export const useTrip = () => {
     const context = useContext(TripContext);
-    if (context === undefined) {
-        throw new Error('useTrip must be used within a TripProvider');
-    }
+    if (context === undefined) throw new Error('useTrip must be used within a TripProvider');
     return context;
 };

@@ -1,7 +1,4 @@
-import { collection, addDoc, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
-import { db } from '../lib/firebase';
-
-const INVITES_COLLECTION = 'invites';
+import { supabase } from '../lib/supabase';
 
 function generateInviteCode(): string {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -14,41 +11,34 @@ function generateInviteCode(): string {
 
 export const createFamilyInvite = async (familyId: string, createdBy: string): Promise<string> => {
     const code = generateInviteCode();
-    await addDoc(collection(db, INVITES_COLLECTION), {
+    const { error } = await supabase.from('invites').insert({
         code,
-        familyId,
-        createdBy,
-        createdAt: Date.now(),
-        expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days
-        used: false,
+        family_id: familyId,
+        created_by: createdBy,
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     });
+    if (error) throw error;
     return code;
 };
 
 export const lookupInviteCode = async (code: string): Promise<{ familyId: string; familyName: string; inviteId: string } | null> => {
-    const q = query(
-        collection(db, INVITES_COLLECTION),
-        where('code', '==', code.toUpperCase()),
-        where('used', '==', false)
-    );
-    const snapshot = await getDocs(q);
-    if (snapshot.empty) return null;
+    const { data: invites } = await supabase
+        .from('invites')
+        .select('id, family_id, expires_at, families(name)')
+        .eq('code', code.toUpperCase())
+        .eq('used', false)
+        .limit(1);
 
-    const invite = snapshot.docs[0].data();
-    if (invite.expiresAt < Date.now()) return null;
+    if (!invites?.length) return null;
 
-    // Get family name
-    const familyDoc = await getDoc(doc(db, 'families', invite.familyId));
-    if (!familyDoc.exists()) return null;
+    const invite = invites[0];
+    if (new Date(invite.expires_at) < new Date()) return null;
 
-    return {
-        familyId: invite.familyId,
-        familyName: (familyDoc.data() as { name: string }).name,
-        inviteId: snapshot.docs[0].id,
-    };
+    const familyName = (invite as any).families?.name || 'Unknown Family';
+
+    return { familyId: invite.family_id, familyName, inviteId: invite.id };
 };
 
 export const markInviteUsed = async (inviteId: string): Promise<void> => {
-    const { doc: firestoreDoc, updateDoc } = await import('firebase/firestore');
-    await updateDoc(firestoreDoc(db, 'invites', inviteId), { used: true });
+    await supabase.from('invites').update({ used: true }).eq('id', inviteId);
 };

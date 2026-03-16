@@ -1,93 +1,50 @@
-import {
-    collection, doc, updateDoc, deleteDoc, addDoc,
-    getDocs, serverTimestamp, query
-} from 'firebase/firestore';
-import { db } from '../lib/firebase';
-import { TRIPS_COLLECTION } from './firestore';
-import type { Trip } from '../types';
+import { supabase } from '../lib/supabase';
 
-export const createTrip = async (
-    userId: string,
-    tripData: Omit<Trip, 'id' | 'userId' | 'createdAt' | 'familyId'>
-): Promise<string> => {
-    try {
-        const docRef = await addDoc(collection(db, TRIPS_COLLECTION), {
-            userId,
-            familyId: null,
-            ...tripData,
-            createdAt: Date.now()
-        });
-        return docRef.id;
-    } catch (error) {
-        console.error('Error creating trip:', error);
-        throw error;
-    }
+export const createTrip = async (userId: string, tripData: {
+    title: string; start_date: string; end_date: string; image: string; budget: number;
+}): Promise<string> => {
+    const { data, error } = await supabase
+        .from('trips')
+        .insert({ user_id: userId, ...tripData })
+        .select('id')
+        .single();
+    if (error) throw error;
+    return data.id;
 };
 
-export const updateTrip = async (tripId: string, data: Partial<Trip>) => {
-    try {
-        const tripRef = doc(db, TRIPS_COLLECTION, tripId);
-        await updateDoc(tripRef, { ...data, updatedAt: serverTimestamp() });
-    } catch (error) {
-        console.error('Error updating trip:', error);
-        throw error;
-    }
+export const updateTrip = async (tripId: string, data: Record<string, unknown>) => {
+    const { error } = await supabase.from('trips').update(data).eq('id', tripId);
+    if (error) throw error;
 };
 
 export const deleteTrip = async (tripId: string) => {
-    try {
-        await deleteDoc(doc(db, TRIPS_COLLECTION, tripId));
-    } catch (error) {
-        console.error('Error deleting trip:', error);
-        throw error;
-    }
+    const { error } = await supabase.from('trips').delete().eq('id', tripId);
+    if (error) throw error;
 };
 
-export const addSubCollectionItem = async <T extends Record<string, unknown>>(
-    tripId: string, collectionName: string, data: T
-): Promise<string> => {
-    try {
-        const subColRef = collection(db, TRIPS_COLLECTION, tripId, collectionName);
-        const docRef = await addDoc(subColRef, { ...data, createdAt: serverTimestamp() });
-        return docRef.id;
-    } catch (error) {
-        console.error(`Error adding to ${collectionName}:`, error);
-        throw error;
-    }
+// Generic table operations for trip sub-resources
+export const addTripItem = async (table: string, data: Record<string, unknown>): Promise<string> => {
+    const { data: row, error } = await supabase.from(table).insert(data).select('id').single();
+    if (error) throw error;
+    return row.id;
 };
 
-export const updateSubCollectionItem = async <T extends Record<string, unknown>>(
-    tripId: string, collectionName: string, itemId: string, data: T
-) => {
-    try {
-        const itemRef = doc(db, TRIPS_COLLECTION, tripId, collectionName, itemId);
-        await updateDoc(itemRef, { ...data, updatedAt: serverTimestamp() });
-    } catch (error) {
-        console.error(`Error updating in ${collectionName}:`, error);
-        throw error;
-    }
+export const updateTripItem = async (table: string, id: string, data: Record<string, unknown>) => {
+    const { error } = await supabase.from(table).update(data).eq('id', id);
+    if (error) throw error;
 };
 
-export const deleteSubCollectionItem = async (
-    tripId: string, collectionName: string, itemId: string
-) => {
-    try {
-        await deleteDoc(doc(db, TRIPS_COLLECTION, tripId, collectionName, itemId));
-    } catch (error) {
-        console.error(`Error deleting from ${collectionName}:`, error);
-        throw error;
-    }
+export const deleteTripItem = async (table: string, id: string) => {
+    const { error } = await supabase.from(table).delete().eq('id', id);
+    if (error) throw error;
 };
 
-export const getSubCollection = async <T>(
-    tripId: string, collectionName: string
-): Promise<(T & { id: string })[]> => {
-    try {
-        const subColRef = collection(db, TRIPS_COLLECTION, tripId, collectionName);
-        const snapshot = await getDocs(query(subColRef));
-        return snapshot.docs.map(d => ({ id: d.id, ...d.data() })) as (T & { id: string })[];
-    } catch (error) {
-        console.error(`Error getting ${collectionName}:`, error);
-        throw error;
-    }
+export const getTripItems = async <T>(table: string, tripId: string, orderBy = 'created_at'): Promise<T[]> => {
+    const { data, error } = await supabase
+        .from(table)
+        .select('*')
+        .eq('trip_id', tripId)
+        .order(orderBy, { ascending: true });
+    if (error) throw error;
+    return (data || []) as T[];
 };

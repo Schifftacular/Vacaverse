@@ -1,8 +1,14 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { db } from '../lib/firebase';
-import { collection, query, where, onSnapshot, addDoc, doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
-import type { Family } from '../types';
+
+interface Family {
+    id: string;
+    name: string;
+    created_by: string;
+    created_at: string;
+    members: string[];
+}
 
 interface FamilyContextType {
     families: Family[];
@@ -21,67 +27,70 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const [currentFamily, setCurrentFamily] = useState<Family | null>(null);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        if (!user) {
-            setFamilies([]);
-            setLoading(false);
-            return;
-        }
+    const fetchFamilies = async () => {
+        if (!user) { setFamilies([]); setLoading(false); return; }
 
-        const q = query(
-            collection(db, 'families'),
-            where('members', 'array-contains', user.uid)
-        );
+        const { data: memberships } = await supabase
+            .from('family_members')
+            .select('family_id')
+            .eq('user_id', user.id);
 
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const familyData: Family[] = [];
-            snapshot.forEach((doc) => {
-                familyData.push({ id: doc.id, ...doc.data() } as Family);
-            });
-            setFamilies(familyData);
-            setLoading(false);
-        });
+        if (!memberships?.length) { setFamilies([]); setLoading(false); return; }
 
-        return () => unsubscribe();
-    }, [user]);
+        const familyIds = memberships.map(m => m.family_id);
+        const { data: familyRows } = await supabase
+            .from('families')
+            .select('*')
+            .in('id', familyIds);
+
+        // Get members for each family
+        const { data: allMembers } = await supabase
+            .from('family_members')
+            .select('family_id, user_id')
+            .in('family_id', familyIds);
+
+        const familiesWithMembers: Family[] = (familyRows || []).map(f => ({
+            ...f,
+            members: (allMembers || []).filter(m => m.family_id === f.id).map(m => m.user_id),
+        }));
+
+        setFamilies(familiesWithMembers);
+        setLoading(false);
+    };
+
+    useEffect(() => { fetchFamilies(); }, [user]);
 
     const createFamily = async (name: string) => {
         if (!user) return;
-        try {
-            await addDoc(collection(db, 'families'), {
-                name,
-                members: [user.uid],
-                admins: [user.uid],
-                createdAt: Date.now()
-            });
-        } catch (error) {
-            console.error("Error creating family:", error);
-            throw error;
-        }
+        const { data, error } = await supabase
+            .from('families')
+            .insert({ name, created_by: user.id })
+            .select()
+            .single();
+        if (error) throw error;
+
+        await supabase.from('family_members').insert({
+            family_id: data.id,
+            user_id: user.id,
+            role: 'admin',
+        });
+
+        await fetchFamilies();
     };
 
     const joinFamily = async (familyId: string) => {
         if (!user) return;
-        try {
-            const familyRef = doc(db, 'families', familyId);
-            await updateDoc(familyRef, {
-                members: arrayUnion(user.uid)
-            });
-        } catch (error) {
-            console.error("Error joining family:", error);
-            throw error;
-        }
+        const { error } = await supabase.from('family_members').insert({
+            family_id: familyId,
+            user_id: user.id,
+            role: 'member',
+        });
+        if (error) throw error;
+        await fetchFamilies();
     };
 
     return (
-        <FamilyContext.Provider value={{
-            families,
-            currentFamily,
-            setCurrentFamily,
-            createFamily,
-            joinFamily,
-            loading
-        }}>
+        <FamilyContext.Provider value={{ families, currentFamily, setCurrentFamily, createFamily, joinFamily, loading }}>
             {children}
         </FamilyContext.Provider>
     );
@@ -89,8 +98,6 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
 export const useFamily = () => {
     const context = useContext(FamilyContext);
-    if (context === undefined) {
-        throw new Error('useFamily must be used within a FamilyProvider');
-    }
+    if (context === undefined) throw new Error('useFamily must be used within a FamilyProvider');
     return context;
 };

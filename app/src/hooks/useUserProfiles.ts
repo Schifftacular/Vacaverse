@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../lib/firebase';
-import type { UserProfile } from '../types';
+import { supabase } from '../lib/supabase';
+
+interface UserProfile {
+    id: string;
+    display_name: string;
+    email: string;
+    photo_url: string | null;
+}
 
 const profileCache = new Map<string, UserProfile>();
 
@@ -10,10 +15,7 @@ export function useUserProfiles(userIds: string[]): { profiles: Map<string, User
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (userIds.length === 0) {
-            setLoading(false);
-            return;
-        }
+        if (userIds.length === 0) { setLoading(false); return; }
 
         const fetchProfiles = async () => {
             const result = new Map<string, UserProfile>();
@@ -27,25 +29,23 @@ export function useUserProfiles(userIds: string[]): { profiles: Map<string, User
                 }
             }
 
-            for (const uid of toFetch) {
-                try {
-                    const snap = await getDoc(doc(db, 'users', uid));
-                    if (snap.exists()) {
-                        const profile = { uid, ...snap.data() } as UserProfile;
-                        profileCache.set(uid, profile);
-                        result.set(uid, profile);
-                    } else {
-                        const fallback: UserProfile = {
-                            uid,
-                            displayName: 'Unknown',
-                            email: '',
-                            photoURL: null,
-                            createdAt: 0,
-                        };
+            if (toFetch.length > 0) {
+                const { data } = await supabase
+                    .from('profiles')
+                    .select('id, display_name, email, photo_url')
+                    .in('id', toFetch);
+
+                for (const profile of (data || [])) {
+                    profileCache.set(profile.id, profile);
+                    result.set(profile.id, profile);
+                }
+
+                // Fallback for missing profiles
+                for (const uid of toFetch) {
+                    if (!result.has(uid)) {
+                        const fallback: UserProfile = { id: uid, display_name: 'Unknown', email: '', photo_url: null };
                         result.set(uid, fallback);
                     }
-                } catch (error) {
-                    console.error(`Failed to fetch profile for ${uid}:`, error);
                 }
             }
 
