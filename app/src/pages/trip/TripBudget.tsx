@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import { useTrip } from '../../contexts/TripContext';
+import { useOutletContext } from 'react-router-dom';
 import { addSubCollectionItem, getSubCollection, deleteSubCollectionItem } from '../../services/tripService';
 import { useToast } from '../../contexts/ToastContext';
 import { DollarSign, Plus, Trash2, X, Loader2 } from 'lucide-react';
 import { GridSkeleton } from '../../components/ui/Skeletons';
+import type { Trip } from '../../types';
 
 const COLORS = ['#68A8AD', '#FFC726', '#003E51', '#E88C0C', '#2E8B84', '#EF4444', '#8B5CF6'];
 
@@ -20,7 +21,7 @@ interface Expense {
 const CATEGORIES = ['Accommodation', 'Flights', 'Food', 'Activities', 'Transport', 'Shopping', 'Other'];
 
 export default function TripBudget() {
-    const { currentTrip } = useTrip();
+    const { trip } = useOutletContext<{ trip: Trip }>();
     const { showToast } = useToast();
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [loading, setLoading] = useState(true);
@@ -34,15 +35,15 @@ export default function TripBudget() {
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
 
     useEffect(() => {
-        if (currentTrip?.id) {
+        if (trip?.id) {
             fetchExpenses();
         }
-    }, [currentTrip?.id]);
+    }, [trip?.id]);
 
     const fetchExpenses = async () => {
-        if (!currentTrip?.id) return;
+        if (!trip?.id) return;
         try {
-            const data = await getSubCollection(currentTrip.id, 'expenses');
+            const data = await getSubCollection(trip.id, 'expenses');
             // Sort by date desc (or createdAt)
             const sorted = (data as Expense[]).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
             setExpenses(sorted);
@@ -56,7 +57,7 @@ export default function TripBudget() {
 
     const handleAddExpense = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!currentTrip?.id) return;
+        if (!trip?.id) return;
 
         setSubmitLoading(true);
         try {
@@ -66,7 +67,7 @@ export default function TripBudget() {
                 category,
                 date
             };
-            await addSubCollectionItem(currentTrip.id, 'expenses', newExpense);
+            await addSubCollectionItem(trip.id, 'expenses', newExpense);
             showToast('Expense added!', 'success');
             setIsModalOpen(false);
 
@@ -85,11 +86,11 @@ export default function TripBudget() {
     };
 
     const handleDeleteExpense = async (id: string) => {
-        if (!currentTrip?.id) return;
+        if (!trip?.id) return;
         if (!confirm('Delete this expense?')) return;
 
         try {
-            await deleteSubCollectionItem(currentTrip.id, 'expenses', id);
+            await deleteSubCollectionItem(trip.id, 'expenses', id);
             setExpenses(prev => prev.filter(e => e.id !== id));
             showToast('Expense deleted', 'info');
         } catch (error) {
@@ -100,8 +101,7 @@ export default function TripBudget() {
 
     // Calculations
     const totalSpent = expenses.reduce((sum, item) => sum + item.amount, 0);
-    // Mock total budget for now (or add to Trip model later)
-    const totalBudget = 5000;
+    const totalBudget = trip?.budget || 0;
     const remaining = totalBudget - totalSpent;
 
     const chartData = CATEGORIES.map(cat => {

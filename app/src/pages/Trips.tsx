@@ -1,15 +1,23 @@
 import { useState, useEffect } from 'react';
 import { Plus, ChevronRight, X, Loader2, Image as ImageIcon, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { differenceInDays, format, parseISO } from 'date-fns';
 import { useAuth } from '../contexts/AuthContext';
-import { getTrips, createTrip } from '../services/firestore';
-import { deleteTrip } from '../services/tripService'; // New generic service
+import { getTrips } from '../services/firestore';
+import { createTrip, deleteTrip } from '../services/tripService';
 import { uploadImage } from '../services/storage';
 import { useToast } from '../contexts/ToastContext';
 import { GridSkeleton } from '../components/ui/Skeletons';
 import type { Trip } from '../types';
 
 function TripListCard({ trip, onDelete }: { trip: Trip; onDelete: (id: string, e: React.MouseEvent) => void }) {
+    const daysAway = differenceInDays(parseISO(trip.startDate), new Date());
+    const daysLabel = daysAway > 0
+        ? `${daysAway} days away`
+        : daysAway === 0
+            ? 'Today!'
+            : 'Completed';
+
     return (
         <Link to={`/trips/${trip.id}`} className="block group">
             <div className="bg-[#1e293b] rounded-2xl overflow-hidden border border-gray-800 hover:border-gray-700 transition-colors relative">
@@ -28,24 +36,22 @@ function TripListCard({ trip, onDelete }: { trip: Trip; onDelete: (id: string, e
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                     <div className="absolute bottom-4 left-4 right-4">
                         <h3 className="text-xl font-bold text-white">{trip.title}</h3>
-                        <p className="text-sm text-gray-300">{trip.dates} • {trip.daysAway} days to go</p>
+                        <p className="text-sm text-gray-300">
+                            {format(parseISO(trip.startDate), 'MMM d')} - {format(parseISO(trip.endDate), 'MMM d, yyyy')} • {daysLabel}
+                        </p>
                     </div>
                 </div>
 
                 <div className="p-4">
-                    <div className="grid grid-cols-3 gap-4 text-center">
+                    <div className="grid grid-cols-2 gap-4 text-center">
                         <div className="bg-[#0f172a] rounded-lg p-3">
-                            <div className="text-sm text-gray-400">Budget Used</div>
-                            <div className="text-xl font-bold text-brand-teal">{trip.progress.budget}%</div>
+                            <div className="text-sm text-gray-400">Budget</div>
+                            <div className="text-xl font-bold text-brand-teal">${trip.budget.toLocaleString()}</div>
                         </div>
                         <div className="bg-[#0f172a] rounded-lg p-3">
-                            <div className="text-sm text-gray-400">Tasks Complete</div>
-                            <div className="text-xl font-bold text-brand-teal">{trip.progress.tasks}%</div>
-                        </div>
-                        <div className="bg-[#0f172a] rounded-lg p-3">
-                            <div className="text-sm text-gray-400">Bookings</div>
-                            <div className="text-xl font-bold text-brand-teal text-nowrap">
-                                {trip.progress.bookings.done}/{trip.progress.bookings.total}
+                            <div className="text-sm text-gray-400">Days Away</div>
+                            <div className="text-xl font-bold text-brand-teal">
+                                {daysAway > 0 ? daysAway : daysAway === 0 ? 'Today' : 'Done'}
                             </div>
                         </div>
                     </div>
@@ -69,7 +75,9 @@ export default function Trips() {
 
     // Form State
     const [newTripTitle, setNewTripTitle] = useState('');
-    const [newTripDates, setNewTripDates] = useState('');
+    const [newTripStartDate, setNewTripStartDate] = useState('');
+    const [newTripEndDate, setNewTripEndDate] = useState('');
+    const [newTripBudget, setNewTripBudget] = useState('');
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [createLoading, setCreateLoading] = useState(false);
@@ -119,7 +127,7 @@ export default function Trips() {
 
     const handleCreateTrip = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!user || !newTripTitle || !newTripDates) return;
+        if (!user || !newTripTitle || !newTripStartDate || !newTripEndDate) return;
 
         setCreateLoading(true);
         try {
@@ -132,14 +140,10 @@ export default function Trips() {
 
             await createTrip(user.uid, {
                 title: newTripTitle,
-                dates: newTripDates,
-                daysAway: Math.floor(Math.random() * 100) + 30, // Mock days away for now
+                startDate: newTripStartDate,
+                endDate: newTripEndDate,
                 image: imageUrl,
-                progress: {
-                    budget: 0,
-                    tasks: 0,
-                    bookings: { done: 0, total: 5 }
-                }
+                budget: parseFloat(newTripBudget) || 0,
             });
             await fetchTrips();
             showToast('Trip created successfully!', 'success');
@@ -147,7 +151,9 @@ export default function Trips() {
             // Reset form
             setIsModalOpen(false);
             setNewTripTitle('');
-            setNewTripDates('');
+            setNewTripStartDate('');
+            setNewTripEndDate('');
+            setNewTripBudget('');
             setSelectedImage(null);
             setImagePreview(null);
         } catch (error) {
@@ -240,15 +246,39 @@ export default function Trips() {
                                 />
                             </div>
 
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm text-gray-400 mb-1">Start Date</label>
+                                    <input
+                                        type="date"
+                                        value={newTripStartDate}
+                                        onChange={(e) => setNewTripStartDate(e.target.value)}
+                                        className="w-full bg-[#0f172a] border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-brand-teal"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm text-gray-400 mb-1">End Date</label>
+                                    <input
+                                        type="date"
+                                        value={newTripEndDate}
+                                        onChange={(e) => setNewTripEndDate(e.target.value)}
+                                        className="w-full bg-[#0f172a] border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-brand-teal"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
                             <div>
-                                <label className="block text-sm text-gray-400 mb-1">Dates</label>
+                                <label className="block text-sm text-gray-400 mb-1">Trip Budget ($)</label>
                                 <input
-                                    type="text"
-                                    value={newTripDates}
-                                    onChange={(e) => setNewTripDates(e.target.value)}
-                                    placeholder="e.g., July 10-20, 2026"
+                                    type="number"
+                                    value={newTripBudget}
+                                    onChange={(e) => setNewTripBudget(e.target.value)}
+                                    placeholder="5000"
+                                    min="0"
+                                    step="1"
                                     className="w-full bg-[#0f172a] border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-brand-teal"
-                                    required
                                 />
                             </div>
 

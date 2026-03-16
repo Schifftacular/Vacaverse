@@ -2,9 +2,7 @@ import { Outlet, NavLink, Link, useParams } from 'react-router-dom';
 import { ArrowLeft, Calendar } from 'lucide-react';
 import { useTrip } from '../contexts/TripContext';
 import { useMemo } from 'react';
-
-// Mock stats for now if not in Trip object
-const mockStats = { budget: 72, tasks: 85, bookings: { done: 5, total: 7 } };
+import { differenceInDays, format, parseISO } from 'date-fns';
 
 const tabs = [
     { name: 'Itinerary', path: '' },
@@ -20,10 +18,7 @@ export default function TripLayout() {
     const trip = useMemo(() => trips.find(t => t.id === tripId), [trips, tripId]);
 
     if (!trip) {
-        // Fallback for direct URL access before trips are loaded or if not found
-        // In a real app we might fetch specific trip document here.
-        // For now, if simple loading check:
-        if (trips.length === 0) { // Assuming loading or empty
+        if (trips.length === 0) {
             return <div className="p-8 text-center text-gray-400">Loading trip...</div>;
         }
         return (
@@ -33,6 +28,8 @@ export default function TripLayout() {
             </div>
         );
     }
+
+    const daysAway = differenceInDays(parseISO(trip.startDate), new Date());
 
     return (
         <div className="pb-8 min-h-screen bg-[#0f172a]">
@@ -47,26 +44,23 @@ export default function TripLayout() {
                 <div className="absolute bottom-6 left-4 right-4 z-10">
                     <h1 className="text-2xl font-bold text-white">{trip.title}</h1>
                     <p className="text-gray-300 text-sm flex items-center gap-2 mt-1">
-                        <Calendar size={16} /> {trip.dates} • {trip.daysAway} days to go
+                        <Calendar size={16} />
+                        {format(parseISO(trip.startDate), 'MMM d')} - {format(parseISO(trip.endDate), 'MMM d, yyyy')} •{' '}
+                        {daysAway > 0 ? `${daysAway} days to go` : 'In progress'}
                     </p>
                 </div>
             </div>
 
-            {/* Stats Summary Row (Visible on all tabs? Maybe. Let's keep it consistent.) */}
-            <div className="grid grid-cols-3 gap-3 p-4">
+            {/* Stats Summary Row */}
+            <div className="grid grid-cols-2 gap-3 p-4">
                 <div className="bg-[#1e293b] rounded-xl p-3 text-center border border-gray-800">
                     <div className="text-xs text-gray-400 mb-1">Budget</div>
-                    {/* Use real progress data if available, else mock */}
-                    <div className="text-xl font-bold text-white">{trip.progress?.budget || mockStats.budget}%</div>
+                    <div className="text-xl font-bold text-white">${trip.budget?.toLocaleString() || '0'}</div>
                 </div>
                 <div className="bg-[#1e293b] rounded-xl p-3 text-center border border-gray-800">
-                    <div className="text-xs text-gray-400 mb-1">Tasks</div>
-                    <div className="text-xl font-bold text-white">{trip.progress?.tasks || mockStats.tasks}%</div>
-                </div>
-                <div className="bg-[#1e293b] rounded-xl p-3 text-center border border-gray-800">
-                    <div className="text-xs text-gray-400 mb-1">Bookings</div>
+                    <div className="text-xs text-gray-400 mb-1">Days Away</div>
                     <div className="text-xl font-bold text-white">
-                        {trip.progress?.bookings ? `${trip.progress.bookings.done}/${trip.progress.bookings.total}` : `${mockStats.bookings.done}/${mockStats.bookings.total}`}
+                        {daysAway > 0 ? daysAway : 'In progress'}
                     </div>
                 </div>
             </div>
@@ -77,7 +71,7 @@ export default function TripLayout() {
                     <NavLink
                         key={tab.name}
                         to={tab.path}
-                        end={tab.path === ''} // Exact match for index
+                        end={tab.path === ''}
                         className={({ isActive }) => `px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${isActive
                                 ? 'text-brand-teal border-brand-teal'
                                 : 'text-gray-400 border-transparent hover:text-gray-300'
