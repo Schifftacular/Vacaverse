@@ -110,13 +110,13 @@ export default function Profile() {
                 <div className="bg-[var(--color-bg-card)] rounded-2xl p-6 border border-[var(--color-border)] flex items-center gap-4">
                     <div className="w-20 h-20 rounded-full bg-gray-700 overflow-hidden border-4 border-brand-teal">
                         <img
-                            src={user.photoURL || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200"}
+                            src={user.user_metadata?.avatar_url || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200"}
                             alt="Avatar"
                             className="w-full h-full object-cover"
                         />
                     </div>
                     <div>
-                        <h2 className="text-xl font-bold text-[var(--color-text-primary)]">{user.displayName || user.email?.split('@')[0] || "User"}</h2>
+                        <h2 className="text-xl font-bold text-[var(--color-text-primary)]">{user.user_metadata?.full_name || user.email?.split('@')[0] || "User"}</h2>
                         <p className="text-[var(--color-text-secondary)]">{user.email}</p>
                         <button className="text-brand-teal text-sm font-medium mt-2">Edit Profile</button>
                     </div>

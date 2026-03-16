@@ -3,15 +3,15 @@ import { Plus, ChevronRight, X, Loader2, Image as ImageIcon, Trash2 } from 'luci
 import { Link } from 'react-router-dom';
 import { differenceInDays, format, parseISO } from 'date-fns';
 import { useAuth } from '../contexts/AuthContext';
-import { getTrips } from '../services/firestore';
 import { createTrip, deleteTrip } from '../services/tripService';
+import { supabase } from '../lib/supabase';
 import { uploadImage } from '../services/storage';
 import { useToast } from '../contexts/ToastContext';
 import { GridSkeleton } from '../components/ui/Skeletons';
 import type { Trip } from '../types';
 
 function TripListCard({ trip, onDelete }: { trip: Trip; onDelete: (id: string, e: React.MouseEvent) => void }) {
-    const daysAway = differenceInDays(parseISO(trip.startDate), new Date());
+    const daysAway = differenceInDays(parseISO(trip.start_date), new Date());
     const daysLabel = daysAway > 0
         ? `${daysAway} days away`
         : daysAway === 0
@@ -37,7 +37,7 @@ function TripListCard({ trip, onDelete }: { trip: Trip; onDelete: (id: string, e
                     <div className="absolute bottom-4 left-4 right-4">
                         <h3 className="text-xl font-bold text-white">{trip.title}</h3>
                         <p className="text-sm text-gray-300">
-                            {format(parseISO(trip.startDate), 'MMM d')} - {format(parseISO(trip.endDate), 'MMM d, yyyy')} • {daysLabel}
+                            {format(parseISO(trip.start_date), 'MMM d')} - {format(parseISO(trip.end_date), 'MMM d, yyyy')} • {daysLabel}
                         </p>
                     </div>
                 </div>
@@ -89,8 +89,13 @@ export default function Trips() {
             return;
         }
         try {
-            const data = await getTrips(user.uid);
-            setTrips(data);
+            const { data, error } = await supabase
+                .from('trips')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false });
+            if (error) throw error;
+            setTrips(data || []);
         } catch (error) {
             console.error('Failed to fetch trips', error);
             showToast('Failed to load trips', 'error');
@@ -134,14 +139,14 @@ export default function Trips() {
             let imageUrl = `https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&q=80&w=800`; // Default
 
             if (selectedImage) {
-                const path = `trips/${user.uid}/${Date.now()}_${selectedImage.name}`;
+                const path = `trips/${user.id}/${Date.now()}_${selectedImage.name}`;
                 imageUrl = await uploadImage(selectedImage, path);
             }
 
-            await createTrip(user.uid, {
+            await createTrip(user.id, {
                 title: newTripTitle,
-                startDate: newTripStartDate,
-                endDate: newTripEndDate,
+                start_date: newTripStartDate,
+                end_date: newTripEndDate,
                 image: imageUrl,
                 budget: parseFloat(newTripBudget) || 0,
             });

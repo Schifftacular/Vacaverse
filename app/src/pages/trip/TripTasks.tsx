@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { addSubCollectionItem, getSubCollection, updateSubCollectionItem } from '../../services/tripService';
+import { addTripItem, getTripItems, updateTripItem } from '../../services/tripService';
 import { useToast } from '../../contexts/ToastContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFamily } from '../../contexts/FamilyContext';
@@ -25,15 +25,15 @@ export default function TripTasks() {
 
     // Determine family members for assignee dropdown
     const familyMembers: string[] = useMemo(() => {
-        if (!currentTrip?.familyId) return user ? [user.uid] : [];
-        const family = families.find(f => f.id === currentTrip.familyId);
-        return family?.members ?? (user ? [user.uid] : []);
-    }, [families, currentTrip?.familyId, user]);
+        if (!currentTrip?.family_id) return user ? [user.id] : [];
+        const family = families.find(f => f.id === currentTrip.family_id);
+        return family?.members ?? (user ? [user.id] : []);
+    }, [families, currentTrip?.family_id, user]);
 
     // Resolve profiles for all family members + assignees
     const allProfileIds = useMemo(() => {
         const ids = new Set<string>(familyMembers);
-        tasks.forEach(t => { if (t.assignedTo) ids.add(t.assignedTo); });
+        tasks.forEach(t => { if (t.assigned_to) ids.add(t.assigned_to); });
         return Array.from(ids);
     }, [familyMembers, tasks]);
 
@@ -48,8 +48,8 @@ export default function TripTasks() {
     const fetchTasks = async () => {
         if (!currentTrip?.id) return;
         try {
-            const data = await getSubCollection(currentTrip.id, 'tasks');
-            setTasks(data as Task[]);
+            const data = await getTripItems<Task>('tasks', currentTrip.id);
+            setTasks(data);
         } catch (error) {
             console.error(error);
             showToast('Failed to load tasks', 'error');
@@ -64,12 +64,13 @@ export default function TripTasks() {
 
         setSubmitLoading(true);
         try {
-            const newTask: Omit<Task, 'id'> = {
+            const newTask = {
+                trip_id: currentTrip.id,
                 title: newTaskTitle.trim(),
-                status: 'todo',
-                ...(newTaskAssignee ? { assignedTo: newTaskAssignee } : {}),
+                status: 'todo' as const,
+                ...(newTaskAssignee ? { assigned_to: newTaskAssignee } : {}),
             };
-            await addSubCollectionItem(currentTrip.id, 'tasks', newTask as Record<string, unknown>);
+            await addTripItem('tasks', newTask as Record<string, unknown>);
             showToast('Task added', 'success');
             setNewTaskTitle('');
             setNewTaskAssignee('');
@@ -92,7 +93,7 @@ export default function TripTasks() {
         setTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: nextStatus } : t));
 
         try {
-            await updateSubCollectionItem(currentTrip.id, 'tasks', task.id, { status: nextStatus });
+            await updateTripItem('tasks', task.id, { status: nextStatus });
         } catch (error) {
             console.error(error);
             showToast('Failed to update task', 'error');
@@ -104,10 +105,10 @@ export default function TripTasks() {
         if (!currentTrip?.id) return;
 
         // Optimistic update
-        setTasks(prev => prev.map(t => t.id === task.id ? { ...t, assignedTo: assignedTo || undefined } : t));
+        setTasks(prev => prev.map(t => t.id === task.id ? { ...t, assigned_to: assignedTo || undefined } : t));
 
         try {
-            await updateSubCollectionItem(currentTrip.id, 'tasks', task.id, { assignedTo: assignedTo || null });
+            await updateTripItem('tasks', task.id, { assigned_to: assignedTo || null });
         } catch (error) {
             console.error(error);
             showToast('Failed to update assignee', 'error');
@@ -123,7 +124,7 @@ export default function TripTasks() {
     const renderTask = (task: Task, dimmed = false) => {
         const isDone = task.status === 'done';
         const isExpanded = expandedTaskId === task.id;
-        const assigneeProfile = task.assignedTo ? profiles.get(task.assignedTo) : null;
+        const assigneeProfile = task.assigned_to ? profiles.get(task.assigned_to) : null;
 
         return (
             <div key={task.id} className={`bg-[#1e293b] rounded-xl border border-gray-800 overflow-hidden transition-opacity ${dimmed ? 'opacity-50' : ''}`}>
@@ -152,7 +153,7 @@ export default function TripTasks() {
                         <div className="flex items-center gap-2 mt-0.5">
                             {assigneeProfile ? (
                                 <span className="text-xs text-gray-400">
-                                    {assigneeProfile.displayName}
+                                    {assigneeProfile.display_name}
                                 </span>
                             ) : (
                                 <span className="text-xs text-gray-600">Unassigned</span>
@@ -170,15 +171,15 @@ export default function TripTasks() {
 
                     {/* Assignee avatar */}
                     {assigneeProfile && (
-                        assigneeProfile.photoURL ? (
+                        assigneeProfile.photo_url ? (
                             <img
-                                src={assigneeProfile.photoURL}
-                                alt={assigneeProfile.displayName}
+                                src={assigneeProfile.photo_url}
+                                alt={assigneeProfile.display_name}
                                 className="w-7 h-7 rounded-full object-cover shrink-0"
                             />
                         ) : (
                             <div className="w-7 h-7 rounded-full bg-brand-teal flex items-center justify-center text-xs text-white font-bold shrink-0">
-                                {(assigneeProfile.displayName?.[0] ?? '?').toUpperCase()}
+                                {(assigneeProfile.display_name?.[0] ?? '?').toUpperCase()}
                             </div>
                         )
                     )}
@@ -198,7 +199,7 @@ export default function TripTasks() {
                     <div className="px-4 pb-4 pt-0 border-t border-gray-800">
                         <label className="block text-xs text-gray-400 mb-2 mt-3">Assign to</label>
                         <select
-                            value={task.assignedTo ?? ''}
+                            value={task.assigned_to ?? ''}
                             onChange={(e) => updateAssignee(task, e.target.value)}
                             className="w-full bg-[#0f172a] border border-gray-700 rounded-lg p-2 text-white text-sm focus:outline-none focus:border-brand-teal"
                         >
@@ -207,7 +208,7 @@ export default function TripTasks() {
                                 const p = profiles.get(uid);
                                 return (
                                     <option key={uid} value={uid}>
-                                        {p?.displayName ?? uid}
+                                        {p?.display_name ?? uid}
                                     </option>
                                 );
                             })}
@@ -305,7 +306,7 @@ export default function TripTasks() {
                                         const p = profiles.get(uid);
                                         return (
                                             <option key={uid} value={uid}>
-                                                {p?.displayName ?? uid}
+                                                {p?.display_name ?? uid}
                                             </option>
                                         );
                                     })}

@@ -1,14 +1,13 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
-import { storage } from '../../lib/firebase';
+import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useUserProfiles } from '../../hooks/useUserProfiles';
 import { useToast } from '../../contexts/ToastContext';
 import {
-    getSubCollection,
-    addSubCollectionItem,
-    deleteSubCollectionItem,
+    getTripItems,
+    addTripItem,
+    deleteTripItem,
 } from '../../services/tripService';
 import {
     Plus,
@@ -37,9 +36,9 @@ const getFileIcon = (mimeType: string) => {
     return File;
 };
 
-const formatDate = (timestamp: any): string => {
+const formatDate = (timestamp: string): string => {
     if (!timestamp) return '';
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const date = new Date(timestamp);
     return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 };
 
@@ -57,7 +56,7 @@ export default function TripDocuments() {
 
     const userIds = useMemo(() => {
         const ids = new Set<string>();
-        docs.forEach(d => { if (d.uploadedBy) ids.add(d.uploadedBy); });
+        docs.forEach(d => { if (d.uploaded_by) ids.add(d.uploaded_by); });
         return Array.from(ids);
     }, [docs]);
 
@@ -70,12 +69,8 @@ export default function TripDocuments() {
 
     const loadDocuments = async () => {
         try {
-            const data = await getSubCollection<TripDocument>(trip.id, 'documents');
-            data.sort((a, b) => {
-                const aTime = a.createdAt?.seconds ?? 0;
-                const bTime = b.createdAt?.seconds ?? 0;
-                return bTime - aTime;
-            });
+            const data = await getTripItems<TripDocument>('documents', trip.id);
+            data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
             setDocs(data);
         } catch (error) {
             console.error('Error loading documents:', error);
@@ -96,71 +91,73 @@ export default function TripDocuments() {
     const handleUpload = async (file: File) => {
         if (!user) return;
         const storagePath = `trips/${trip.id}/documents/${Date.now()}_${file.name}`;
-        const storageRef = ref(storage, storagePath);
-        const uploadTask = uploadBytesResumable(storageRef, file);
 
         setUploadProgress(0);
 
-        await new Promise<void>((resolve, reject) => {
-            uploadTask.on(
-                'state_changed',
-                (snapshot) => {
-                    const pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-                    setUploadProgress(pct);
-                },
-                (error) => {
-                    console.error('Upload error:', error);
-                    showToast('Upload failed', 'error');
-                    setUploadProgress(null);
-                    reject(error);
-                },
-                async () => {
-                    try {
-                        const url = await getDownloadURL(uploadTask.snapshot.ref);
-                        const newDocId = await addSubCollectionItem(trip.id, 'documents', {
-                            name: file.name,
-                            size: file.size,
-                            type: file.type || 'application/octet-stream',
-                            storageUrl: url,
-                            storagePath: storagePath,
-                            uploadedBy: user.uid,
-                        } as unknown as Record<string, unknown>);
-                        const optimisticDoc: TripDocument = {
-                            id: newDocId,
-                            name: file.name,
-                            size: file.size,
-                            type: file.type || 'application/octet-stream',
-                            storageUrl: url,
-                            storagePath: storagePath,
-                            uploadedBy: user.uid,
-                            createdAt: null,
-                        };
-                        setDocs(prev => [optimisticDoc, ...prev]);
-                        showToast('File uploaded!', 'success');
-                        setUploadProgress(null);
-                        resolve();
-                    } catch (err) {
-                        showToast('Failed to save document metadata', 'error');
-                        setUploadProgress(null);
-                        reject(err);
-                    }
-                }
-            );
-        });
+        try {
+            // Upload to Supabase Storage
+            const { error: uploadError } = await supabase.storage
+                .from('trip-documents')
+                .upload(storagePath, file);
+
+            if (uploadError) throw uploadError;
+
+            setUploadProgress(50);
+
+            // Get public URL
+            const { data: urlData } = supabase.storage
+                .from('trip-documents')
+                .getPublicUrl(storagePath);
+
+            const storageUrl = urlData.publicUrl;
+
+            setUploadProgress(80);
+
+            // Save metadata to DB
+            const newDocId = await addTripItem('documents', {
+                trip_id: trip.id,
+                name: file.name,
+                size: file.size,
+                type: file.type || 'application/octet-stream',
+                storage_url: storageUrl,
+                storage_path: storagePath,
+                uploaded_by: user.id,
+            } as Record<string, unknown>);
+
+            const optimisticDoc: TripDocument = {
+                id: newDocId,
+                trip_id: trip.id,
+                name: file.name,
+                size: file.size,
+                type: file.type || 'application/octet-stream',
+                storage_url: storageUrl,
+                storage_path: storagePath,
+                uploaded_by: user.id,
+                created_at: new Date().toISOString(),
+            };
+            setDocs(prev => [optimisticDoc, ...prev]);
+            showToast('File uploaded!', 'success');
+        } catch (error) {
+            console.error('Upload error:', error);
+            showToast('Upload failed', 'error');
+        } finally {
+            setUploadProgress(null);
+        }
     };
 
     const handleDelete = async (doc: TripDocument) => {
         setDeletingId(doc.id);
         setConfirmDelete(null);
         try {
-            // Try to delete from Storage (best-effort — file might have different path)
+            // Try to delete from Storage (best-effort)
             try {
-                const storageRef = ref(storage, (doc as any).storagePath || `trips/${trip.id}/documents/${doc.name}`);
-                await deleteObject(storageRef);
+                await supabase.storage
+                    .from('trip-documents')
+                    .remove([doc.storage_path]);
             } catch {
-                // Storage file might not exist at this path (stored with timestamp prefix)
+                // Storage file might not exist
             }
-            await deleteSubCollectionItem(trip.id, 'documents', doc.id);
+            await deleteTripItem('documents', doc.id);
             setDocs(prev => prev.filter(d => d.id !== doc.id));
             showToast('Document deleted', 'success');
         } catch (error) {
@@ -212,7 +209,7 @@ export default function TripDocuments() {
                 <div className="space-y-3">
                     {docs.map(doc => {
                         const IconComponent = getFileIcon(doc.type);
-                        const uploader = profiles.get(doc.uploadedBy);
+                        const uploader = profiles.get(doc.uploaded_by);
                         const isDeleting = deletingId === doc.id;
 
                         return (
@@ -227,7 +224,7 @@ export default function TripDocuments() {
 
                                 {/* Info */}
                                 <a
-                                    href={doc.storageUrl}
+                                    href={doc.storage_url}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="flex-1 min-w-0 group"
@@ -238,15 +235,15 @@ export default function TripDocuments() {
                                     </p>
                                     <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
                                         {formatSize(doc.size)}
-                                        {uploader && ` · ${uploader.displayName}`}
-                                        {doc.createdAt && ` · ${formatDate(doc.createdAt)}`}
+                                        {uploader && ` · ${uploader.display_name}`}
+                                        {doc.created_at && ` · ${formatDate(doc.created_at)}`}
                                     </p>
                                 </a>
 
                                 {/* Actions */}
                                 <div className="flex items-center gap-1 shrink-0">
                                     <a
-                                        href={doc.storageUrl}
+                                        href={doc.storage_url}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="p-2 text-gray-500 hover:text-brand-teal transition-colors"

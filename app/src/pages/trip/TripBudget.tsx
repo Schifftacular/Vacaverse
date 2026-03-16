@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { useOutletContext } from 'react-router-dom';
-import { addSubCollectionItem, getSubCollection, deleteSubCollectionItem } from '../../services/tripService';
+import { addTripItem, getTripItems, deleteTripItem } from '../../services/tripService';
 import { useToast } from '../../contexts/ToastContext';
 import { DollarSign, Plus, Trash2, X, Loader2 } from 'lucide-react';
 import { GridSkeleton } from '../../components/ui/Skeletons';
@@ -36,9 +36,9 @@ export default function TripBudget() {
     const fetchExpenses = async () => {
         if (!trip?.id) return;
         try {
-            const data = await getSubCollection(trip.id, 'expenses');
-            // Sort by date desc (or createdAt)
-            const sorted = (data as Expense[]).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+            const data = await getTripItems<Expense>('expenses', trip.id);
+            // Sort by date desc
+            const sorted = data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
             setExpenses(sorted);
         } catch (error) {
             console.error(error);
@@ -55,12 +55,13 @@ export default function TripBudget() {
         setSubmitLoading(true);
         try {
             const newExpense = {
+                trip_id: trip.id,
                 title,
                 amount: parseFloat(amount),
                 category,
-                date
+                date,
             };
-            await addSubCollectionItem(trip.id, 'expenses', newExpense);
+            await addTripItem('expenses', newExpense as Record<string, unknown>);
             showToast('Expense added!', 'success');
             setIsModalOpen(false);
 
@@ -83,7 +84,7 @@ export default function TripBudget() {
         if (!confirm('Delete this expense?')) return;
 
         try {
-            await deleteSubCollectionItem(trip.id, 'expenses', id);
+            await deleteTripItem('expenses', id);
             setExpenses(prev => prev.filter(e => e.id !== id));
             showToast('Expense deleted', 'info');
         } catch (error) {

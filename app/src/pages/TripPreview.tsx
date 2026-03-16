@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '../lib/firebase';
-import { getSubCollection } from '../services/tripService';
+import { supabase } from '../lib/supabase';
 import { MapPin, Calendar, Users, LogIn } from 'lucide-react';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import type { Trip, TripEvent } from '../types';
@@ -21,25 +19,31 @@ export default function TripPreview() {
 
     const fetchTripByToken = async (token: string) => {
         try {
-            const q = query(collection(db, 'trips'), where('shareToken', '==', token));
-            const snapshot = await getDocs(q);
-            if (snapshot.empty) {
+            const { data: tripData, error: tripError } = await supabase
+                .from('trips')
+                .select('*')
+                .eq('share_token', token)
+                .single();
+
+            if (tripError || !tripData) {
                 setNotFound(true);
                 setLoading(false);
                 return;
             }
-            const tripDoc = snapshot.docs[0];
-            const tripData = { id: tripDoc.id, ...tripDoc.data() } as Trip;
-            setTrip(tripData);
+
+            setTrip(tripData as Trip);
 
             // Fetch events
-            const eventsData = await getSubCollection<TripEvent>(tripDoc.id, 'events');
-            const sorted = eventsData.sort((a, b) => {
-                const dateA = new Date(`${a.date}T${a.time || '00:00'}`);
-                const dateB = new Date(`${b.date}T${b.time || '00:00'}`);
-                return dateA.getTime() - dateB.getTime();
-            });
-            setEvents(sorted);
+            const { data: eventsData, error: eventsError } = await supabase
+                .from('trip_events')
+                .select('*')
+                .eq('trip_id', tripData.id)
+                .order('date')
+                .order('time');
+
+            if (!eventsError && eventsData) {
+                setEvents(eventsData as TripEvent[]);
+            }
         } catch (error) {
             console.error('Error fetching trip preview:', error);
             setNotFound(true);
@@ -66,7 +70,7 @@ export default function TripPreview() {
         );
     }
 
-    const daysAway = differenceInDays(parseISO(trip.startDate), new Date());
+    const daysAway = differenceInDays(parseISO(trip.start_date), new Date());
 
     // Group events by date
     const eventsByDate = events.reduce((acc, event) => {
@@ -88,7 +92,7 @@ export default function TripPreview() {
                     <div className="flex items-center gap-4 mt-2 text-gray-300 text-sm">
                         <span className="flex items-center gap-1">
                             <Calendar size={14} />
-                            {format(parseISO(trip.startDate), 'MMM d')} - {format(parseISO(trip.endDate), 'MMM d, yyyy')}
+                            {format(parseISO(trip.start_date), 'MMM d')} - {format(parseISO(trip.end_date), 'MMM d, yyyy')}
                         </span>
                         {daysAway > 0 && <span>{daysAway} days away</span>}
                     </div>

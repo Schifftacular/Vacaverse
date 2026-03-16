@@ -1,12 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { addSubCollectionItem, getSubCollection, updateSubCollectionItem } from '../../services/tripService';
+import { addTripItem, getTripItems, updateTripItem } from '../../services/tripService';
+import { supabase } from '../../lib/supabase';
 import { useToast } from '../../contexts/ToastContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useUserProfiles } from '../../hooks/useUserProfiles';
 import { Plus, MapPin, X, Loader2, Check, HelpCircle, XCircle } from 'lucide-react';
 import { GridSkeleton } from '../../components/ui/Skeletons';
-import type { Trip, TripEvent } from '../../types';
+import type { Trip, TripEvent, EventRsvp } from '../../types';
 
 type RsvpStatus = 'going' | 'maybe' | 'not_going';
 
@@ -15,6 +16,7 @@ export default function TripItinerary() {
     const { showToast } = useToast();
     const { user } = useAuth();
     const [events, setEvents] = useState<TripEvent[]>([]);
+    const [rsvps, setRsvps] = useState<EventRsvp[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [submitLoading, setSubmitLoading] = useState(false);
@@ -25,16 +27,12 @@ export default function TripItinerary() {
     const [time, setTime] = useState('');
     const [location, setLocation] = useState('');
 
-    // Collect all user IDs from RSVP maps to resolve profiles
+    // Collect all user IDs from RSVPs to resolve profiles
     const rsvpUserIds = useMemo(() => {
         const ids = new Set<string>();
-        for (const event of events) {
-            if (event.rsvp) {
-                Object.keys(event.rsvp).forEach(uid => ids.add(uid));
-            }
-        }
+        rsvps.forEach(r => ids.add(r.user_id));
         return Array.from(ids);
-    }, [events]);
+    }, [rsvps]);
 
     const { profiles } = useUserProfiles(rsvpUserIds);
 
@@ -47,14 +45,26 @@ export default function TripItinerary() {
     const fetchEvents = async () => {
         if (!currentTrip?.id) return;
         try {
-            const data = await getSubCollection(currentTrip.id, 'events');
+            const data = await getTripItems<TripEvent>('trip_events', currentTrip.id);
             // Sort by date then time
-            const sorted = (data as TripEvent[]).sort((a, b) => {
+            const sorted = data.sort((a, b) => {
                 const dateA = new Date(`${a.date}T${a.time}`);
                 const dateB = new Date(`${b.date}T${b.time}`);
                 return dateA.getTime() - dateB.getTime();
             });
             setEvents(sorted);
+
+            // Fetch RSVPs for all events
+            if (sorted.length > 0) {
+                const eventIds = sorted.map(e => e.id);
+                const { data: rsvpData, error } = await supabase
+                    .from('event_rsvps')
+                    .select('*')
+                    .in('event_id', eventIds);
+                if (!error) {
+                    setRsvps(rsvpData || []);
+                }
+            }
         } catch (error) {
             console.error(error);
             showToast('Failed to load itinerary', 'error');
@@ -70,13 +80,14 @@ export default function TripItinerary() {
         setSubmitLoading(true);
         try {
             const newEvent = {
+                trip_id: currentTrip.id,
                 title,
                 date,
                 time,
                 location,
-                description: ''
+                description: '',
             };
-            await addSubCollectionItem(currentTrip.id, 'events', newEvent);
+            await addTripItem('trip_events', newEvent as Record<string, unknown>);
             showToast('Event added', 'success');
             setIsModalOpen(false);
 
@@ -98,15 +109,17 @@ export default function TripItinerary() {
     const handleRsvp = async (event: TripEvent, status: RsvpStatus) => {
         if (!currentTrip?.id || !user) return;
 
-        const updatedRsvp = { ...(event.rsvp || {}), [user.uid]: status };
-
         // Optimistic update
-        setEvents(prev =>
-            prev.map(e => e.id === event.id ? { ...e, rsvp: updatedRsvp } : e)
-        );
+        setRsvps(prev => {
+            const filtered = prev.filter(r => !(r.event_id === event.id && r.user_id === user.id));
+            return [...filtered, { event_id: event.id, user_id: user.id, status }];
+        });
 
         try {
-            await updateSubCollectionItem(currentTrip.id, 'events', event.id, { rsvp: updatedRsvp });
+            const { error } = await supabase
+                .from('event_rsvps')
+                .upsert({ event_id: event.id, user_id: user.id, status });
+            if (error) throw error;
         } catch (error) {
             console.error(error);
             showToast('Failed to update RSVP', 'error');
@@ -146,10 +159,12 @@ export default function TripItinerary() {
                         </div>
                         <div className="space-y-4 relative pl-4 border-l-2 border-gray-800/50">
                             {eventsByDate[dateKey].map((event) => {
-                                const myRsvp = user ? event.rsvp?.[user.uid] : undefined;
-                                const goingUids = Object.entries(event.rsvp || {})
-                                    .filter(([, s]) => s === 'going')
-                                    .map(([uid]) => uid);
+                                const myRsvp = user
+                                    ? rsvps.find(r => r.event_id === event.id && r.user_id === user.id)?.status
+                                    : undefined;
+                                const goingUserIds = rsvps
+                                    .filter(r => r.event_id === event.id && r.status === 'going')
+                                    .map(r => r.user_id);
 
                                 return (
                                     <div key={event.id} className="flex items-start bg-[#1e293b] rounded-xl p-4 border border-gray-800 ml-4 relative">
@@ -203,32 +218,32 @@ export default function TripItinerary() {
                                                     </button>
 
                                                     {/* Tiny avatars of people going */}
-                                                    {goingUids.length > 0 && (
+                                                    {goingUserIds.length > 0 && (
                                                         <div className="flex items-center gap-1 ml-1">
                                                             <div className="flex -space-x-1">
-                                                                {goingUids.slice(0, 5).map((uid) => {
+                                                                {goingUserIds.slice(0, 5).map((uid) => {
                                                                     const profile = profiles.get(uid);
-                                                                    return profile?.photoURL ? (
+                                                                    return profile?.photo_url ? (
                                                                         <img
                                                                             key={uid}
-                                                                            src={profile.photoURL}
-                                                                            alt={profile.displayName}
-                                                                            title={profile.displayName}
+                                                                            src={profile.photo_url}
+                                                                            alt={profile.display_name}
+                                                                            title={profile.display_name}
                                                                             className="w-5 h-5 rounded-full border border-[#1e293b] object-cover"
                                                                         />
                                                                     ) : (
                                                                         <div
                                                                             key={uid}
-                                                                            title={profile?.displayName ?? uid}
+                                                                            title={profile?.display_name ?? uid}
                                                                             className="w-5 h-5 rounded-full border border-[#1e293b] bg-brand-teal flex items-center justify-center text-[8px] text-white font-bold"
                                                                         >
-                                                                            {(profile?.displayName?.[0] ?? '?').toUpperCase()}
+                                                                            {(profile?.display_name?.[0] ?? '?').toUpperCase()}
                                                                         </div>
                                                                     );
                                                                 })}
                                                             </div>
-                                                            {goingUids.length > 5 && (
-                                                                <span className="text-xs text-gray-400">+{goingUids.length - 5}</span>
+                                                            {goingUserIds.length > 5 && (
+                                                                <span className="text-xs text-gray-400">+{goingUserIds.length - 5}</span>
                                                             )}
                                                         </div>
                                                     )}

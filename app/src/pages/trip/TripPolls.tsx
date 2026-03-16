@@ -2,20 +2,17 @@ import { useState, useEffect, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useUserProfiles } from '../../hooks/useUserProfiles';
-import {
-    collection, onSnapshot, orderBy, query
-} from 'firebase/firestore';
-import { db } from '../../lib/firebase';
-import { TRIPS_COLLECTION } from '../../services/firestore';
-import { addSubCollectionItem, updateSubCollectionItem } from '../../services/tripService';
+import { supabase } from '../../lib/supabase';
+import { addTripItem, getTripItems } from '../../services/tripService';
 import { Plus, X, BarChart2, Check } from 'lucide-react';
-import type { Trip, Poll } from '../../types';
+import type { Trip, Poll, PollVote } from '../../types';
 
 export default function TripPolls() {
     const { trip } = useOutletContext<{ trip: Trip }>();
     const { user } = useAuth();
 
     const [polls, setPolls] = useState<Poll[]>([]);
+    const [votes, setVotes] = useState<PollVote[]>([]);
     const [showModal, setShowModal] = useState(false);
     const [question, setQuestion] = useState('');
     const [options, setOptions] = useState(['', '']);
@@ -24,7 +21,7 @@ export default function TripPolls() {
     // Collect all user IDs for profile resolution
     const userIds = useMemo(() => {
         const ids = new Set<string>();
-        polls.forEach(p => ids.add(p.createdBy));
+        polls.forEach(p => ids.add(p.created_by));
         return Array.from(ids);
     }, [polls]);
 
@@ -32,27 +29,50 @@ export default function TripPolls() {
 
     useEffect(() => {
         if (!trip?.id) return;
-        const q = query(
-            collection(db, TRIPS_COLLECTION, trip.id, 'polls'),
-            orderBy('createdAt', 'desc')
-        );
-        const unsub = onSnapshot(q, (snap) => {
-            setPolls(snap.docs.map(d => ({ id: d.id, ...d.data() }) as Poll));
-        });
-        return () => unsub();
+        fetchPollsAndVotes();
     }, [trip?.id]);
+
+    const fetchPollsAndVotes = async () => {
+        try {
+            const pollData = await getTripItems<Poll>('polls', trip.id, 'created_at');
+            // Sort descending by created_at
+            pollData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+            setPolls(pollData);
+
+            if (pollData.length > 0) {
+                const pollIds = pollData.map(p => p.id);
+                const { data: voteData, error } = await supabase
+                    .from('poll_votes')
+                    .select('*')
+                    .in('poll_id', pollIds);
+                if (!error) {
+                    setVotes(voteData || []);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to load polls:', error);
+        }
+    };
 
     const handleVote = async (poll: Poll, optionIndex: number) => {
         if (!user) return;
-        // Toggle off if already voted for same option
-        const currentVote = poll.votes[user.uid];
-        if (currentVote === optionIndex) return;
+        const myVote = votes.find(v => v.poll_id === poll.id && v.user_id === user.id);
+        if (myVote?.option_index === optionIndex) return;
+
+        // Optimistic update
+        setVotes(prev => {
+            const filtered = prev.filter(v => !(v.poll_id === poll.id && v.user_id === user.id));
+            return [...filtered, { poll_id: poll.id, user_id: user.id, option_index: optionIndex }];
+        });
+
         try {
-            await updateSubCollectionItem(trip.id, 'polls', poll.id, {
-                votes: { ...poll.votes, [user.uid]: optionIndex }
-            });
+            const { error } = await supabase
+                .from('poll_votes')
+                .upsert({ poll_id: poll.id, user_id: user.id, option_index: optionIndex });
+            if (error) throw error;
         } catch (error) {
             console.error('Failed to vote:', error);
+            fetchPollsAndVotes();
         }
     };
 
@@ -81,15 +101,16 @@ export default function TripPolls() {
 
         setSubmitting(true);
         try {
-            await addSubCollectionItem(trip.id, 'polls', {
+            await addTripItem('polls', {
+                trip_id: trip.id,
                 question: question.trim(),
                 options: validOptions,
-                votes: {},
-                createdBy: user.uid,
-            });
+                created_by: user.id,
+            } as Record<string, unknown>);
             setQuestion('');
             setOptions(['', '']);
             setShowModal(false);
+            fetchPollsAndVotes();
         } catch (error) {
             console.error('Failed to create poll:', error);
         } finally {
@@ -103,9 +124,9 @@ export default function TripPolls() {
         setShowModal(false);
     };
 
-    const formatTime = (timestamp: any) => {
+    const formatTime = (timestamp: string) => {
         if (!timestamp) return '';
-        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+        const date = new Date(timestamp);
         const now = new Date();
         const diffMs = now.getTime() - date.getTime();
         const diffMins = Math.floor(diffMs / 60000);
@@ -130,12 +151,12 @@ export default function TripPolls() {
             ) : (
                 <div className="space-y-4">
                     {polls.map(poll => {
-                        const totalVotes = Object.keys(poll.votes).length;
-                        const myVote = user ? poll.votes[user.uid] : undefined;
-                        const profile = profiles.get(poll.createdBy);
-                        // Find winning option index
+                        const pollVotes = votes.filter(v => v.poll_id === poll.id);
+                        const totalVotes = pollVotes.length;
+                        const myVote = user ? pollVotes.find(v => v.user_id === user.id)?.option_index : undefined;
+                        const profile = profiles.get(poll.created_by);
                         const voteCounts = poll.options.map((_, i) =>
-                            Object.values(poll.votes).filter(v => v === i).length
+                            pollVotes.filter(v => v.option_index === i).length
                         );
                         const maxVotes = Math.max(...voteCounts, 1);
 
@@ -146,7 +167,7 @@ export default function TripPolls() {
                             >
                                 <p className="text-white font-semibold text-base mb-1">{poll.question}</p>
                                 <p className="text-xs text-gray-500 mb-4">
-                                    Asked by {profile?.displayName ?? 'Someone'} · {formatTime(poll.createdAt)} · {totalVotes} vote{totalVotes !== 1 ? 's' : ''}
+                                    Asked by {profile?.display_name ?? 'Someone'} · {formatTime(poll.created_at)} · {totalVotes} vote{totalVotes !== 1 ? 's' : ''}
                                 </p>
 
                                 <div className="space-y-2">

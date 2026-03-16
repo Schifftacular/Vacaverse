@@ -37,7 +37,7 @@ export default function Family() {
         if (!currentFamily || !user) return;
         setInviteLoading(true);
         try {
-            const code = await createFamilyInvite(currentFamily.id, user.uid);
+            const code = await createFamilyInvite(currentFamily.id, user.id);
             setInviteCode(code);
         } catch (error) {
             console.error('Failed to generate invite:', error);
@@ -162,16 +162,16 @@ export default function Family() {
                         return (
                             <div key={uid} className="flex items-center gap-3 bg-[var(--color-bg-card)] p-3 rounded-xl border border-[var(--color-border)] mb-2">
                                 <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden flex-shrink-0">
-                                    {profile?.photoURL ? (
-                                        <img src={profile.photoURL} alt="" className="w-full h-full object-cover" />
+                                    {profile?.photo_url ? (
+                                        <img src={profile.photo_url} alt="" className="w-full h-full object-cover" />
                                     ) : (
                                         <span className="text-white text-sm font-bold">
-                                            {(profile?.displayName || '?').charAt(0).toUpperCase()}
+                                            {(profile?.display_name || '?').charAt(0).toUpperCase()}
                                         </span>
                                     )}
                                 </div>
                                 <div>
-                                    <div className="text-[var(--color-text-primary)] font-medium">{profile?.displayName || 'Loading...'}</div>
+                                    <div className="text-[var(--color-text-primary)] font-medium">{profile?.display_name || 'Loading...'}</div>
                                     <div className="text-xs text-[var(--color-text-secondary)]">{profile?.email || ''}</div>
                                 </div>
                             </div>

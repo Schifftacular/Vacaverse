@@ -9,10 +9,10 @@ export default function Home() {
     const { trips, loading } = useTrip();
 
     const upcomingTrip = trips
-        .filter(t => differenceInDays(parseISO(t.startDate), new Date()) > 0)
-        .sort((a, b) => parseISO(a.startDate).getTime() - parseISO(b.startDate).getTime())[0];
+        .filter(t => differenceInDays(parseISO(t.start_date), new Date()) > 0)
+        .sort((a, b) => parseISO(a.start_date).getTime() - parseISO(b.start_date).getTime())[0];
 
-    const displayName = user?.displayName || user?.email?.split('@')[0] || 'Traveler';
+    const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Traveler';
 
     return (
         <div className="pb-8">
@@ -23,8 +23,8 @@ export default function Home() {
                     <p className="text-sm text-[var(--color-text-secondary)]">Welcome back, {displayName}!</p>
                 </div>
                 <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden border-2 border-brand-teal">
-                    {user?.photoURL ? (
-                        <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover" />
+                    {user?.user_metadata?.avatar_url ? (
+                        <img src={user.user_metadata.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                     ) : (
                         <span className="text-white font-bold">{displayName.charAt(0).toUpperCase()}</span>
                     )}
@@ -48,14 +48,14 @@ export default function Home() {
                                     <div className="absolute bottom-4 left-4 right-4">
                                         <h3 className="text-xl font-bold text-white">{upcomingTrip.title}</h3>
                                         <p className="text-sm text-gray-300">
-                                            {format(parseISO(upcomingTrip.startDate), 'MMM d')} - {format(parseISO(upcomingTrip.endDate), 'MMM d, yyyy')}
+                                            {format(parseISO(upcomingTrip.start_date), 'MMM d')} - {format(parseISO(upcomingTrip.end_date), 'MMM d, yyyy')}
                                         </p>
                                     </div>
                                 </div>
                                 <div className="p-4 flex items-center justify-between">
                                     <div className="text-center">
                                         <div className="text-2xl font-bold text-brand-teal">
-                                            {differenceInDays(parseISO(upcomingTrip.startDate), new Date())}
+                                            {differenceInDays(parseISO(upcomingTrip.start_date), new Date())}
                                         </div>
                                         <div className="text-xs text-[var(--color-text-secondary)]">days to go</div>
                                     </div>

@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { MessageSquarePlus, X, Send, Loader2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { supabase } from '../lib/supabase';
 
 export function FeedbackWidget() {
     const { user } = useAuth();
@@ -20,15 +19,15 @@ export function FeedbackWidget() {
 
         setSending(true);
         try {
-            await addDoc(collection(db, 'feedback'), {
-                userId: user.uid,
+            const { error } = await supabase.from('feedback').insert({
+                user_id: user.id,
                 email: user.email,
                 type,
                 text: text.trim(),
                 url: window.location.pathname,
-                userAgent: navigator.userAgent,
-                createdAt: serverTimestamp(),
+                user_agent: navigator.userAgent,
             });
+            if (error) throw error;
             setSent(true);
             setText('');
             setTimeout(() => {

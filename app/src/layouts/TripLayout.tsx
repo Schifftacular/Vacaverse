@@ -27,13 +27,13 @@ export default function TripLayout() {
     const handleShare = async () => {
         if (!trip || !tripId) return;
 
-        let token = trip.shareToken;
+        let token = trip.share_token;
 
         if (!token) {
             setSharingLoading(true);
             try {
                 token = crypto.randomUUID().slice(0, 12);
-                await updateTrip(tripId, { shareToken: token });
+                await updateTrip(tripId, { share_token: token });
                 // Optimistically update local state via the token reference
             } catch (error) {
                 console.error('Error generating share token:', error);
@@ -73,7 +73,7 @@ export default function TripLayout() {
         );
     }
 
-    const daysAway = differenceInDays(parseISO(trip.startDate), new Date());
+    const daysAway = differenceInDays(parseISO(trip.start_date), new Date());
 
     return (
         <div className="pb-8 min-h-screen bg-[var(--color-bg-primary)]">
@@ -100,7 +100,7 @@ export default function TripLayout() {
                     <h1 className="text-2xl font-bold text-white">{trip.title}</h1>
                     <p className="text-gray-300 text-sm flex items-center gap-2 mt-1">
                         <Calendar size={16} />
-                        {format(parseISO(trip.startDate), 'MMM d')} - {format(parseISO(trip.endDate), 'MMM d, yyyy')} •{' '}
+                        {format(parseISO(trip.start_date), 'MMM d')} - {format(parseISO(trip.end_date), 'MMM d, yyyy')} •{' '}
                         {daysAway > 0 ? `${daysAway} days to go` : 'In progress'}
                     </p>
                 </div>

@@ -1,93 +1,109 @@
 export interface UserProfile {
-    uid: string;
-    displayName: string;
+    id: string;
+    display_name: string;
     email: string;
-    photoURL: string | null;
-    createdAt: number;
+    photo_url: string | null;
+    created_at: string;
 }
 
 export interface Family {
     id: string;
     name: string;
     members: string[];
-    admins: string[];
-    createdAt: number;
+    created_by: string;
+    created_at: string;
 }
 
 export interface Trip {
     id: string;
-    userId: string;
-    familyId: string | null;
+    user_id: string;
+    family_id: string | null;
     title: string;
-    startDate: string;
-    endDate: string;
+    start_date: string;
+    end_date: string;
     image: string;
     budget: number;
-    createdAt: number;
-    shareToken?: string;
+    share_token?: string;
+    created_at: string;
 }
 
 export interface TripEvent {
     id: string;
+    trip_id: string;
     title: string;
     date: string;
     time: string;
     location: string;
     description: string;
-    createdBy?: string;
-    rsvp?: Record<string, 'going' | 'maybe' | 'not_going'>; // userId -> status
+    created_by?: string;
+}
+
+export interface EventRsvp {
+    event_id: string;
+    user_id: string;
+    status: 'going' | 'maybe' | 'not_going';
 }
 
 export interface Expense {
     id: string;
+    trip_id: string;
     title: string;
     amount: number;
     category: string;
     date: string;
-    paidBy?: string;
-    createdAt?: any;
+    paid_by?: string;
+    created_at?: string;
 }
 
 export interface Task {
     id: string;
+    trip_id: string;
     title: string;
     status: 'todo' | 'doing' | 'done';
-    assignedTo?: string;
-    createdBy?: string;
+    assigned_to?: string;
+    created_by?: string;
 }
 
 export interface ActivityEntry {
     id: string;
-    tripId: string;
-    userId: string;
-    action: string; // e.g., "added an event", "completed a task", "added an expense"
-    detail: string; // e.g., "Snorkeling at 2pm"
-    createdAt: any;
+    trip_id: string;
+    user_id: string;
+    action: string;
+    detail: string;
+    created_at: string;
 }
 
 export interface Comment {
     id: string;
-    userId: string;
+    trip_id: string;
+    user_id: string;
     text: string;
-    createdAt: any;
+    created_at: string;
 }
 
 export interface Poll {
     id: string;
+    trip_id: string;
     question: string;
     options: string[];
-    votes: Record<string, number>; // userId -> optionIndex
-    createdBy: string;
-    createdAt: any;
+    created_by: string;
+    created_at: string;
+}
+
+export interface PollVote {
+    poll_id: string;
+    user_id: string;
+    option_index: number;
 }
 
 export interface TripDocument {
     id: string;
+    trip_id: string;
     name: string;
-    size: number; // bytes
-    type: string; // MIME type
-    storageUrl: string; // Firebase Storage download URL
-    storagePath?: string; // Full Firebase Storage path for deletion
-    uploadedBy: string; // userId
-    createdAt: any;
+    size: number;
+    type: string;
+    storage_path: string;
+    storage_url: string;
+    uploaded_by: string;
+    created_at: string;
 }

@@ -19,8 +19,8 @@ export default function TripFeed() {
     // Collect all user IDs for profile resolution
     const userIds = useMemo(() => {
         const ids = new Set<string>();
-        activity.forEach(a => ids.add(a.userId));
-        comments.forEach(c => ids.add(c.userId));
+        activity.forEach(a => ids.add(a.user_id));
+        comments.forEach(c => ids.add(c.user_id));
         return Array.from(ids);
     }, [activity, comments]);
 
@@ -42,7 +42,7 @@ export default function TripFeed() {
         if (!trip?.id || !user || !newComment.trim()) return;
         setSending(true);
         try {
-            await addComment(trip.id, user.uid, newComment.trim());
+            await addComment(trip.id, user.id, newComment.trim());
             setNewComment('');
         } catch (error) {
             console.error('Failed to send comment:', error);
@@ -53,7 +53,7 @@ export default function TripFeed() {
 
     const formatTime = (timestamp: any) => {
         if (!timestamp) return '';
-        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+        const date = new Date(timestamp);
         const now = new Date();
         const diffMs = now.getTime() - date.getTime();
         const diffMins = Math.floor(diffMs / 60000);
@@ -103,16 +103,16 @@ export default function TripFeed() {
                             </div>
                         ) : (
                             comments.map(comment => {
-                                const profile = profiles.get(comment.userId);
-                                const isMe = comment.userId === user?.uid;
+                                const profile = profiles.get(comment.user_id);
+                                const isMe = comment.user_id === user?.id;
                                 return (
                                     <div key={comment.id} className={`flex gap-2 ${isMe ? 'flex-row-reverse' : ''}`}>
                                         <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden shrink-0">
-                                            {profile?.photoURL ? (
-                                                <img src={profile.photoURL} alt="" className="w-full h-full object-cover" />
+                                            {profile?.photo_url ? (
+                                                <img src={profile.photo_url} alt="" className="w-full h-full object-cover" />
                                             ) : (
                                                 <span className="text-white text-xs font-bold">
-                                                    {(profile?.displayName?.[0] ?? '?').toUpperCase()}
+                                                    {(profile?.display_name?.[0] ?? '?').toUpperCase()}
                                                 </span>
                                             )}
                                         </div>
@@ -122,7 +122,7 @@ export default function TripFeed() {
                                             }`}>
                                                 {!isMe && (
                                                     <div className="text-xs font-medium text-brand-teal mb-1">
-                                                        {profile?.displayName ?? 'Unknown'}
+                                                        {profile?.display_name ?? 'Unknown'}
                                                     </div>
                                                 )}
                                                 <p className="text-sm">{comment.text}</p>
@@ -166,21 +166,21 @@ export default function TripFeed() {
                         </div>
                     ) : (
                         activity.map(entry => {
-                            const profile = profiles.get(entry.userId);
+                            const profile = profiles.get(entry.user_id);
                             return (
                                 <div key={entry.id} className="flex items-start gap-3">
                                     <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden shrink-0 mt-0.5">
-                                        {profile?.photoURL ? (
-                                            <img src={profile.photoURL} alt="" className="w-full h-full object-cover" />
+                                        {profile?.photo_url ? (
+                                            <img src={profile.photo_url} alt="" className="w-full h-full object-cover" />
                                         ) : (
                                             <span className="text-white text-xs font-bold">
-                                                {(profile?.displayName?.[0] ?? '?').toUpperCase()}
+                                                {(profile?.display_name?.[0] ?? '?').toUpperCase()}
                                             </span>
                                         )}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm text-gray-300">
-                                            <span className="font-medium text-white">{profile?.displayName ?? 'Someone'}</span>
+                                            <span className="font-medium text-white">{profile?.display_name ?? 'Someone'}</span>
                                             {' '}{entry.action}
                                         </p>
                                         {entry.detail && (
