@@ -5,7 +5,7 @@ import { differenceInDays, format, parseISO } from 'date-fns';
 import { useAuth } from '../contexts/AuthContext';
 import { createTrip, deleteTrip } from '../services/tripService';
 import { supabase } from '../lib/supabase';
-import { uploadImage } from '../services/storage';
+
 import { useToast } from '../contexts/ToastContext';
 import { GridSkeleton } from '../components/ui/Skeletons';
 import type { Trip } from '../types';
@@ -139,8 +139,12 @@ export default function Trips() {
             let imageUrl = `https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&q=80&w=800`; // Default
 
             if (selectedImage) {
-                const path = `trips/${user.id}/${Date.now()}_${selectedImage.name}`;
-                imageUrl = await uploadImage(selectedImage, path);
+                const path = `trip-covers/${user.id}/${Date.now()}_${selectedImage.name}`;
+                const { error: uploadError } = await supabase.storage.from('trip-documents').upload(path, selectedImage);
+                if (!uploadError) {
+                    const { data: urlData } = supabase.storage.from('trip-documents').getPublicUrl(path);
+                    imageUrl = urlData.publicUrl;
+                }
             }
 
             await createTrip(user.id, {

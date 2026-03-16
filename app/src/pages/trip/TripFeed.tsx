@@ -128,7 +128,7 @@ export default function TripFeed() {
                                                 <p className="text-sm">{comment.text}</p>
                                             </div>
                                             <div className={`text-xs text-gray-500 mt-1 ${isMe ? 'text-right' : ''}`}>
-                                                {formatTime(comment.createdAt)}
+                                                {formatTime(comment.created_at)}
                                             </div>
                                         </div>
                                     </div>
@@ -187,7 +187,7 @@ export default function TripFeed() {
                                             <p className="text-xs text-gray-500 mt-0.5 truncate">{entry.detail}</p>
                                         )}
                                     </div>
-                                    <span className="text-xs text-gray-600 shrink-0">{formatTime(entry.createdAt)}</span>
+                                    <span className="text-xs text-gray-600 shrink-0">{formatTime(entry.created_at)}</span>
                                 </div>
                             );
                         })
