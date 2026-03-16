@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useFamily } from '../contexts/FamilyContext';
-import { lookupInviteCode } from '../services/inviteService';
+import { lookupInviteCode, markInviteUsed } from '../services/inviteService';
 import { useToast } from '../contexts/ToastContext';
 import { Users, Loader2 } from 'lucide-react';
 
@@ -14,7 +14,7 @@ export default function Join() {
 
     const [code, setCode] = useState('');
     const [loading, setLoading] = useState(false);
-    const [found, setFound] = useState<{ familyId: string; familyName: string } | null>(null);
+    const [found, setFound] = useState<{ familyId: string; familyName: string; inviteId: string } | null>(null);
 
     const handleLookup = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -39,6 +39,7 @@ export default function Join() {
         setLoading(true);
         try {
             await joinFamily(found.familyId);
+            await markInviteUsed(found.inviteId);
             showToast(`Joined ${found.familyName}!`, 'success');
             navigate('/family');
         } catch (error) {

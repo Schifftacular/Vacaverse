@@ -122,6 +122,7 @@ export default function TripDocuments() {
                             size: file.size,
                             type: file.type || 'application/octet-stream',
                             storageUrl: url,
+                            storagePath: storagePath,
                             uploadedBy: user.uid,
                         } as unknown as Record<string, unknown>);
                         const optimisticDoc: TripDocument = {
@@ -130,6 +131,7 @@ export default function TripDocuments() {
                             size: file.size,
                             type: file.type || 'application/octet-stream',
                             storageUrl: url,
+                            storagePath: storagePath,
                             uploadedBy: user.uid,
                             createdAt: null,
                         };
@@ -153,7 +155,7 @@ export default function TripDocuments() {
         try {
             // Try to delete from Storage (best-effort — file might have different path)
             try {
-                const storageRef = ref(storage, `trips/${trip.id}/documents/${doc.name}`);
+                const storageRef = ref(storage, (doc as any).storagePath || `trips/${trip.id}/documents/${doc.name}`);
                 await deleteObject(storageRef);
             } catch {
                 // Storage file might not exist at this path (stored with timestamp prefix)

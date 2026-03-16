@@ -87,6 +87,7 @@ export interface TripDocument {
     size: number; // bytes
     type: string; // MIME type
     storageUrl: string; // Firebase Storage download URL
+    storagePath?: string; // Full Firebase Storage path for deletion
     uploadedBy: string; // userId
     createdAt: any;
 }

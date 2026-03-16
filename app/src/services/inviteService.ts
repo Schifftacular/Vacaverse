@@ -25,7 +25,7 @@ export const createFamilyInvite = async (familyId: string, createdBy: string): P
     return code;
 };
 
-export const lookupInviteCode = async (code: string): Promise<{ familyId: string; familyName: string } | null> => {
+export const lookupInviteCode = async (code: string): Promise<{ familyId: string; familyName: string; inviteId: string } | null> => {
     const q = query(
         collection(db, INVITES_COLLECTION),
         where('code', '==', code.toUpperCase()),
@@ -44,5 +44,11 @@ export const lookupInviteCode = async (code: string): Promise<{ familyId: string
     return {
         familyId: invite.familyId,
         familyName: (familyDoc.data() as any).name,
+        inviteId: snapshot.docs[0].id,
     };
+};
+
+export const markInviteUsed = async (inviteId: string): Promise<void> => {
+    const { doc: firestoreDoc, updateDoc } = await import('firebase/firestore');
+    await updateDoc(firestoreDoc(db, 'invites', inviteId), { used: true });
 };
