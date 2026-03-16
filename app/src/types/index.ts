@@ -1,23 +1,55 @@
+export interface UserProfile {
+    uid: string;
+    displayName: string;
+    email: string;
+    photoURL: string | null;
+    createdAt: number;
+}
+
 export interface Family {
     id: string;
     name: string;
-    members: string[]; // User IDs
-    admins: string[]; // User IDs
+    members: string[];
+    admins: string[];
     createdAt: number;
 }
 
 export interface Trip {
     id: string;
-    userId: string; // Creator
-    familyId?: string; // Optional for now, but goal is to have all trips belong to a family
+    userId: string;
+    familyId: string | null;
     title: string;
-    dates: string;
-    daysAway: number;
+    startDate: string;
+    endDate: string;
     image: string;
-    progress: {
-        budget: number;
-        tasks: number;
-        bookings: { done: number; total: number };
-    };
+    budget: number;
     createdAt: number;
+}
+
+export interface TripEvent {
+    id: string;
+    title: string;
+    date: string;
+    time: string;
+    location: string;
+    description: string;
+    createdBy?: string;
+}
+
+export interface Expense {
+    id: string;
+    title: string;
+    amount: number;
+    category: string;
+    date: string;
+    paidBy?: string;
+    createdAt?: any;
+}
+
+export interface Task {
+    id: string;
+    title: string;
+    status: 'todo' | 'doing' | 'done';
+    assignedTo?: string;
+    createdBy?: string;
 }
