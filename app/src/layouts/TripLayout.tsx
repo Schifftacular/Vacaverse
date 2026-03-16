@@ -7,11 +7,10 @@ import { useMemo } from 'react';
 const mockStats = { budget: 72, tasks: 85, bookings: { done: 5, total: 7 } };
 
 const tabs = [
-    { name: 'Itinerary', path: '' }, // Index route
+    { name: 'Itinerary', path: '' },
     { name: 'Budget', path: 'budget' },
     { name: 'Tasks', path: 'tasks' },
-    { name: 'Meals', path: 'meals' },
-    { name: 'Docs', path: 'documents' }, // Shortened for mobile
+    { name: 'Docs', path: 'documents' },
 ];
 
 export default function TripLayout() {

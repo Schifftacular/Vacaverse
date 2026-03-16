@@ -1,11 +1,10 @@
-import { Home, Users, Briefcase, User, Compass } from 'lucide-react';
+import { Home, Users, Briefcase, User } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { twMerge } from 'tailwind-merge';
 
 const navItems = [
     { icon: Home, label: 'Home', path: '/' },
     { icon: Users, label: 'Family', path: '/family' },
-    { icon: Compass, label: 'Discover', path: '/discover' },
     { icon: Briefcase, label: 'Trips', path: '/trips' },
     { icon: User, label: 'Profile', path: '/profile' },
 ];
