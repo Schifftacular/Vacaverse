@@ -1,12 +1,22 @@
 import { useState } from 'react';
 import { useFamily } from '../contexts/FamilyContext';
-import { Users, Plus, X, Check } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { createFamilyInvite } from '../services/inviteService';
+import { useUserProfiles } from '../hooks/useUserProfiles';
+import { Users, Plus, X, Check, Copy, Loader2 } from 'lucide-react';
 
 export default function Family() {
     const { families, currentFamily, setCurrentFamily, createFamily, loading } = useFamily();
+    const { user } = useAuth();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newFamilyName, setNewFamilyName] = useState('');
     const [createLoading, setCreateLoading] = useState(false);
+    const [inviteCode, setInviteCode] = useState<string | null>(null);
+    const [inviteLoading, setInviteLoading] = useState(false);
+    const [copied, setCopied] = useState(false);
+
+    const memberIds = currentFamily?.members ?? [];
+    const { profiles } = useUserProfiles(memberIds);
 
     const handleCreateFamily = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -21,6 +31,26 @@ export default function Family() {
         } finally {
             setCreateLoading(false);
         }
+    };
+
+    const handleGenerateInvite = async () => {
+        if (!currentFamily || !user) return;
+        setInviteLoading(true);
+        try {
+            const code = await createFamilyInvite(currentFamily.id, user.uid);
+            setInviteCode(code);
+        } catch (error) {
+            console.error('Failed to generate invite:', error);
+        } finally {
+            setInviteLoading(false);
+        }
+    };
+
+    const handleCopyCode = () => {
+        if (!inviteCode) return;
+        navigator.clipboard.writeText(inviteCode);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
     };
 
     if (loading) {
@@ -67,7 +97,10 @@ export default function Family() {
                     {families.map(family => (
                         <button
                             key={family.id}
-                            onClick={() => setCurrentFamily(currentFamily?.id === family.id ? null : family)}
+                            onClick={() => {
+                                setCurrentFamily(currentFamily?.id === family.id ? null : family);
+                                setInviteCode(null);
+                            }}
                             className={`w-full bg-[#1e293b] p-4 rounded-xl border transition-colors text-left ${
                                 currentFamily?.id === family.id
                                     ? 'border-brand-teal'
@@ -87,6 +120,63 @@ export default function Family() {
                             </div>
                         </button>
                     ))}
+                </div>
+            )}
+
+            {/* Members section for selected family */}
+            {currentFamily && (
+                <div className="mt-6">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-lg font-semibold text-white">Members</h2>
+                        <button
+                            onClick={handleGenerateInvite}
+                            disabled={inviteLoading}
+                            className="text-sm text-brand-teal flex items-center gap-1 disabled:opacity-50"
+                        >
+                            {inviteLoading ? <Loader2 size={14} className="animate-spin" /> : null}
+                            Get Invite Code
+                        </button>
+                    </div>
+
+                    {/* Invite code display */}
+                    {inviteCode && (
+                        <div className="bg-[#1e293b] rounded-2xl p-5 border border-brand-teal mb-4 text-center">
+                            <p className="text-gray-400 text-sm mb-2">Share this code with your family</p>
+                            <div className="text-4xl font-mono font-bold text-white tracking-widest mb-3">
+                                {inviteCode}
+                            </div>
+                            <p className="text-xs text-gray-500 mb-4">Expires in 7 days</p>
+                            <button
+                                onClick={handleCopyCode}
+                                className="flex items-center gap-2 mx-auto px-4 py-2 bg-brand-teal/20 text-brand-teal rounded-lg text-sm font-medium hover:bg-brand-teal/30 transition-colors"
+                            >
+                                <Copy size={14} />
+                                {copied ? 'Copied!' : 'Copy Code'}
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Member list */}
+                    {currentFamily.members.map(uid => {
+                        const profile = profiles.get(uid);
+                        return (
+                            <div key={uid} className="flex items-center gap-3 bg-[#1e293b] p-3 rounded-xl border border-gray-800 mb-2">
+                                <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden flex-shrink-0">
+                                    {profile?.photoURL ? (
+                                        <img src={profile.photoURL} alt="" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <span className="text-white text-sm font-bold">
+                                            {(profile?.displayName || '?').charAt(0).toUpperCase()}
+                                        </span>
+                                    )}
+                                </div>
+                                <div>
+                                    <div className="text-white font-medium">{profile?.displayName || 'Loading...'}</div>
+                                    <div className="text-xs text-gray-400">{profile?.email || ''}</div>
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             )}
 

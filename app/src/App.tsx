@@ -16,6 +16,7 @@ import TripBudget from './pages/trip/TripBudget';
 import TripItinerary from './pages/trip/TripItinerary';
 import TripDocuments from './pages/trip/TripDocuments';
 import Profile from './pages/Profile';
+import Join from './pages/Join';
 
 export default function App() {
     return (
@@ -26,10 +27,11 @@ export default function App() {
                         <TripProvider>
                             <BrowserRouter>
                                 <Routes>
-                                    {/* Public route: Profile/Login */}
+                                    {/* Public routes */}
                                     <Route path="/profile" element={<MainLayout />}>
                                         <Route index element={<Profile />} />
                                     </Route>
+                                    <Route path="/join" element={<Join />} />
 
                                     {/* Protected routes */}
                                     <Route element={<ProtectedRoute />}>
