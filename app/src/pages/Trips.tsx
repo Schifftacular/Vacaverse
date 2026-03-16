@@ -20,7 +20,7 @@ function TripListCard({ trip, onDelete }: { trip: Trip; onDelete: (id: string, e
 
     return (
         <Link to={`/trips/${trip.id}`} className="block group">
-            <div className="bg-[#1e293b] rounded-2xl overflow-hidden border border-gray-800 hover:border-gray-700 transition-colors relative">
+            <div className="bg-[var(--color-bg-card)] rounded-2xl overflow-hidden border border-[var(--color-border)] hover:border-gray-700 transition-colors relative">
 
                 {/* Delete Button (visible on hover) */}
                 <button
@@ -44,12 +44,12 @@ function TripListCard({ trip, onDelete }: { trip: Trip; onDelete: (id: string, e
 
                 <div className="p-4">
                     <div className="grid grid-cols-2 gap-4 text-center">
-                        <div className="bg-[#0f172a] rounded-lg p-3">
-                            <div className="text-sm text-gray-400">Budget</div>
+                        <div className="bg-[var(--color-bg-primary)] rounded-lg p-3">
+                            <div className="text-sm text-[var(--color-text-secondary)]">Budget</div>
                             <div className="text-xl font-bold text-brand-teal">${trip.budget.toLocaleString()}</div>
                         </div>
-                        <div className="bg-[#0f172a] rounded-lg p-3">
-                            <div className="text-sm text-gray-400">Days Away</div>
+                        <div className="bg-[var(--color-bg-primary)] rounded-lg p-3">
+                            <div className="text-sm text-[var(--color-text-secondary)]">Days Away</div>
                             <div className="text-xl font-bold text-brand-teal">
                                 {daysAway > 0 ? daysAway : daysAway === 0 ? 'Today' : 'Done'}
                             </div>
@@ -57,9 +57,9 @@ function TripListCard({ trip, onDelete }: { trip: Trip; onDelete: (id: string, e
                     </div>
                 </div>
 
-                <div className="flex items-center justify-between px-4 py-3 border-t border-gray-800">
-                    <span className="text-sm text-gray-400">View itinerary</span>
-                    <ChevronRight size={20} className="text-gray-400" />
+                <div className="flex items-center justify-between px-4 py-3 border-t border-[var(--color-border)]">
+                    <span className="text-sm text-[var(--color-text-secondary)]">View itinerary</span>
+                    <ChevronRight size={20} className="text-[var(--color-text-secondary)]" />
                 </div>
             </div>
         </Link>
@@ -187,8 +187,8 @@ export default function Trips() {
     return (
         <div className="pb-24">
             {/* Header */}
-            <div className="flex justify-between items-center p-4 bg-[#0f172a] sticky top-0 z-10 border-b border-gray-800">
-                <h1 className="text-2xl font-bold text-white">My Trips</h1>
+            <div className="flex justify-between items-center p-4 bg-[var(--color-bg-primary)] sticky top-0 z-10 border-b border-[var(--color-border)]">
+                <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">My Trips</h1>
                 <button className="text-brand-teal font-medium text-sm">Past Trips</button>
             </div>
 
@@ -205,7 +205,7 @@ export default function Trips() {
 
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="w-full bg-[#1e293b] border-2 border-dashed border-gray-600 rounded-2xl p-8 flex flex-col items-center justify-center hover:border-gray-500 transition-colors"
+                    className="w-full bg-[var(--color-bg-card)] border-2 border-dashed border-[var(--color-border)] rounded-2xl p-8 flex flex-col items-center justify-center hover:border-gray-500 transition-colors"
                 >
                     <Plus size={32} className="text-gray-400 mb-2" />
                     <span className="text-gray-400">Plan a New Trip</span>
@@ -223,7 +223,7 @@ export default function Trips() {
             {/* Create Trip Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/80 z-50 flex items-end sm:items-center justify-center p-4">
-                    <div className="bg-[#1e293b] w-full max-w-md rounded-2xl p-6 relative animate-in slide-in-from-bottom-10 fade-in border border-gray-800">
+                    <div className="bg-[var(--color-bg-card)] w-full max-w-md rounded-2xl p-6 relative animate-in slide-in-from-bottom-10 fade-in border border-[var(--color-border)]">
                         <button
                             onClick={() => setIsModalOpen(false)}
                             className="absolute top-4 right-4 text-gray-400 hover:text-white"
@@ -231,46 +231,46 @@ export default function Trips() {
                             <X size={24} />
                         </button>
 
-                        <h2 className="text-2xl font-bold text-white mb-6">Plan a New Trip</h2>
+                        <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-6">Plan a New Trip</h2>
 
                         <form onSubmit={handleCreateTrip} className="space-y-4">
                             <div>
-                                <label className="block text-sm text-gray-400 mb-1">Trip Title</label>
+                                <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Trip Title</label>
                                 <input
                                     type="text"
                                     value={newTripTitle}
                                     onChange={(e) => setNewTripTitle(e.target.value)}
                                     placeholder="e.g., Summer in Italy"
-                                    className="w-full bg-[#0f172a] border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-brand-teal"
+                                    className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
                                     required
                                 />
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm text-gray-400 mb-1">Start Date</label>
+                                    <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Start Date</label>
                                     <input
                                         type="date"
                                         value={newTripStartDate}
                                         onChange={(e) => setNewTripStartDate(e.target.value)}
-                                        className="w-full bg-[#0f172a] border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-brand-teal"
+                                        className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm text-gray-400 mb-1">End Date</label>
+                                    <label className="block text-sm text-[var(--color-text-secondary)] mb-1">End Date</label>
                                     <input
                                         type="date"
                                         value={newTripEndDate}
                                         onChange={(e) => setNewTripEndDate(e.target.value)}
-                                        className="w-full bg-[#0f172a] border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-brand-teal"
+                                        className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
                                         required
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm text-gray-400 mb-1">Trip Budget ($)</label>
+                                <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Trip Budget ($)</label>
                                 <input
                                     type="number"
                                     value={newTripBudget}
@@ -278,13 +278,13 @@ export default function Trips() {
                                     placeholder="5000"
                                     min="0"
                                     step="1"
-                                    className="w-full bg-[#0f172a] border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-brand-teal"
+                                    className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm text-gray-400 mb-1">Cover Image</label>
-                                <div className="border border-gray-700 rounded-xl p-3 bg-[#0f172a] flex items-center space-x-4">
+                                <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Cover Image</label>
+                                <div className="border border-[var(--color-border)] rounded-xl p-3 bg-[var(--color-bg-primary)] flex items-center space-x-4">
                                     {imagePreview ? (
                                         <img src={imagePreview} alt="Preview" className="w-16 h-16 rounded-lg object-cover" />
                                     ) : (

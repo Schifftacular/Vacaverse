@@ -39,9 +39,9 @@ export default function TripLayout() {
     const daysAway = differenceInDays(parseISO(trip.startDate), new Date());
 
     return (
-        <div className="pb-8 min-h-screen bg-[#0f172a]">
+        <div className="pb-8 min-h-screen bg-[var(--color-bg-primary)]">
             {/* Header with Background */}
-            <div className="relative h-48 bg-gradient-to-b from-gray-800 to-[#0f172a]">
+            <div className="relative h-48 bg-gradient-to-b from-gray-800 to-[var(--color-bg-primary)]">
                 <Link to="/trips" className="absolute top-4 left-4 p-2 bg-black/30 rounded-full z-20">
                     <ArrowLeft size={24} className="text-white" />
                 </Link>
@@ -60,20 +60,20 @@ export default function TripLayout() {
 
             {/* Stats Summary Row */}
             <div className="grid grid-cols-2 gap-3 p-4">
-                <div className="bg-[#1e293b] rounded-xl p-3 text-center border border-gray-800">
-                    <div className="text-xs text-gray-400 mb-1">Budget</div>
-                    <div className="text-xl font-bold text-white">${trip.budget?.toLocaleString() || '0'}</div>
+                <div className="bg-[var(--color-bg-card)] rounded-xl p-3 text-center border border-[var(--color-border)]">
+                    <div className="text-xs text-[var(--color-text-secondary)] mb-1">Budget</div>
+                    <div className="text-xl font-bold text-[var(--color-text-primary)]">${trip.budget?.toLocaleString() || '0'}</div>
                 </div>
-                <div className="bg-[#1e293b] rounded-xl p-3 text-center border border-gray-800">
-                    <div className="text-xs text-gray-400 mb-1">Days Away</div>
-                    <div className="text-xl font-bold text-white">
+                <div className="bg-[var(--color-bg-card)] rounded-xl p-3 text-center border border-[var(--color-border)]">
+                    <div className="text-xs text-[var(--color-text-secondary)] mb-1">Days Away</div>
+                    <div className="text-xl font-bold text-[var(--color-text-primary)]">
                         {daysAway > 0 ? daysAway : 'In progress'}
                     </div>
                 </div>
             </div>
 
             {/* Tabs */}
-            <div className="flex border-b border-gray-800 px-4 sticky top-0 bg-[#0f172a] z-30 overflow-x-auto no-scrollbar">
+            <div className="flex border-b border-[var(--color-border)] px-4 sticky top-0 bg-[var(--color-bg-primary)] z-30 overflow-x-auto no-scrollbar">
                 {tabs.map((tab) => (
                     <NavLink
                         key={tab.name}
