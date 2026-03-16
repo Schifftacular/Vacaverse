@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="32" fill="#0f172a"/>
+  <!-- Globe circle -->
+  <circle cx="96" cy="88" r="48" fill="none" stroke="#14b8a6" stroke-width="6"/>
+  <!-- Horizontal lines (latitude) -->
+  <ellipse cx="96" cy="88" rx="48" ry="20" fill="none" stroke="#14b8a6" stroke-width="4"/>
+  <!-- Vertical center line (longitude) -->
+  <line x1="96" y1="40" x2="96" y2="136" stroke="#14b8a6" stroke-width="4"/>
+  <!-- Pin drop -->
+  <circle cx="96" cy="80" r="10" fill="#14b8a6"/>
+  <path d="M96 90 Q96 108 86 116 Q96 124 106 116 Q96 108 96 90Z" fill="#14b8a6"/>
+  <!-- Text -->
+  <text x="96" y="160" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="#14b8a6" text-anchor="middle">VacaVerse</text>
+</svg>
