@@ -13,14 +13,20 @@ const tabs = [
 
 export default function TripLayout() {
     const { tripId } = useParams<{ tripId: string }>();
-    const { trips } = useTrip();
+    const { trips, loading } = useTrip();
 
     const trip = useMemo(() => trips.find(t => t.id === tripId), [trips, tripId]);
 
+    if (loading) {
+        return (
+            <div className="p-8 text-center">
+                <div className="w-8 h-8 border-2 border-brand-teal border-t-transparent rounded-full animate-spin mx-auto" />
+                <p className="text-gray-400 mt-4">Loading trip...</p>
+            </div>
+        );
+    }
+
     if (!trip) {
-        if (trips.length === 0) {
-            return <div className="p-8 text-center text-gray-400">Loading trip...</div>;
-        }
         return (
             <div className="p-8 text-center">
                 <p className="text-gray-400">Trip not found</p>
