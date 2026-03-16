@@ -8,6 +8,7 @@ const tabs = [
     { name: 'Itinerary', path: '' },
     { name: 'Budget', path: 'budget' },
     { name: 'Tasks', path: 'tasks' },
+    { name: 'Feed', path: 'feed' },
     { name: 'Docs', path: 'documents' },
 ];
 

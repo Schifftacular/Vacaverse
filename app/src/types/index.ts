@@ -54,3 +54,19 @@ export interface Task {
     assignedTo?: string;
     createdBy?: string;
 }
+
+export interface ActivityEntry {
+    id: string;
+    tripId: string;
+    userId: string;
+    action: string; // e.g., "added an event", "completed a task", "added an expense"
+    detail: string; // e.g., "Snorkeling at 2pm"
+    createdAt: any;
+}
+
+export interface Comment {
+    id: string;
+    userId: string;
+    text: string;
+    createdAt: any;
+}
