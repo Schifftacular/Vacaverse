@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Settings, ChevronRight, Bell, CreditCard, HelpCircle, LogOut, Shield, Moon, LogIn } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useTrip } from '../contexts/TripContext';
+import { useFamily } from '../contexts/FamilyContext';
 
 const menuItems = [
     { icon: Bell, label: 'Notifications', badge: 3 },
@@ -12,6 +14,8 @@ const menuItems = [
 
 export default function Profile() {
     const { user, signInWithGoogle, signInWithEmail, signUpWithEmail, logout } = useAuth();
+    const { trips } = useTrip();
+    const { families } = useFamily();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isSignUp, setIsSignUp] = useState(false);
@@ -120,18 +124,14 @@ export default function Profile() {
 
             {/* Stats */}
             <div className="px-4 mb-6">
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 gap-3">
                     <div className="bg-[#1e293b] rounded-xl p-4 text-center border border-gray-800">
-                        <div className="text-2xl font-bold text-brand-teal">0</div>
+                        <div className="text-2xl font-bold text-brand-teal">{trips.length}</div>
                         <div className="text-xs text-gray-400">Trips</div>
                     </div>
                     <div className="bg-[#1e293b] rounded-xl p-4 text-center border border-gray-800">
-                        <div className="text-2xl font-bold text-brand-teal">0</div>
+                        <div className="text-2xl font-bold text-brand-teal">{families.length}</div>
                         <div className="text-xs text-gray-400">Families</div>
-                    </div>
-                    <div className="bg-[#1e293b] rounded-xl p-4 text-center border border-gray-800">
-                        <div className="text-2xl font-bold text-brand-teal">0</div>
-                        <div className="text-xs text-gray-400">Memories</div>
                     </div>
                 </div>
             </div>
