@@ -9,6 +9,8 @@ import {
 } from 'firebase/auth';
 import type { User } from 'firebase/auth';
 import { auth } from '../lib/firebase';
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 interface AuthContextType {
     user: User | null;
@@ -29,6 +31,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             setUser(user);
             setLoading(false);
+            if (user) {
+                setDoc(doc(db, 'users', user.uid), {
+                    uid: user.uid,
+                    displayName: user.displayName || user.email?.split('@')[0] || 'User',
+                    email: user.email || '',
+                    photoURL: user.photoURL || null,
+                    createdAt: Date.now()
+                }, { merge: true }).catch(console.error);
+            }
         });
 
         return () => unsubscribe();
