@@ -24,6 +24,7 @@ export interface Trip {
     image: string;
     budget: number;
     createdAt: number;
+    shareToken?: string;
 }
 
 export interface TripEvent {

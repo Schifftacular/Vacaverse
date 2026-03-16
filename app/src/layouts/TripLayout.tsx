@@ -1,8 +1,9 @@
 import { Outlet, NavLink, Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Calendar } from 'lucide-react';
+import { ArrowLeft, Calendar, Share2, Copy, Check } from 'lucide-react';
 import { useTrip } from '../contexts/TripContext';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { differenceInDays, format, parseISO } from 'date-fns';
+import { updateTrip } from '../services/tripService';
 
 const tabs = [
     { name: 'Itinerary', path: '' },
@@ -15,8 +16,43 @@ const tabs = [
 export default function TripLayout() {
     const { tripId } = useParams<{ tripId: string }>();
     const { trips, loading } = useTrip();
+    const [showSharePopup, setShowSharePopup] = useState(false);
+    const [copied, setCopied] = useState(false);
+    const [shareUrl, setShareUrl] = useState<string | null>(null);
+    const [sharingLoading, setSharingLoading] = useState(false);
 
     const trip = useMemo(() => trips.find(t => t.id === tripId), [trips, tripId]);
+
+    const handleShare = async () => {
+        if (!trip || !tripId) return;
+
+        let token = trip.shareToken;
+
+        if (!token) {
+            setSharingLoading(true);
+            try {
+                token = crypto.randomUUID().slice(0, 12);
+                await updateTrip(tripId, { shareToken: token });
+                // Optimistically update local state via the token reference
+            } catch (error) {
+                console.error('Error generating share token:', error);
+                setSharingLoading(false);
+                return;
+            }
+            setSharingLoading(false);
+        }
+
+        const url = `${window.location.origin}/trip/preview/${token}`;
+        setShareUrl(url);
+        setShowSharePopup(true);
+    };
+
+    const handleCopy = async () => {
+        if (!shareUrl) return;
+        await navigator.clipboard.writeText(shareUrl);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
 
     if (loading) {
         return (
@@ -45,6 +81,17 @@ export default function TripLayout() {
                 <Link to="/trips" className="absolute top-4 left-4 p-2 bg-black/30 rounded-full z-20">
                     <ArrowLeft size={24} className="text-white" />
                 </Link>
+                <button
+                    onClick={handleShare}
+                    disabled={sharingLoading}
+                    className="absolute top-4 right-4 p-2 bg-black/30 rounded-full z-20 disabled:opacity-50"
+                    aria-label="Share trip"
+                >
+                    {sharingLoading
+                        ? <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        : <Share2 size={24} className="text-white" />
+                    }
+                </button>
                 {trip.image && (
                     <img src={trip.image} alt="cover" className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-overlay" />
                 )}
@@ -57,6 +104,40 @@ export default function TripLayout() {
                     </p>
                 </div>
             </div>
+
+            {/* Share Popup */}
+            {showSharePopup && shareUrl && (
+                <div className="fixed inset-0 z-50 flex items-end justify-center p-4 bg-black/50" onClick={() => setShowSharePopup(false)}>
+                    <div
+                        className="bg-[var(--color-bg-card)] rounded-2xl p-6 w-full max-w-md border border-[var(--color-border)]"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <h3 className="text-lg font-bold text-[var(--color-text-primary)] mb-1">Share Trip</h3>
+                        <p className="text-sm text-[var(--color-text-secondary)] mb-4">
+                            Anyone with this link can view the itinerary without signing in.
+                        </p>
+                        <div className="flex items-center gap-2 bg-[var(--color-bg-primary)] rounded-xl p-3 border border-[var(--color-border)]">
+                            <span className="text-xs text-[var(--color-text-secondary)] flex-1 truncate">{shareUrl}</span>
+                            <button
+                                onClick={handleCopy}
+                                className="shrink-0 p-2 rounded-lg bg-brand-teal text-white"
+                                aria-label="Copy link"
+                            >
+                                {copied ? <Check size={16} /> : <Copy size={16} />}
+                            </button>
+                        </div>
+                        {copied && (
+                            <p className="text-xs text-brand-teal mt-2 text-center">Link copied!</p>
+                        )}
+                        <button
+                            onClick={() => setShowSharePopup(false)}
+                            className="mt-4 w-full py-2 text-sm text-[var(--color-text-secondary)]"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Stats Summary Row */}
             <div className="grid grid-cols-2 gap-3 p-4">

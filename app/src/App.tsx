@@ -18,6 +18,7 @@ import TripDocuments from './pages/trip/TripDocuments';
 import TripFeed from './pages/trip/TripFeed';
 import Profile from './pages/Profile';
 import Join from './pages/Join';
+import TripPreview from './pages/TripPreview';
 
 export default function App() {
     return (
@@ -33,6 +34,7 @@ export default function App() {
                                         <Route index element={<Profile />} />
                                     </Route>
                                     <Route path="/join" element={<Join />} />
+                                    <Route path="/trip/preview/:shareToken" element={<TripPreview />} />
 
                                     {/* Protected routes */}
                                     <Route element={<ProtectedRoute />}>
