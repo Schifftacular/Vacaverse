@@ -31,8 +31,8 @@ export default function Profile() {
             } else {
                 await signInWithEmail(email, password);
             }
-        } catch (err: any) {
-            setError(err.message || 'Failed to authenticate');
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Failed to authenticate');
         }
     };
 

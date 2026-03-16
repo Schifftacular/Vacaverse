@@ -28,7 +28,11 @@ service cloud.firestore {
 
       match /{subcollection}/{docId} {
         allow read: if get(/databases/$(database)/documents/trips/$(tripId)).data.shareToken != null;
-        allow read, write: if request.auth != null;
+        allow read: if request.auth != null;
+        allow write: if request.auth != null
+          && (get(/databases/$(database)/documents/trips/$(tripId)).data.familyId == null
+            ? request.auth.uid == get(/databases/$(database)/documents/trips/$(tripId)).data.userId
+            : request.auth.uid in get(/databases/$(database)/documents/families/$(get(/databases/$(database)/documents/trips/$(tripId)).data.familyId)).data.members);
       }
     }
 

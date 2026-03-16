@@ -43,7 +43,7 @@ export const lookupInviteCode = async (code: string): Promise<{ familyId: string
 
     return {
         familyId: invite.familyId,
-        familyName: (familyDoc.data() as any).name,
+        familyName: (familyDoc.data() as { name: string }).name,
         inviteId: snapshot.docs[0].id,
     };
 };

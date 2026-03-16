@@ -9,14 +9,7 @@ import type { Trip } from '../../types';
 
 const COLORS = ['#68A8AD', '#FFC726', '#003E51', '#E88C0C', '#2E8B84', '#EF4444', '#8B5CF6'];
 
-interface Expense {
-    id: string;
-    title: string;
-    amount: number;
-    category: string;
-    date: string;
-    createdAt?: any;
-}
+import type { Expense } from '../../types';
 
 const CATEGORIES = ['Accommodation', 'Flights', 'Food', 'Activities', 'Transport', 'Shopping', 'Other'];
 
