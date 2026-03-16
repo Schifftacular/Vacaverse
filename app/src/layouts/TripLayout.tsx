@@ -11,6 +11,7 @@ const tabs = [
     { name: 'Tasks', path: 'tasks' },
     { name: 'Feed', path: 'feed' },
     { name: 'Docs', path: 'documents' },
+    { name: 'Polls', path: 'polls' },
 ];
 
 export default function TripLayout() {

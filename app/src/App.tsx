@@ -16,6 +16,7 @@ import TripBudget from './pages/trip/TripBudget';
 import TripItinerary from './pages/trip/TripItinerary';
 import TripDocuments from './pages/trip/TripDocuments';
 import TripFeed from './pages/trip/TripFeed';
+import TripPolls from './pages/trip/TripPolls';
 import Profile from './pages/Profile';
 import Join from './pages/Join';
 import TripPreview from './pages/TripPreview';
@@ -48,6 +49,7 @@ export default function App() {
                                                 <Route path="budget" element={<TripBudget />} />
                                                 <Route path="feed" element={<TripFeed />} />
                                                 <Route path="documents" element={<TripDocuments />} />
+                                                <Route path="polls" element={<TripPolls />} />
                                             </Route>
                                         </Route>
                                     </Route>
