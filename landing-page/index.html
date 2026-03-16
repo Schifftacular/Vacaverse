@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VacaVerse — Family Vacation Planning for Every Generation</title>
+    <meta name="description" content="The only trip planner built for your whole family — from grandparents to grandkids. Plan together, even when you're apart.">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="VacaVerse — Plan Apart. Play Together.">
+    <meta property="og:description" content="The only trip planner built for your whole family — from grandparents to grandkids.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="/og-image.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="VacaVerse — Plan Apart. Play Together.">
+    <meta name="twitter:description" content="The only trip planner built for your whole family — from grandparents to grandkids.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --teal: #14b8a6;
+            --teal-dark: #0d9488;
+            --dark: #0f172a;
+            --card: #1e293b;
+            --border: #334155;
+            --text: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --gold: #fbbf24;
+        }
+
+        html { font-size: 16px; scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--dark);
+            color: var(--text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a { color: var(--teal); text-decoration: none; }
+
+        /* ───── Layout ───── */
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+        /* ───── Nav ───── */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+        }
+        nav .container {
+            display: flex; align-items: center; justify-content: space-between;
+            height: 64px;
+        }
+        .logo { font-size: 1.5rem; font-weight: 800; color: var(--text); }
+        .logo span { color: var(--teal); }
+        .nav-cta {
+            background: var(--teal); color: white; padding: 10px 24px;
+            border-radius: 9999px; font-weight: 600; font-size: 0.875rem;
+            border: none; cursor: pointer; transition: background 0.2s;
+        }
+        .nav-cta:hover { background: var(--teal-dark); }
+
+        /* ───── Hero ───── */
+        .hero {
+            padding: 140px 0 80px; text-align: center;
+            background: radial-gradient(ellipse at 50% 0%, rgba(20, 184, 166, 0.08) 0%, transparent 70%);
+        }
+        .hero-badge {
+            display: inline-block; padding: 6px 16px; border-radius: 9999px;
+            background: rgba(20, 184, 166, 0.1); border: 1px solid rgba(20, 184, 166, 0.2);
+            font-size: 0.8125rem; color: var(--teal); font-weight: 500; margin-bottom: 24px;
+        }
+        .hero h1 {
+            font-size: clamp(2.25rem, 5vw, 3.5rem); font-weight: 800;
+            line-height: 1.1; margin-bottom: 20px; max-width: 720px; margin-left: auto; margin-right: auto;
+        }
+        .hero h1 em { font-style: normal; color: var(--teal); }
+        .hero p {
+            font-size: 1.125rem; color: var(--text-secondary);
+            max-width: 560px; margin: 0 auto 40px;
+        }
+
+        /* ───── Email Form ───── */
+        .email-form {
+            display: flex; gap: 12px; max-width: 480px; margin: 0 auto;
+            flex-wrap: wrap; justify-content: center;
+        }
+        .email-form input {
+            flex: 1; min-width: 240px; padding: 14px 20px; border-radius: 12px;
+            background: var(--card); border: 1px solid var(--border);
+            color: var(--text); font-size: 1rem; outline: none;
+            font-family: inherit; transition: border-color 0.2s;
+        }
+        .email-form input:focus { border-color: var(--teal); }
+        .email-form input::placeholder { color: var(--text-muted); }
+        .email-form button {
+            padding: 14px 32px; border-radius: 12px; background: var(--teal);
+            color: white; font-weight: 700; font-size: 1rem; border: none;
+            cursor: pointer; transition: background 0.2s; font-family: inherit;
+            white-space: nowrap;
+        }
+        .email-form button:hover { background: var(--teal-dark); }
+        .form-note { font-size: 0.8125rem; color: var(--text-muted); margin-top: 12px; text-align: center; }
+        .form-success {
+            display: none; padding: 16px 24px; border-radius: 12px;
+            background: rgba(20, 184, 166, 0.1); border: 1px solid rgba(20, 184, 166, 0.3);
+            color: var(--teal); font-weight: 500; text-align: center;
+        }
+
+        /* ───── Problem ───── */
+        .problem { padding: 80px 0; }
+        .problem h2 {
+            font-size: 1.75rem; font-weight: 700; text-align: center;
+            margin-bottom: 16px;
+        }
+        .problem > .container > p {
+            text-align: center; color: var(--text-secondary);
+            max-width: 600px; margin: 0 auto 48px;
+        }
+        .pain-cards {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .pain-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+            padding: 28px; transition: border-color 0.2s;
+        }
+        .pain-card:hover { border-color: var(--teal); }
+        .pain-card .emoji { font-size: 2rem; margin-bottom: 12px; }
+        .pain-card h3 { font-size: 1.125rem; font-weight: 600; margin-bottom: 8px; }
+        .pain-card p { font-size: 0.9375rem; color: var(--text-secondary); }
+
+        /* ───── Features ───── */
+        .features {
+            padding: 80px 0;
+            background: linear-gradient(180deg, transparent 0%, rgba(20, 184, 166, 0.03) 50%, transparent 100%);
+        }
+        .features h2 {
+            font-size: 1.75rem; font-weight: 700; text-align: center;
+            margin-bottom: 48px;
+        }
+        .feature-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+        .feature-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+            padding: 32px;
+        }
+        .feature-icon {
+            width: 48px; height: 48px; border-radius: 12px;
+            background: rgba(20, 184, 166, 0.1); display: flex;
+            align-items: center; justify-content: center; margin-bottom: 16px;
+            color: var(--teal); font-size: 1.5rem;
+        }
+        .feature-card h3 { font-size: 1.125rem; font-weight: 600; margin-bottom: 8px; }
+        .feature-card p { font-size: 0.9375rem; color: var(--text-secondary); }
+
+        /* ───── How It Works ───── */
+        .how-it-works { padding: 80px 0; }
+        .how-it-works h2 {
+            font-size: 1.75rem; font-weight: 700; text-align: center;
+            margin-bottom: 48px;
+        }
+        .steps {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 32px; text-align: center;
+        }
+        .step-num {
+            width: 48px; height: 48px; border-radius: 50%;
+            background: var(--teal); color: white; font-weight: 700;
+            font-size: 1.25rem; display: flex; align-items: center;
+            justify-content: center; margin: 0 auto 16px;
+        }
+        .step h3 { font-size: 1.125rem; font-weight: 600; margin-bottom: 8px; }
+        .step p { font-size: 0.9375rem; color: var(--text-secondary); max-width: 280px; margin: 0 auto; }
+
+        /* ───── CTA ───── */
+        .final-cta {
+            padding: 80px 0; text-align: center;
+            background: radial-gradient(ellipse at 50% 100%, rgba(20, 184, 166, 0.08) 0%, transparent 70%);
+        }
+        .final-cta h2 {
+            font-size: clamp(1.75rem, 4vw, 2.5rem); font-weight: 800;
+            margin-bottom: 16px;
+        }
+        .final-cta p { color: var(--text-secondary); margin-bottom: 32px; font-size: 1.125rem; }
+
+        /* ───── Footer ───── */
+        footer {
+            padding: 40px 0; border-top: 1px solid var(--border);
+            text-align: center; color: var(--text-muted); font-size: 0.875rem;
+        }
+        footer a { color: var(--text-secondary); margin: 0 12px; }
+        footer a:hover { color: var(--teal); }
+
+        /* ───── Responsive ───── */
+        @media (max-width: 640px) {
+            .email-form { flex-direction: column; }
+            .email-form input { min-width: 100%; }
+            .email-form button { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+    <div class="container">
+        <div class="logo">Vaca<span>Verse</span></div>
+        <a href="#waitlist" class="nav-cta">Join the Beta</a>
+    </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-badge">Now accepting beta families</div>
+        <h1>The only trip planner built for your <em>whole</em> family</h1>
+        <p>From grandparents to grandkids. Plan together, even when you're apart. No more buried group texts, forgotten reservations, or one person doing all the work.</p>
+
+        <div id="waitlist">
+            <form class="email-form" id="waitlistForm">
+                <input type="email" id="emailInput" placeholder="Enter your email" required aria-label="Email address">
+                <button type="submit">Join the Waitlist</button>
+            </form>
+            <p class="form-note">Free during beta. No credit card required.</p>
+            <div class="form-success" id="formSuccess">
+                You're in! We'll send you an invite when your spot is ready.
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Problem -->
+<section class="problem">
+    <div class="container">
+        <h2>Sound familiar?</h2>
+        <p>Planning a family vacation with 3+ generations shouldn't require a project manager.</p>
+
+        <div class="pain-cards">
+            <div class="pain-card">
+                <div class="emoji">&#x1F4F1;</div>
+                <h3>The 200-message group text</h3>
+                <p>Flight times buried under memes. Restaurant links lost in scroll. Grandma asking "what time is dinner?" for the fourth time.</p>
+            </div>
+            <div class="pain-card">
+                <div class="emoji">&#x1F62E;&#x200D;&#x1F4A8;</div>
+                <h3>One person does everything</h3>
+                <p>Someone in your family is the "trip planner." They book everything, manage the budget, and herd cats. They deserve better.</p>
+            </div>
+            <div class="pain-card">
+                <div class="emoji">&#x1F475;</div>
+                <h3>Grandparents left out</h3>
+                <p>Most trip planning apps are built for millennials. Your grandparents can't use them, so they miss out on having a voice in the plans.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features -->
+<section class="features">
+    <div class="container">
+        <h2>Everything your family needs in one place</h2>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F4C5;</div>
+                <h3>Shared Itinerary</h3>
+                <p>Build a day-by-day timeline together. RSVP to activities so everyone knows who's going where.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x2705;</div>
+                <h3>Task Checklist</h3>
+                <p>Assign trip prep tasks to different family members. No more "I thought YOU were booking the car."</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F4B0;</div>
+                <h3>Budget Tracking</h3>
+                <p>Track expenses, see who paid what, and keep the trip budget visible to everyone.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F5F3;&#xFE0F;</div>
+                <h3>Family Voting</h3>
+                <p>"Beach day or museum?" Create polls and let every generation have a vote.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F4AC;</div>
+                <h3>Trip Chat</h3>
+                <p>Comments and activity feed right on the trip. No more switching between apps.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F517;</div>
+                <h3>Shareable Preview</h3>
+                <p>Share a link and Grandma can see the full itinerary without downloading anything or creating an account.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section class="how-it-works">
+    <div class="container">
+        <h2>Simple as 1-2-3</h2>
+
+        <div class="steps">
+            <div class="step">
+                <div class="step-num">1</div>
+                <h3>Create your family group</h3>
+                <p>Add your family with a simple invite code. Everyone joins in seconds.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <h3>Plan your trip together</h3>
+                <p>Build the itinerary, vote on activities, assign tasks, and track the budget.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <h3>Enjoy together</h3>
+                <p>Everyone knows the plan. Nobody's left out. All the details in one place.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Final CTA -->
+<section class="final-cta">
+    <div class="container">
+        <h2>Ready to plan your next family adventure?</h2>
+        <p>Join 50 families testing VacaVerse during our closed beta.</p>
+
+        <form class="email-form" id="waitlistForm2">
+            <input type="email" id="emailInput2" placeholder="Enter your email" required aria-label="Email address">
+            <button type="submit">Get Early Access</button>
+        </form>
+        <p class="form-note">We'll invite you when your spot opens up.</p>
+        <div class="form-success" id="formSuccess2">
+            You're in! We'll send you an invite when your spot is ready.
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <p style="margin-bottom: 12px;">
+            <strong>Vaca<span style="color: var(--teal);">Verse</span></strong> &mdash; Plan Apart. Play Together.
+        </p>
+        <p>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">Contact</a>
+        </p>
+        <p style="margin-top: 16px;">&copy; 2026 VacaVerse. All rights reserved.</p>
+    </div>
+</footer>
+
+<script>
+// Simple waitlist form handling
+// In production, replace with actual email service (ConvertKit, Loops, etc.)
+function handleWaitlistSubmit(formId, inputId, successId) {
+    const form = document.getElementById(formId);
+    const input = document.getElementById(inputId);
+    const success = document.getElementById(successId);
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const email = input.value.trim();
+        if (!email) return;
+
+        // Store locally for now — replace with API call to email service
+        const waitlist = JSON.parse(localStorage.getItem('vacaverse-waitlist') || '[]');
+        if (!waitlist.includes(email)) {
+            waitlist.push(email);
+            localStorage.setItem('vacaverse-waitlist', JSON.stringify(waitlist));
+        }
+
+        // Show success, hide form
+        form.style.display = 'none';
+        success.style.display = 'block';
+    });
+}
+
+handleWaitlistSubmit('waitlistForm', 'emailInput', 'formSuccess');
+handleWaitlistSubmit('waitlistForm2', 'emailInput2', 'formSuccess2');
+</script>
+
+</body>
+</html>

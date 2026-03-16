@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import { BottomNav } from '../components/BottomNav';
+import { FeedbackWidget } from '../components/FeedbackWidget';
 
 export function MainLayout() {
     return (
@@ -8,6 +9,7 @@ export function MainLayout() {
                 <Outlet />
             </main>
             <BottomNav />
+            <FeedbackWidget />
         </div>
     );
 }

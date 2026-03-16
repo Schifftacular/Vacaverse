@@ -71,3 +71,22 @@ export interface Comment {
     text: string;
     createdAt: any;
 }
+
+export interface Poll {
+    id: string;
+    question: string;
+    options: string[];
+    votes: Record<string, number>; // userId -> optionIndex
+    createdBy: string;
+    createdAt: any;
+}
+
+export interface TripDocument {
+    id: string;
+    name: string;
+    size: number; // bytes
+    type: string; // MIME type
+    storageUrl: string; // Firebase Storage download URL
+    uploadedBy: string; // userId
+    createdAt: any;
+}
