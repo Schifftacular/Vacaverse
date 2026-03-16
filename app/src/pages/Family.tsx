@@ -1,10 +1,8 @@
 import { useState } from 'react';
 import { useFamily } from '../contexts/FamilyContext';
-import { useAuth } from '../contexts/AuthContext';
 import { Users, Plus, X, Check } from 'lucide-react';
 
 export default function Family() {
-    const { user } = useAuth();
     const { families, currentFamily, setCurrentFamily, createFamily, loading } = useFamily();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newFamilyName, setNewFamilyName] = useState('');

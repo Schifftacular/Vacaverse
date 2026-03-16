@@ -1,21 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { useTrip } from '../../contexts/TripContext';
+import { useState, useEffect } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { addSubCollectionItem, getSubCollection } from '../../services/tripService';
 import { useToast } from '../../contexts/ToastContext';
 import { Plus, MapPin, X, Loader2 } from 'lucide-react';
 import { GridSkeleton } from '../../components/ui/Skeletons';
-
-interface TripEvent {
-    id: string;
-    title: string;
-    date: string; // YYYY-MM-DD
-    time: string; // HH:MM
-    location: string;
-    description: string;
-}
+import type { Trip, TripEvent } from '../../types';
 
 export default function TripItinerary() {
-    const { currentTrip } = useTrip();
+    const { trip: currentTrip } = useOutletContext<{ trip: Trip }>();
     const { showToast } = useToast();
     const [events, setEvents] = useState<TripEvent[]>([]);
     const [loading, setLoading] = useState(true);

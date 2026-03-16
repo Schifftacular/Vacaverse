@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import {
     DndContext,
     closestCenter,
@@ -16,17 +17,11 @@ import {
     useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { useTrip } from '../../contexts/TripContext';
 import { addSubCollectionItem, getSubCollection, updateSubCollectionItem } from '../../services/tripService';
 import { useToast } from '../../contexts/ToastContext';
 import { Plus, GripVertical, Loader2, X } from 'lucide-react';
 import { GridSkeleton } from '../../components/ui/Skeletons';
-
-interface Task {
-    id: string;
-    title: string;
-    status: 'todo' | 'doing' | 'done';
-}
+import type { Trip, Task } from '../../types';
 
 function SortableItem(props: any) {
     const {
@@ -84,7 +79,7 @@ const Column = ({ title, tasks, onAddTask }: { title: string, tasks: Task[], onA
 }
 
 export default function TripTasks() {
-    const { currentTrip } = useTrip();
+    const { trip: currentTrip } = useOutletContext<{ trip: Trip }>();
     const { showToast } = useToast();
     const [tasks, setTasks] = useState<Task[]>([]);
     const [loading, setLoading] = useState(true);
@@ -222,7 +217,7 @@ export default function TripTasks() {
                     collisionDetection={closestCenter}
                     onDragEnd={handleDragEnd}
                 >
-                    <Column title="To Do" tasks={todoTasks} id="todo" onAddTask={() => setIsModalOpen(true)} />
+                    <Column title="To Do" tasks={todoTasks} onAddTask={() => setIsModalOpen(true)} />
                 </DndContext>
 
                 {/* Doing Column - Click to advance */}
