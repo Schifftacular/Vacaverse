@@ -1,102 +1,43 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import {
-    DndContext,
-    closestCenter,
-    KeyboardSensor,
-    PointerSensor,
-    useSensor,
-    useSensors,
-} from '@dnd-kit/core';
-import type { DragEndEvent } from '@dnd-kit/core';
-import {
-    arrayMove,
-    SortableContext,
-    sortableKeyboardCoordinates,
-    verticalListSortingStrategy,
-    useSortable,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import { addSubCollectionItem, getSubCollection, updateSubCollectionItem } from '../../services/tripService';
 import { useToast } from '../../contexts/ToastContext';
-import { Plus, GripVertical, Loader2, X } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { useFamily } from '../../contexts/FamilyContext';
+import { useUserProfiles } from '../../hooks/useUserProfiles';
+import { Plus, Loader2, X, ChevronRight, ChevronDown } from 'lucide-react';
 import { GridSkeleton } from '../../components/ui/Skeletons';
 import type { Trip, Task } from '../../types';
-
-function SortableItem(props: any) {
-    const {
-        attributes,
-        listeners,
-        setNodeRef,
-        transform,
-        transition,
-    } = useSortable({ id: props.id });
-
-    const style = {
-        transform: CSS.Transform.toString(transform),
-        transition,
-    };
-
-    return (
-        <div ref={setNodeRef} style={style} className="bg-[#1e293b] p-3 mb-2 rounded-lg border border-gray-800 flex items-center gap-2 group touch-none">
-            <div {...attributes} {...listeners} className="text-gray-500 cursor-grab opacity-0 group-hover:opacity-100 transition-opacity">
-                <GripVertical size={16} />
-            </div>
-            <div className={`text-white text-sm ${props.status === 'done' ? 'line-through text-gray-500' : ''}`}>{props.children}</div>
-        </div>
-    );
-}
-
-const Column = ({ title, tasks, onAddTask }: { title: string, tasks: Task[], onAddTask?: () => void }) => {
-    return (
-        <div className="bg-[#0f172a] p-4 rounded-xl border border-gray-800 min-h-[500px] flex flex-col">
-            <h3 className="text-white font-medium mb-4 flex justify-between items-center">
-                {title}
-                <span className="text-xs bg-gray-800 text-gray-400 px-2 py-1 rounded-full">{tasks.length}</span>
-            </h3>
-            <div className="space-y-2 flex-1">
-                <SortableContext
-                    items={tasks.map(t => t.id)}
-                    strategy={verticalListSortingStrategy}
-                >
-                    {tasks.map((task) => (
-                        <SortableItem key={task.id} id={task.id} status={task.status}>
-                            {task.title}
-                        </SortableItem>
-                    ))}
-                </SortableContext>
-            </div>
-            {onAddTask && (
-                <button
-                    onClick={onAddTask}
-                    className="w-full py-2 mt-2 text-sm text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors flex items-center justify-center gap-2"
-                >
-                    <Plus size={16} /> Add Task
-                </button>
-            )}
-        </div>
-    );
-}
 
 export default function TripTasks() {
     const { trip: currentTrip } = useOutletContext<{ trip: Trip }>();
     const { showToast } = useToast();
+    const { user } = useAuth();
+    const { families } = useFamily();
+
     const [tasks, setTasks] = useState<Task[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newTaskTitle, setNewTaskTitle] = useState('');
+    const [newTaskAssignee, setNewTaskAssignee] = useState('');
     const [submitLoading, setSubmitLoading] = useState(false);
+    const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
 
-    const sensors = useSensors(
-        useSensor(PointerSensor, {
-            activationConstraint: {
-                distance: 8,
-            },
-        }),
-        useSensor(KeyboardSensor, {
-            coordinateGetter: sortableKeyboardCoordinates,
-        })
-    );
+    // Determine family members for assignee dropdown
+    const familyMembers: string[] = useMemo(() => {
+        if (!currentTrip?.familyId) return user ? [user.uid] : [];
+        const family = families.find(f => f.id === currentTrip.familyId);
+        return family?.members ?? (user ? [user.uid] : []);
+    }, [families, currentTrip?.familyId, user]);
+
+    // Resolve profiles for all family members + assignees
+    const allProfileIds = useMemo(() => {
+        const ids = new Set<string>(familyMembers);
+        tasks.forEach(t => { if (t.assignedTo) ids.add(t.assignedTo); });
+        return Array.from(ids);
+    }, [familyMembers, tasks]);
+
+    const { profiles } = useUserProfiles(allProfileIds);
 
     useEffect(() => {
         if (currentTrip?.id) {
@@ -119,17 +60,19 @@ export default function TripTasks() {
 
     const handleAddTask = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!currentTrip?.id || !newTaskTitle) return;
+        if (!currentTrip?.id || !newTaskTitle.trim()) return;
 
         setSubmitLoading(true);
         try {
-            const newTask = {
-                title: newTaskTitle,
-                status: 'todo'
+            const newTask: Omit<Task, 'id'> = {
+                title: newTaskTitle.trim(),
+                status: 'todo',
+                ...(newTaskAssignee ? { assignedTo: newTaskAssignee } : {}),
             };
-            await addSubCollectionItem(currentTrip.id, 'tasks', newTask);
+            await addSubCollectionItem(currentTrip.id, 'tasks', newTask as Record<string, unknown>);
             showToast('Task added', 'success');
             setNewTaskTitle('');
+            setNewTaskAssignee('');
             setIsModalOpen(false);
             fetchTasks();
         } catch (error) {
@@ -140,124 +83,188 @@ export default function TripTasks() {
         }
     };
 
-    const handleDragEnd = async (event: DragEndEvent) => {
-        const { active, over } = event;
-
-        if (!over) return;
-
-        // Find the task being dragged
-        const activeTask = tasks.find(t => t.id === active.id);
-        if (!activeTask) return;
-
-        // In a real Kanban with dnd-kit, you need separate SortableContexts for each column 
-        // and complex collision detection to know which column you dropped into.
-        // For this MVP, we will stick to a simpler "List Reorder" within status, 
-        // OR facilitate status change by clicking (or just assume explicit column drops later).
-
-        // LIMITATION: dnd-kit vertical list strategy doesn't auto-handle cross-container drag easily 
-        // without custom collision algorithms.
-        // To keep this "15 features" sprint manageable, I will implement:
-        // 1. Reordering within the "Todo" list.
-        // 2. Clicking a task to advance its status (Todo -> Doing -> Done).
-
-        if (active.id !== over.id) {
-            setTasks((items) => {
-                const oldIndex = items.findIndex(t => t.id === active.id);
-                const newIndex = items.findIndex(t => t.id === over.id);
-                return arrayMove(items, oldIndex, newIndex);
-            });
-        }
-    };
-
-    // Quick Status Toggle for MVP (since full DnD Kanban is complex for one file)
-    const toggleStatus = async (task: Task) => {
+    const toggleDone = async (task: Task) => {
         if (!currentTrip?.id) return;
 
-        const nextStatus = {
-            'todo': 'doing',
-            'doing': 'done',
-            'done': 'todo'
-        }[task.status] as Task['status'];
+        const nextStatus: Task['status'] = task.status === 'done' ? 'todo' : 'done';
+
+        // Optimistic update
+        setTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: nextStatus } : t));
 
         try {
-            // Optimistic update
-            setTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: nextStatus } : t));
-
             await updateSubCollectionItem(currentTrip.id, 'tasks', task.id, { status: nextStatus });
-            showToast(`Task moved to ${nextStatus}`, 'success');
         } catch (error) {
             console.error(error);
             showToast('Failed to update task', 'error');
-            // Revert
             fetchTasks();
         }
     };
 
-    const todoTasks = tasks.filter(t => t.status === 'todo');
-    const doingTasks = tasks.filter(t => t.status === 'doing');
+    const updateAssignee = async (task: Task, assignedTo: string) => {
+        if (!currentTrip?.id) return;
+
+        // Optimistic update
+        setTasks(prev => prev.map(t => t.id === task.id ? { ...t, assignedTo: assignedTo || undefined } : t));
+
+        try {
+            await updateSubCollectionItem(currentTrip.id, 'tasks', task.id, { assignedTo: assignedTo || null });
+        } catch (error) {
+            console.error(error);
+            showToast('Failed to update assignee', 'error');
+            fetchTasks();
+        }
+    };
+
+    const activeTasks = tasks.filter(t => t.status !== 'done');
     const doneTasks = tasks.filter(t => t.status === 'done');
 
     if (loading) return <div className="p-4"><GridSkeleton /></div>;
 
+    const renderTask = (task: Task, dimmed = false) => {
+        const isDone = task.status === 'done';
+        const isExpanded = expandedTaskId === task.id;
+        const assigneeProfile = task.assignedTo ? profiles.get(task.assignedTo) : null;
+
+        return (
+            <div key={task.id} className={`bg-[#1e293b] rounded-xl border border-gray-800 overflow-hidden transition-opacity ${dimmed ? 'opacity-50' : ''}`}>
+                <div className="flex items-center gap-3 p-4">
+                    {/* Checkbox */}
+                    <button
+                        onClick={() => toggleDone(task)}
+                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${isDone
+                            ? 'bg-brand-teal border-brand-teal'
+                            : 'border-gray-600 hover:border-brand-teal'
+                            }`}
+                        aria-label={isDone ? 'Mark incomplete' : 'Mark complete'}
+                    >
+                        {isDone && (
+                            <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                                <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                        )}
+                    </button>
+
+                    {/* Title */}
+                    <div className="flex-1 min-w-0">
+                        <span className={`text-sm font-medium ${isDone ? 'line-through text-gray-500' : 'text-white'}`}>
+                            {task.title}
+                        </span>
+                        <div className="flex items-center gap-2 mt-0.5">
+                            {assigneeProfile ? (
+                                <span className="text-xs text-gray-400">
+                                    {assigneeProfile.displayName}
+                                </span>
+                            ) : (
+                                <span className="text-xs text-gray-600">Unassigned</span>
+                            )}
+                            <span className={`text-xs px-1.5 py-0.5 rounded-full ${isDone
+                                ? 'bg-gray-800 text-gray-500'
+                                : task.status === 'doing'
+                                    ? 'bg-yellow-900/40 text-yellow-400'
+                                    : 'bg-gray-800 text-gray-400'
+                                }`}>
+                                {isDone ? 'Done' : task.status === 'doing' ? 'In progress' : 'To do'}
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Assignee avatar */}
+                    {assigneeProfile && (
+                        assigneeProfile.photoURL ? (
+                            <img
+                                src={assigneeProfile.photoURL}
+                                alt={assigneeProfile.displayName}
+                                className="w-7 h-7 rounded-full object-cover shrink-0"
+                            />
+                        ) : (
+                            <div className="w-7 h-7 rounded-full bg-brand-teal flex items-center justify-center text-xs text-white font-bold shrink-0">
+                                {(assigneeProfile.displayName?.[0] ?? '?').toUpperCase()}
+                            </div>
+                        )
+                    )}
+
+                    {/* Expand toggle */}
+                    <button
+                        onClick={() => setExpandedTaskId(isExpanded ? null : task.id)}
+                        className="text-gray-500 hover:text-gray-300 shrink-0"
+                        aria-label="Expand task"
+                    >
+                        {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                    </button>
+                </div>
+
+                {/* Expanded: assignee selector */}
+                {isExpanded && (
+                    <div className="px-4 pb-4 pt-0 border-t border-gray-800">
+                        <label className="block text-xs text-gray-400 mb-2 mt-3">Assign to</label>
+                        <select
+                            value={task.assignedTo ?? ''}
+                            onChange={(e) => updateAssignee(task, e.target.value)}
+                            className="w-full bg-[#0f172a] border border-gray-700 rounded-lg p-2 text-white text-sm focus:outline-none focus:border-brand-teal"
+                        >
+                            <option value="">Unassigned</option>
+                            {familyMembers.map(uid => {
+                                const p = profiles.get(uid);
+                                return (
+                                    <option key={uid} value={uid}>
+                                        {p?.displayName ?? uid}
+                                    </option>
+                                );
+                            })}
+                        </select>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     return (
         <div className="px-4 pb-24">
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-white">Tasks Board</h2>
-                <div className="text-sm text-gray-500 bg-gray-900 px-3 py-1 rounded-full">
-                    Tip: Click tasks to move them forward
-                </div>
+                <h2 className="text-xl font-bold text-white">Tasks</h2>
+                <span className="text-xs text-gray-500 bg-gray-900 px-3 py-1 rounded-full">
+                    {activeTasks.length} active · {doneTasks.length} done
+                </span>
             </div>
 
-            {/* Kanban Columns */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 overflow-x-auto">
-
-                {/* TODO Column - Sortable */}
-                <DndContext
-                    sensors={sensors}
-                    collisionDetection={closestCenter}
-                    onDragEnd={handleDragEnd}
-                >
-                    <Column title="To Do" tasks={todoTasks} onAddTask={() => setIsModalOpen(true)} />
-                </DndContext>
-
-                {/* Doing Column - Click to advance */}
-                <div className="bg-[#0f172a] p-4 rounded-xl border border-gray-800 min-h-[500px]">
-                    <h3 className="text-white font-medium mb-4 flex justify-between items-center">
-                        In Progress
-                        <span className="text-xs bg-gray-800 text-gray-400 px-2 py-1 rounded-full">{doingTasks.length}</span>
-                    </h3>
-                    <div className="space-y-2">
-                        {doingTasks.map(task => (
-                            <div
-                                key={task.id}
-                                onClick={() => toggleStatus(task)}
-                                className="bg-[#1e293b] p-3 rounded-lg border border-gray-800 text-white text-sm cursor-pointer hover:bg-gray-700 transition-colors"
-                            >
-                                {task.title}
-                            </div>
-                        ))}
-                    </div>
+            {tasks.length === 0 ? (
+                <div className="text-center py-20 text-gray-500">
+                    <p className="mb-4">No tasks yet.</p>
+                    <button onClick={() => setIsModalOpen(true)} className="text-brand-teal font-bold hover:underline">
+                        Add your first task
+                    </button>
                 </div>
+            ) : (
+                <>
+                    {/* Active tasks */}
+                    {activeTasks.length > 0 && (
+                        <div className="space-y-2 mb-6">
+                            {activeTasks.map(task => renderTask(task, false))}
+                        </div>
+                    )}
 
-                {/* Done Column */}
-                <div className="bg-[#0f172a] p-4 rounded-xl border border-gray-800 min-h-[500px]">
-                    <h3 className="text-white font-medium mb-4 flex justify-between items-center">
-                        Done
-                        <span className="text-xs bg-gray-800 text-gray-400 px-2 py-1 rounded-full">{doneTasks.length}</span>
-                    </h3>
-                    <div className="space-y-2">
-                        {doneTasks.map(task => (
-                            <div
-                                key={task.id}
-                                onClick={() => toggleStatus(task)}
-                                className="bg-[#1e293b] p-3 rounded-lg border border-gray-800 text-white text-sm line-through text-gray-500 cursor-pointer hover:bg-gray-700 transition-colors"
-                            >
-                                {task.title}
+                    {/* Completed tasks */}
+                    {doneTasks.length > 0 && (
+                        <>
+                            <div className="flex items-center gap-3 mb-3">
+                                <span className="text-xs text-gray-500 uppercase tracking-wider">Completed</span>
+                                <div className="h-[1px] bg-gray-800 flex-1" />
                             </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
+                            <div className="space-y-2">
+                                {doneTasks.map(task => renderTask(task, true))}
+                            </div>
+                        </>
+                    )}
+                </>
+            )}
+
+            {/* FAB */}
+            <button
+                onClick={() => setIsModalOpen(true)}
+                className="fixed bottom-6 right-6 w-14 h-14 bg-brand-teal rounded-full flex items-center justify-center shadow-lg text-white hover:bg-teal-600 transition-colors z-30"
+            >
+                <Plus size={24} />
+            </button>
 
             {/* Add Task Modal */}
             {isModalOpen && (
@@ -270,11 +277,11 @@ export default function TripTasks() {
                             <X size={24} />
                         </button>
 
-                        <h2 className="text-2xl font-bold text-white mb-6">Add New Task</h2>
+                        <h2 className="text-2xl font-bold text-white mb-6">Add Task</h2>
 
                         <form onSubmit={handleAddTask} className="space-y-4">
                             <div>
-                                <label className="block text-sm text-gray-400 mb-1">Task Title</label>
+                                <label className="block text-sm text-gray-400 mb-1">Title</label>
                                 <input
                                     type="text"
                                     value={newTaskTitle}
@@ -282,7 +289,27 @@ export default function TripTasks() {
                                     placeholder="e.g., Book rental car"
                                     className="w-full bg-[#0f172a] border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-brand-teal"
                                     required
+                                    autoFocus
                                 />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm text-gray-400 mb-1">Assign to (optional)</label>
+                                <select
+                                    value={newTaskAssignee}
+                                    onChange={(e) => setNewTaskAssignee(e.target.value)}
+                                    className="w-full bg-[#0f172a] border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-brand-teal"
+                                >
+                                    <option value="">Unassigned</option>
+                                    {familyMembers.map(uid => {
+                                        const p = profiles.get(uid);
+                                        return (
+                                            <option key={uid} value={uid}>
+                                                {p?.displayName ?? uid}
+                                            </option>
+                                        );
+                                    })}
+                                </select>
                             </div>
 
                             <button

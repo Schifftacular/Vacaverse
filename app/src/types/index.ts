@@ -34,6 +34,7 @@ export interface TripEvent {
     location: string;
     description: string;
     createdBy?: string;
+    rsvp?: Record<string, 'going' | 'maybe' | 'not_going'>; // userId -> status
 }
 
 export interface Expense {

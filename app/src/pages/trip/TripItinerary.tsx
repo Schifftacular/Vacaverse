@@ -1,14 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { addSubCollectionItem, getSubCollection } from '../../services/tripService';
+import { addSubCollectionItem, getSubCollection, updateSubCollectionItem } from '../../services/tripService';
 import { useToast } from '../../contexts/ToastContext';
-import { Plus, MapPin, X, Loader2 } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { useUserProfiles } from '../../hooks/useUserProfiles';
+import { Plus, MapPin, X, Loader2, Check, HelpCircle, XCircle } from 'lucide-react';
 import { GridSkeleton } from '../../components/ui/Skeletons';
 import type { Trip, TripEvent } from '../../types';
+
+type RsvpStatus = 'going' | 'maybe' | 'not_going';
 
 export default function TripItinerary() {
     const { trip: currentTrip } = useOutletContext<{ trip: Trip }>();
     const { showToast } = useToast();
+    const { user } = useAuth();
     const [events, setEvents] = useState<TripEvent[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -19,6 +24,19 @@ export default function TripItinerary() {
     const [date, setDate] = useState('');
     const [time, setTime] = useState('');
     const [location, setLocation] = useState('');
+
+    // Collect all user IDs from RSVP maps to resolve profiles
+    const rsvpUserIds = useMemo(() => {
+        const ids = new Set<string>();
+        for (const event of events) {
+            if (event.rsvp) {
+                Object.keys(event.rsvp).forEach(uid => ids.add(uid));
+            }
+        }
+        return Array.from(ids);
+    }, [events]);
+
+    const { profiles } = useUserProfiles(rsvpUserIds);
 
     useEffect(() => {
         if (currentTrip?.id) {
@@ -77,6 +95,25 @@ export default function TripItinerary() {
         }
     };
 
+    const handleRsvp = async (event: TripEvent, status: RsvpStatus) => {
+        if (!currentTrip?.id || !user) return;
+
+        const updatedRsvp = { ...(event.rsvp || {}), [user.uid]: status };
+
+        // Optimistic update
+        setEvents(prev =>
+            prev.map(e => e.id === event.id ? { ...e, rsvp: updatedRsvp } : e)
+        );
+
+        try {
+            await updateSubCollectionItem(currentTrip.id, 'events', event.id, { rsvp: updatedRsvp });
+        } catch (error) {
+            console.error(error);
+            showToast('Failed to update RSVP', 'error');
+            fetchEvents();
+        }
+    };
+
     // Group events by date
     const eventsByDate = events.reduce((acc, event) => {
         const dateKey = event.date;
@@ -108,25 +145,99 @@ export default function TripItinerary() {
                             <div className="h-[1px] bg-gray-800 flex-1" />
                         </div>
                         <div className="space-y-4 relative pl-4 border-l-2 border-gray-800/50">
-                            {eventsByDate[dateKey].map((event) => (
-                                <div key={event.id} className="flex items-start bg-[#1e293b] rounded-xl p-4 border border-gray-800 ml-4 relative">
-                                    {/* Timeline Dot */}
-                                    <div className="absolute -left-[25px] top-6 w-4 h-4 rounded-full bg-brand-teal border-4 border-[#0f172a]" />
+                            {eventsByDate[dateKey].map((event) => {
+                                const myRsvp = user ? event.rsvp?.[user.uid] : undefined;
+                                const goingUids = Object.entries(event.rsvp || {})
+                                    .filter(([, s]) => s === 'going')
+                                    .map(([uid]) => uid);
 
-                                    <div className="w-20 pt-1">
-                                        <div className="text-sm font-bold text-white">{event.time}</div>
+                                return (
+                                    <div key={event.id} className="flex items-start bg-[#1e293b] rounded-xl p-4 border border-gray-800 ml-4 relative">
+                                        {/* Timeline Dot */}
+                                        <div className="absolute -left-[25px] top-6 w-4 h-4 rounded-full bg-brand-teal border-4 border-[#0f172a]" />
+
+                                        <div className="w-20 pt-1 shrink-0">
+                                            <div className="text-sm font-bold text-white">{event.time}</div>
+                                        </div>
+                                        <div className="flex-1 border-l border-gray-700 pl-4 ml-2 min-w-0">
+                                            <h3 className="font-medium text-white text-lg">{event.title}</h3>
+                                            {event.location && (
+                                                <div className="flex items-center text-sm text-gray-400 mt-1">
+                                                    <MapPin size={14} className="mr-1 shrink-0" />
+                                                    {event.location}
+                                                </div>
+                                            )}
+
+                                            {/* RSVP Row */}
+                                            {user && (
+                                                <div className="mt-3 flex flex-wrap items-center gap-2">
+                                                    <button
+                                                        onClick={() => handleRsvp(event, 'going')}
+                                                        className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border transition-colors ${myRsvp === 'going'
+                                                            ? 'bg-brand-teal border-brand-teal text-white'
+                                                            : 'border-gray-700 text-gray-400 hover:border-brand-teal hover:text-brand-teal'
+                                                            }`}
+                                                    >
+                                                        <Check size={12} />
+                                                        Going
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleRsvp(event, 'maybe')}
+                                                        className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border transition-colors ${myRsvp === 'maybe'
+                                                            ? 'bg-yellow-500 border-yellow-500 text-white'
+                                                            : 'border-gray-700 text-gray-400 hover:border-yellow-500 hover:text-yellow-500'
+                                                            }`}
+                                                    >
+                                                        <HelpCircle size={12} />
+                                                        Maybe
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleRsvp(event, 'not_going')}
+                                                        className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border transition-colors ${myRsvp === 'not_going'
+                                                            ? 'bg-red-500 border-red-500 text-white'
+                                                            : 'border-gray-700 text-gray-400 hover:border-red-500 hover:text-red-500'
+                                                            }`}
+                                                    >
+                                                        <XCircle size={12} />
+                                                        Can't go
+                                                    </button>
+
+                                                    {/* Tiny avatars of people going */}
+                                                    {goingUids.length > 0 && (
+                                                        <div className="flex items-center gap-1 ml-1">
+                                                            <div className="flex -space-x-1">
+                                                                {goingUids.slice(0, 5).map((uid) => {
+                                                                    const profile = profiles.get(uid);
+                                                                    return profile?.photoURL ? (
+                                                                        <img
+                                                                            key={uid}
+                                                                            src={profile.photoURL}
+                                                                            alt={profile.displayName}
+                                                                            title={profile.displayName}
+                                                                            className="w-5 h-5 rounded-full border border-[#1e293b] object-cover"
+                                                                        />
+                                                                    ) : (
+                                                                        <div
+                                                                            key={uid}
+                                                                            title={profile?.displayName ?? uid}
+                                                                            className="w-5 h-5 rounded-full border border-[#1e293b] bg-brand-teal flex items-center justify-center text-[8px] text-white font-bold"
+                                                                        >
+                                                                            {(profile?.displayName?.[0] ?? '?').toUpperCase()}
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                            {goingUids.length > 5 && (
+                                                                <span className="text-xs text-gray-400">+{goingUids.length - 5}</span>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div className="flex-1 border-l border-gray-700 pl-4 ml-2">
-                                        <h3 className="font-medium text-white text-lg">{event.title}</h3>
-                                        {event.location && (
-                                            <div className="flex items-center text-sm text-gray-400 mt-1">
-                                                <MapPin size={14} className="mr-1" />
-                                                {event.location}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 ))
