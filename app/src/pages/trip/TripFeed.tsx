@@ -361,7 +361,7 @@ export default function TripFeed() {
     };
 
     return (
-        <div className="px-4 pb-24 flex flex-col" style={{ height: 'calc(100dvh - 300px)' }}>
+        <div className="px-4 flex flex-col" style={{ height: 'calc(100dvh - 300px)' }}>
             {/* Presence */}
             {presence.length > 0 && (
                 <div className="flex items-center gap-2 mb-3 text-xs text-gray-400" data-testid="presence-bar">
@@ -417,7 +417,7 @@ export default function TripFeed() {
             {activeTab === 'comments' ? (
                 /* Comments section */
                 <div className="flex flex-col flex-1 min-h-0 relative">
-                    <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto space-y-3 mb-4">
+                    <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto space-y-3 mb-4 pb-24">
                         {topLevelComments.length === 0 ? (
                             <div className="text-center py-12 text-gray-500">
                                 <MessageCircle size={32} className="mx-auto mb-2 opacity-50" />
@@ -644,8 +644,21 @@ export default function TripFeed() {
                         )}
                     </div>
 
-                    {/* Comment input */}
-                    <form onSubmit={handleSendComment} className="flex gap-2">
+                    {/* Comment input — pinned with position:fixed (not sticky, and not
+                        bottom padding) so it always sits directly above the fixed
+                        BottomNav, regardless of page scroll position or viewport height
+                        (on-screen keyboard). Unlike `sticky`, this doesn't depend on the
+                        page having been scrolled far enough to reach its "stuck" resting
+                        spot — focusing the input on a tall page only scrolls it partially
+                        into view, which left a sticky composer stranded behind the nav.
+                        The bottom offset matches BottomNav's own height + safe-area
+                        reservation (see MainLayout's pb) so there's no gap or overlap.
+                        left-20 (not left-4) so it clears the global FeedbackWidget FAB,
+                        which floats fixed at the same bottom-20/left-4 corner. */}
+                    <form
+                        onSubmit={handleSendComment}
+                        className="fixed left-20 right-4 bottom-[calc(4rem_+_env(safe-area-inset-bottom)_+_0.5rem)] z-20 flex gap-2"
+                    >
                         <input
                             type="text"
                             value={newComment}
