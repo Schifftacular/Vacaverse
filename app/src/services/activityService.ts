@@ -80,12 +80,16 @@ export const subscribeToComments = (
     };
 };
 
-export const addComment = async (tripId: string, _userId: string, text: string) => {
+export const addComment = async (tripId: string, _userId: string, text: string, parentCommentId?: string | null) => {
     return new Promise<any>((resolve, reject) => {
-        getSocket().emit('comment:new', { trip_id: tripId, text }, (ack: { data?: any; error?: string }) => {
-            if (ack?.error) reject(new Error(ack.error));
-            else resolve(ack.data);
-        });
+        getSocket().emit(
+            'comment:new',
+            { trip_id: tripId, text, parent_comment_id: parentCommentId ?? null },
+            (ack: { data?: any; error?: string }) => {
+                if (ack?.error) reject(new Error(ack.error));
+                else resolve(ack.data);
+            }
+        );
     });
 };
 

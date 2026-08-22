@@ -11,21 +11,23 @@ import {
     deleteComment,
     type PresenceUser,
 } from '../../services/activityService';
-import { Send, MessageCircle, Activity, Pencil, Trash2, X, Check, ChevronDown, AlertCircle } from 'lucide-react';
+import { Send, MessageCircle, Activity, Pencil, Trash2, X, Check, ChevronDown, AlertCircle, Reply } from 'lucide-react';
 import type { Trip, ActivityEntry, Comment } from '../../types';
+import { ThreadPanel } from '../../components/ThreadPanel';
 
 // A comment that hasn't been confirmed by the server yet, rendered inline
 // with real comments so sending feels instant.
-interface PendingComment {
+export interface PendingComment {
     clientId: string;
     trip_id: string;
     user_id: string;
     text: string;
     created_at: string;
     status: 'sending' | 'error';
+    parent_comment_id: string | null;
 }
 
-type FeedComment = Comment & { _pending?: PendingComment };
+export type FeedComment = Comment & { _pending?: PendingComment };
 
 const NEAR_BOTTOM_PX = 120;
 
@@ -51,6 +53,9 @@ export default function TripFeed() {
 
     // Which own-message's hover/tap actions are pinned open (for touch, which has no hover).
     const [openActionsId, setOpenActionsId] = useState<string | null>(null);
+
+    // Which comment's reply thread is open in the side panel.
+    const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
 
     // Scroll behavior: only stick to bottom if already near it.
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -123,17 +128,48 @@ export default function TripFeed() {
             user_id: p.user_id,
             text: p.text,
             created_at: p.created_at,
+            parent_comment_id: p.parent_comment_id,
             _pending: p,
         }));
         return [...confirmed, ...pendingItems];
     }, [comments, pending, deletingIds]);
 
+    // Only top-level comments render in the main feed; replies live in the
+    // thread panel so posting/receiving a reply never grows the main list
+    // (which is what keeps the main feed's scroll position stable).
+    const topLevelComments: FeedComment[] = useMemo(
+        () => displayComments.filter(c => !c.parent_comment_id),
+        [displayComments]
+    );
+
+    const repliesByParent = useMemo(() => {
+        const map = new Map<string, FeedComment[]>();
+        for (const c of displayComments) {
+            if (!c.parent_comment_id) continue;
+            const arr = map.get(c.parent_comment_id) ?? [];
+            arr.push(c);
+            map.set(c.parent_comment_id, arr);
+        }
+        return map;
+    }, [displayComments]);
+
+    const activeThreadRoot = useMemo(
+        () => (activeThreadId ? comments.find(c => c.id === activeThreadId) ?? null : null),
+        [activeThreadId, comments]
+    );
+
+    // The thread root can vanish while the panel is open (deleted here or
+    // remotely) — close the panel rather than showing a dangling thread.
+    useEffect(() => {
+        if (activeThreadId && !activeThreadRoot) setActiveThreadId(null);
+    }, [activeThreadId, activeThreadRoot]);
+
     const unreadStartIndex = useMemo(() => {
         if (unreadBoundary === null) return -1;
-        return displayComments.findIndex(
+        return topLevelComments.findIndex(
             c => !c._pending && new Date(c.created_at).getTime() > unreadBoundary
         );
-    }, [displayComments, unreadBoundary]);
+    }, [topLevelComments, unreadBoundary]);
 
     const checkNearBottom = () => {
         const el = scrollRef.current;
@@ -157,11 +193,11 @@ export default function TripFeed() {
     // message, or this is the first load); otherwise leave scroll alone and
     // surface a "new messages" affordance instead.
     useEffect(() => {
-        const count = displayComments.length;
+        const count = topLevelComments.length;
         const grew = count > prevCountRef.current;
         const isFirstLoad = prevCountRef.current === 0 && count > 0;
         if (grew) {
-            const last = displayComments[count - 1];
+            const last = topLevelComments[count - 1];
             const isOwn = last.user_id === user?.id;
             if (isFirstLoad || isOwn || isNearBottomRef.current) {
                 scrollToBottom(!isFirstLoad);
@@ -170,25 +206,23 @@ export default function TripFeed() {
             }
         }
         prevCountRef.current = count;
-    }, [displayComments, user?.id]);
+    }, [topLevelComments, user?.id]);
 
-    const handleSendComment = async (e: React.FormEvent) => {
-        e.preventDefault();
-        const text = newComment.trim();
-        if (!trip?.id || !user || !text) return;
-        setNewComment('');
+    const sendComment = async (text: string, parentCommentId: string | null = null) => {
+        if (!trip?.id || !user || !text.trim()) return;
         const clientId = `pending-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
         const item: PendingComment = {
             clientId,
             trip_id: trip.id,
             user_id: user.id,
-            text,
+            text: text.trim(),
             created_at: new Date().toISOString(),
             status: 'sending',
+            parent_comment_id: parentCommentId,
         };
         setPending(prev => [...prev, item]);
         try {
-            await addComment(trip.id, user.id, text);
+            await addComment(trip.id, user.id, item.text, parentCommentId);
             setPending(prev => prev.filter(p => p.clientId !== clientId));
         } catch (error) {
             console.error('Failed to send comment:', error);
@@ -196,10 +230,18 @@ export default function TripFeed() {
         }
     };
 
+    const handleSendComment = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const text = newComment.trim();
+        if (!text) return;
+        setNewComment('');
+        await sendComment(text);
+    };
+
     const retryPending = async (item: PendingComment) => {
         setPending(prev => prev.map(p => (p.clientId === item.clientId ? { ...p, status: 'sending' } : p)));
         try {
-            await addComment(item.trip_id, item.user_id, item.text);
+            await addComment(item.trip_id, item.user_id, item.text, item.parent_comment_id);
             setPending(prev => prev.filter(p => p.clientId !== item.clientId));
         } catch (error) {
             console.error('Failed to send comment:', error);
@@ -329,21 +371,23 @@ export default function TripFeed() {
                 /* Comments section */
                 <div className="flex flex-col flex-1 min-h-0 relative">
                     <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto space-y-3 mb-4">
-                        {displayComments.length === 0 ? (
+                        {topLevelComments.length === 0 ? (
                             <div className="text-center py-12 text-gray-500">
                                 <MessageCircle size={32} className="mx-auto mb-2 opacity-50" />
                                 <p>No comments yet. Start the conversation!</p>
                             </div>
                         ) : (
-                            displayComments.map((comment, index) => {
+                            topLevelComments.map((comment, index) => {
                                 const profile = profiles.get(comment.user_id);
                                 const isMe = comment.user_id === user?.id;
                                 const isEditing = editingId === comment.id;
                                 const isPending = !!comment._pending;
                                 const isErrored = comment._pending?.status === 'error';
                                 const showDeleteError = deleteErrorId === comment.id;
-                                const showActions = isMe && !isPending && !isEditing;
+                                const showEditDelete = isMe && !isPending && !isEditing;
+                                const showReply = !isPending && !isEditing;
                                 const actionsOpen = openActionsId === comment.id;
+                                const replyCount = repliesByParent.get(comment.id)?.length ?? 0;
 
                                 return (
                                     <div key={comment.id}>
@@ -408,10 +452,13 @@ export default function TripFeed() {
                                                         </div>
                                                     ) : (
                                                         <div
-                                                            onClick={() => showActions && setOpenActionsId(actionsOpen ? null : comment.id)}
+                                                            onClick={() =>
+                                                                (showEditDelete || showReply) &&
+                                                                setOpenActionsId(actionsOpen ? null : comment.id)
+                                                            }
                                                             className={`rounded-2xl px-4 py-2 ${
                                                                 isMe ? 'bg-brand-teal text-white' : 'bg-[#1e293b] text-white border border-gray-800'
-                                                            } ${isPending ? 'opacity-60' : ''} ${showActions ? 'cursor-pointer' : ''}`}
+                                                            } ${isPending ? 'opacity-60' : ''} ${(showEditDelete || showReply) ? 'cursor-pointer' : ''}`}
                                                         >
                                                             {!isMe && (
                                                                 <div className="text-xs font-medium text-brand-teal mb-1">
@@ -422,29 +469,43 @@ export default function TripFeed() {
                                                         </div>
                                                     )}
 
-                                                    {/* Hover (desktop) / tap-to-pin (touch) actions on own messages */}
-                                                    {showActions && (
+                                                    {/* Hover (desktop) / tap-to-pin (touch) actions */}
+                                                    {(showEditDelete || showReply) && (
                                                         <div
                                                             className={`flex gap-1 transition-opacity ${
                                                                 actionsOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
                                                             }`}
                                                         >
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => startEdit(comment)}
-                                                                className="p-1.5 rounded-full bg-[#1e293b] border border-gray-700 text-gray-300 hover:text-white"
-                                                                aria-label="Edit message"
-                                                            >
-                                                                <Pencil size={12} />
-                                                            </button>
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => handleDelete(comment)}
-                                                                className="p-1.5 rounded-full bg-[#1e293b] border border-gray-700 text-gray-300 hover:text-red-400"
-                                                                aria-label="Delete message"
-                                                            >
-                                                                <Trash2 size={12} />
-                                                            </button>
+                                                            {showReply && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setActiveThreadId(comment.id)}
+                                                                    className="p-1.5 rounded-full bg-[#1e293b] border border-gray-700 text-gray-300 hover:text-white"
+                                                                    aria-label="Reply"
+                                                                >
+                                                                    <Reply size={12} />
+                                                                </button>
+                                                            )}
+                                                            {showEditDelete && (
+                                                                <>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => startEdit(comment)}
+                                                                        className="p-1.5 rounded-full bg-[#1e293b] border border-gray-700 text-gray-300 hover:text-white"
+                                                                        aria-label="Edit message"
+                                                                    >
+                                                                        <Pencil size={12} />
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleDelete(comment)}
+                                                                        className="p-1.5 rounded-full bg-[#1e293b] border border-gray-700 text-gray-300 hover:text-red-400"
+                                                                        aria-label="Delete message"
+                                                                    >
+                                                                        <Trash2 size={12} />
+                                                                    </button>
+                                                                </>
+                                                            )}
                                                         </div>
                                                     )}
                                                 </div>
@@ -482,6 +543,19 @@ export default function TripFeed() {
                                                         </>
                                                     )}
                                                 </div>
+
+                                                {/* Reply-count badge — always visible when replies exist, not hover-gated */}
+                                                {replyCount > 0 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setActiveThreadId(comment.id)}
+                                                        className={`flex items-center gap-1 text-xs text-brand-teal mt-1 hover:underline ${isMe ? 'self-end' : ''}`}
+                                                        data-testid="reply-count-badge"
+                                                    >
+                                                        <Reply size={12} />
+                                                        {replyCount} {replyCount === 1 ? 'reply' : 'replies'}
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -557,6 +631,32 @@ export default function TripFeed() {
                         })
                     )}
                 </div>
+            )}
+
+            {activeThreadRoot && (
+                <ThreadPanel
+                    root={activeThreadRoot}
+                    replies={repliesByParent.get(activeThreadRoot.id) ?? []}
+                    profiles={profiles}
+                    currentUserId={user?.id}
+                    formatTime={formatTime}
+                    onClose={() => setActiveThreadId(null)}
+                    onSendReply={(text) => sendComment(text, activeThreadRoot.id)}
+                    editingId={editingId}
+                    editingText={editingText}
+                    editSaving={editSaving}
+                    editError={editError}
+                    onStartEdit={startEdit}
+                    onCancelEdit={cancelEdit}
+                    onSubmitEdit={submitEdit}
+                    onEditingTextChange={setEditingText}
+                    openActionsId={openActionsId}
+                    onToggleActions={setOpenActionsId}
+                    deleteErrorId={deleteErrorId}
+                    onDelete={handleDelete}
+                    onRetryPending={retryPending}
+                    onDiscardPending={discardPending}
+                />
             )}
         </div>
     );

@@ -80,6 +80,7 @@ export interface Comment {
     text: string;
     created_at: string;
     edited_at?: string | null;
+    parent_comment_id?: string | null;
 }
 
 export interface Poll {
