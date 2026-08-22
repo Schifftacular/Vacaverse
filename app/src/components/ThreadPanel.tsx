@@ -82,11 +82,11 @@ function ThreadMessage({
 
     return (
         <div className="group flex gap-2">
-            <div className="w-7 h-7 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden shrink-0">
+            <div className="w-7 h-7 rounded-full bg-[var(--color-bg-secondary)] flex items-center justify-center overflow-hidden shrink-0">
                 {profile?.photo_url ? (
                     <img src={profile.photo_url} alt="" className="w-full h-full object-cover" />
                 ) : (
-                    <span className="text-white text-[10px] font-bold">
+                    <span className="text-[var(--color-text-primary)] text-[10px] font-bold">
                         {(profile?.display_name?.[0] ?? '?').toUpperCase()}
                     </span>
                 )}
@@ -94,7 +94,7 @@ function ThreadMessage({
             <div className="flex-1 min-w-0 flex flex-col">
                 <div className="flex items-center gap-1">
                     {isEditing ? (
-                        <div className="rounded-2xl px-3 py-2 bg-[#0f172a] border border-brand-teal w-full">
+                        <div className="rounded-2xl px-3 py-2 bg-[var(--color-bg-primary)] border border-brand-teal w-full">
                             <textarea
                                 autoFocus
                                 value={editingText}
@@ -107,30 +107,30 @@ function ThreadMessage({
                                         onCancelEdit();
                                     }
                                 }}
-                                className="w-full bg-transparent text-white text-sm resize-none focus:outline-none"
+                                className="w-full bg-transparent text-[var(--color-text-primary)] text-sm resize-none focus:outline-none"
                                 rows={2}
                             />
                             <div className="flex justify-end gap-1 mt-1">
-                                <button type="button" onClick={onCancelEdit} className="p-1 text-gray-400 hover:text-white" aria-label="Cancel edit">
+                                <button type="button" onClick={onCancelEdit} className="p-1 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]" aria-label="Cancel edit">
                                     <X size={14} />
                                 </button>
                                 <button
                                     type="button"
                                     onClick={onSubmitEdit}
                                     disabled={editSaving || !editingText.trim()}
-                                    className="p-1 text-brand-teal hover:text-white disabled:opacity-50"
+                                    className="p-1 text-brand-teal hover:brightness-125 disabled:opacity-50"
                                     aria-label="Save edit"
                                 >
                                     <Check size={14} />
                                 </button>
                             </div>
-                            {editError && <p className="text-xs text-red-400 mt-1">Couldn't save. Try again.</p>}
+                            {editError && <p className="text-xs text-[var(--color-vermilion)] mt-1">Couldn't save. Try again.</p>}
                         </div>
                     ) : (
                         <div
                             onClick={() => canEditDelete && onToggleActions()}
                             className={`rounded-2xl px-3 py-2 min-w-0 ${
-                                isMe ? 'bg-brand-teal text-white' : 'bg-[#0f172a] text-white border border-gray-800'
+                                isMe ? 'bg-brand-teal text-[var(--color-carbon)]' : 'bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] border border-[var(--color-border)]'
                             } ${isPending ? 'opacity-60' : ''} ${canEditDelete ? 'cursor-pointer' : ''}`}
                         >
                             {!isMe && (
@@ -145,20 +145,20 @@ function ThreadMessage({
                             <button
                                 type="button"
                                 onClick={onStartEdit}
-                                className="min-w-11 min-h-11 -m-2 flex items-center justify-center text-gray-300 hover:text-white"
+                                className="min-w-11 min-h-11 -m-2 flex items-center justify-center text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
                                 aria-label="Edit message"
                             >
-                                <span className="p-1.5 rounded-full bg-[#0f172a] border border-gray-700 flex items-center justify-center">
+                                <span className="p-1.5 rounded-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] flex items-center justify-center">
                                     <Pencil size={12} />
                                 </span>
                             </button>
                             <button
                                 type="button"
                                 onClick={onDelete}
-                                className="min-w-11 min-h-11 -m-2 flex items-center justify-center text-gray-300 hover:text-red-400"
+                                className="min-w-11 min-h-11 -m-2 flex items-center justify-center text-[var(--color-text-secondary)] hover:text-[var(--color-vermilion)]"
                                 aria-label="Delete message"
                             >
-                                <span className="p-1.5 rounded-full bg-[#0f172a] border border-gray-700 flex items-center justify-center">
+                                <span className="p-1.5 rounded-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] flex items-center justify-center">
                                     <Trash2 size={12} />
                                 </span>
                             </button>
@@ -166,15 +166,15 @@ function ThreadMessage({
                     )}
                 </div>
 
-                <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-1">
+                <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-muted)] mt-1">
                     {isPending ? (
                         isErrored ? (
-                            <span className="flex items-center gap-1 text-red-400">
+                            <span className="flex items-center gap-1 text-[var(--color-vermilion)]">
                                 <AlertCircle size={11} /> Failed to send
-                                <button type="button" onClick={onRetryPending} className="underline hover:text-red-300">
+                                <button type="button" onClick={onRetryPending} className="underline hover:brightness-125">
                                     Retry
                                 </button>
-                                <button type="button" onClick={onDiscardPending} className="underline hover:text-red-300">
+                                <button type="button" onClick={onDiscardPending} className="underline hover:brightness-125">
                                     Discard
                                 </button>
                             </span>
@@ -185,7 +185,7 @@ function ThreadMessage({
                         <>
                             <span>{formatTime(comment.created_at)}</span>
                             {comment.edited_at && <span>(edited)</span>}
-                            {showDeleteError && <span className="text-red-400">Couldn't delete, try again</span>}
+                            {showDeleteError && <span className="text-[var(--color-vermilion)]">Couldn't delete, try again</span>}
                         </>
                     )}
                 </div>
@@ -252,17 +252,17 @@ export function ThreadPanel({
         <div className="fixed inset-0 z-50 bg-black/60 flex justify-end" onClick={onClose}>
             <div
                 onClick={e => e.stopPropagation()}
-                className="h-full w-full sm:w-[420px] max-w-full bg-[#1e293b] border-l border-gray-800 flex flex-col"
+                className="h-full w-full sm:w-[420px] max-w-full bg-[var(--color-bg-card)] border-l border-[var(--color-border)] flex flex-col"
                 data-testid="thread-panel"
             >
-                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800 shrink-0">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-border)] shrink-0">
                     <div>
-                        <h3 className="font-semibold text-white text-sm">Thread</h3>
-                        <p className="text-xs text-gray-500">
+                        <h3 className="cx-label text-sm text-[var(--color-text-primary)]">Thread</h3>
+                        <p className="text-xs text-[var(--color-text-muted)]">
                             {replies.length} {replies.length === 1 ? 'reply' : 'replies'}
                         </p>
                     </div>
-                    <button type="button" onClick={onClose} className="text-gray-400 hover:text-white" aria-label="Close thread">
+                    <button type="button" onClick={onClose} className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]" aria-label="Close thread">
                         <X size={20} />
                     </button>
                 </div>
@@ -290,7 +290,7 @@ export function ThreadPanel({
                         formatTime={formatTime}
                     />
 
-                    {replies.length > 0 && <div className="h-px bg-gray-800" />}
+                    {replies.length > 0 && <div className="h-px bg-[var(--color-border)]" />}
 
                     {replies.map(reply => (
                         <ThreadMessage
@@ -318,19 +318,19 @@ export function ThreadPanel({
                     ))}
                 </div>
 
-                <form onSubmit={handleSubmit} className="flex gap-2 p-4 border-t border-gray-800 shrink-0">
+                <form onSubmit={handleSubmit} className="flex gap-2 p-4 border-t border-[var(--color-border)] shrink-0">
                     <input
                         ref={focusReplyInput}
                         type="text"
                         value={replyText}
                         onChange={e => setReplyText(e.target.value)}
                         placeholder="Reply in thread..."
-                        className="flex-1 bg-[#0f172a] border border-gray-700 rounded-full px-4 py-2.5 text-white text-base focus:outline-none focus:border-brand-teal"
+                        className="flex-1 bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-full px-4 py-2.5 text-[var(--color-text-primary)] text-base focus:outline-none focus:border-brand-teal"
                     />
                     <button
                         type="submit"
                         disabled={!replyText.trim()}
-                        className="w-10 h-10 bg-brand-teal rounded-full flex items-center justify-center text-white disabled:opacity-50 shrink-0"
+                        className="w-11 h-11 bg-brand-teal rounded-full flex items-center justify-center text-[var(--color-carbon)] disabled:opacity-50 shrink-0"
                         aria-label="Send reply"
                     >
                         <Send size={16} />

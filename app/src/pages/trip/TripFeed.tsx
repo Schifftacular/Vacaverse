@@ -18,6 +18,7 @@ import {
 import { Send, MessageCircle, Activity, Pencil, Trash2, X, Check, ChevronDown, AlertCircle, Reply } from 'lucide-react';
 import type { Trip, ActivityEntry, Comment } from '../../types';
 import { ThreadPanel } from '../../components/ThreadPanel';
+import { EmptyState } from '../../components/ui/Concourse';
 
 // A comment that hasn't been confirmed by the server yet, rendered inline
 // with real comments so sending feels instant.
@@ -364,7 +365,7 @@ export default function TripFeed() {
         <div className="px-4 flex flex-col" style={{ height: 'calc(100dvh - 300px)' }}>
             {/* Presence */}
             {presence.length > 0 && (
-                <div className="flex items-center gap-2 mb-3 text-xs text-gray-400" data-testid="presence-bar">
+                <div className="flex items-center gap-2 mb-3 text-xs text-[var(--color-text-secondary)]" data-testid="presence-bar">
                     <div className="flex -space-x-2">
                         {presence.slice(0, 5).map(p => (
                             <div
@@ -375,7 +376,7 @@ export default function TripFeed() {
                                 {p.photo_url ? (
                                     <img src={p.photo_url} alt="" className="w-full h-full object-cover" />
                                 ) : (
-                                    <span className="text-white text-[9px] font-bold">{(p.display_name?.[0] ?? '?').toUpperCase()}</span>
+                                    <span className="text-[var(--color-carbon)] text-[9px] font-bold">{(p.display_name?.[0] ?? '?').toUpperCase()}</span>
                                 )}
                             </div>
                         ))}
@@ -392,10 +393,10 @@ export default function TripFeed() {
             <div className="flex gap-2 mb-4">
                 <button
                     onClick={() => setActiveTab('comments')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                    className={`cx-label flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-colors ${
                         activeTab === 'comments'
-                            ? 'bg-brand-teal text-white'
-                            : 'bg-[#1e293b] text-gray-400 border border-gray-800'
+                            ? 'bg-brand-teal text-[var(--color-carbon)]'
+                            : 'bg-[var(--color-bg-card)] text-[var(--color-text-secondary)] border border-[var(--color-border)]'
                     }`}
                 >
                     <MessageCircle size={14} />
@@ -403,10 +404,10 @@ export default function TripFeed() {
                 </button>
                 <button
                     onClick={() => setActiveTab('activity')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                    className={`cx-label flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-colors ${
                         activeTab === 'activity'
-                            ? 'bg-brand-teal text-white'
-                            : 'bg-[#1e293b] text-gray-400 border border-gray-800'
+                            ? 'bg-brand-teal text-[var(--color-carbon)]'
+                            : 'bg-[var(--color-bg-card)] text-[var(--color-text-secondary)] border border-[var(--color-border)]'
                     }`}
                 >
                     <Activity size={14} />
@@ -419,11 +420,11 @@ export default function TripFeed() {
                 <div className="flex flex-col flex-1 min-h-0 relative">
                     <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto space-y-3 mb-4 pb-24">
                         {topLevelComments.length === 0 ? (
-                            <div className="text-center py-12 text-gray-500">
-                                <MessageCircle size={32} className="mx-auto mb-2 opacity-50" />
-                                <p>No comments yet. Start the conversation!</p>
-                                <p className="text-xs mt-1 text-gray-600">Say hi, or ask what everyone's excited about.</p>
-                            </div>
+                            <EmptyState
+                                icon={<MessageCircle size={32} className="opacity-50" />}
+                                title="No comments yet. Start the conversation!"
+                                hint="Say hi, or ask what everyone's excited about."
+                            />
                         ) : (
                             topLevelComments.map((comment, index) => {
                                 const profile = profiles.get(comment.user_id);
@@ -447,11 +448,11 @@ export default function TripFeed() {
                                             </div>
                                         )}
                                         <div className={`group flex gap-2 ${isMe ? 'flex-row-reverse' : ''}`}>
-                                            <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden shrink-0">
+                                            <div className="w-8 h-8 rounded-full bg-[var(--color-bg-secondary)] flex items-center justify-center overflow-hidden shrink-0">
                                                 {profile?.photo_url ? (
                                                     <img src={profile.photo_url} alt="" className="w-full h-full object-cover" />
                                                 ) : (
-                                                    <span className="text-white text-xs font-bold">
+                                                    <span className="text-[var(--color-text-primary)] text-xs font-bold">
                                                         {(profile?.display_name?.[0] ?? '?').toUpperCase()}
                                                     </span>
                                                 )}
@@ -459,7 +460,7 @@ export default function TripFeed() {
                                             <div className={`max-w-[75%] ${isMe ? 'items-end' : ''} flex flex-col`}>
                                                 <div className={`flex items-center gap-1 ${isMe ? 'flex-row-reverse' : ''}`}>
                                                     {isEditing ? (
-                                                        <div className="rounded-2xl px-3 py-2 bg-[#1e293b] border border-brand-teal w-64 max-w-full">
+                                                        <div className="rounded-2xl px-3 py-2 bg-[var(--color-bg-card)] border border-brand-teal w-64 max-w-full">
                                                             <textarea
                                                                 autoFocus
                                                                 value={editingText}
@@ -472,14 +473,14 @@ export default function TripFeed() {
                                                                         cancelEdit();
                                                                     }
                                                                 }}
-                                                                className="w-full bg-transparent text-white text-sm resize-none focus:outline-none"
+                                                                className="w-full bg-transparent text-[var(--color-text-primary)] text-sm resize-none focus:outline-none"
                                                                 rows={2}
                                                             />
                                                             <div className="flex justify-end gap-1 mt-1">
                                                                 <button
                                                                     type="button"
                                                                     onClick={cancelEdit}
-                                                                    className="p-1 text-gray-400 hover:text-white"
+                                                                    className="p-1 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
                                                                     aria-label="Cancel edit"
                                                                 >
                                                                     <X size={14} />
@@ -488,14 +489,14 @@ export default function TripFeed() {
                                                                     type="button"
                                                                     onClick={() => submitEdit(comment)}
                                                                     disabled={editSaving || !editingText.trim()}
-                                                                    className="p-1 text-brand-teal hover:text-white disabled:opacity-50"
+                                                                    className="p-1 text-brand-teal hover:brightness-125 disabled:opacity-50"
                                                                     aria-label="Save edit"
                                                                 >
                                                                     <Check size={14} />
                                                                 </button>
                                                             </div>
                                                             {editError && (
-                                                                <p className="text-xs text-red-400 mt-1">Couldn't save. Try again.</p>
+                                                                <p className="text-xs text-[var(--color-vermilion)] mt-1">Couldn't save. Try again.</p>
                                                             )}
                                                         </div>
                                                     ) : (
@@ -505,7 +506,7 @@ export default function TripFeed() {
                                                                 setOpenActionsId(actionsOpen ? null : comment.id)
                                                             }
                                                             className={`rounded-2xl px-4 py-2 ${
-                                                                isMe ? 'bg-brand-teal text-white' : 'bg-[#1e293b] text-white border border-gray-800'
+                                                                isMe ? 'bg-brand-teal text-[var(--color-carbon)]' : 'bg-[var(--color-bg-card)] text-[var(--color-text-primary)] border border-[var(--color-border)]'
                                                             } ${isPending ? 'opacity-60' : ''} ${(showEditDelete || showReply) ? 'cursor-pointer' : ''}`}
                                                         >
                                                             {!isMe && (
@@ -528,10 +529,10 @@ export default function TripFeed() {
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => setActiveThreadId(comment.id)}
-                                                                    className="min-w-11 min-h-11 -m-2 flex items-center justify-center text-gray-300 hover:text-white"
+                                                                    className="min-w-11 min-h-11 -m-2 flex items-center justify-center text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
                                                                     aria-label="Reply"
                                                                 >
-                                                                    <span className="p-1.5 rounded-full bg-[#1e293b] border border-gray-700 flex items-center justify-center">
+                                                                    <span className="p-1.5 rounded-full bg-[var(--color-bg-card)] border border-[var(--color-border)] flex items-center justify-center">
                                                                         <Reply size={12} />
                                                                     </span>
                                                                 </button>
@@ -541,20 +542,20 @@ export default function TripFeed() {
                                                                     <button
                                                                         type="button"
                                                                         onClick={() => startEdit(comment)}
-                                                                        className="min-w-11 min-h-11 -m-2 flex items-center justify-center text-gray-300 hover:text-white"
+                                                                        className="min-w-11 min-h-11 -m-2 flex items-center justify-center text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
                                                                         aria-label="Edit message"
                                                                     >
-                                                                        <span className="p-1.5 rounded-full bg-[#1e293b] border border-gray-700 flex items-center justify-center">
+                                                                        <span className="p-1.5 rounded-full bg-[var(--color-bg-card)] border border-[var(--color-border)] flex items-center justify-center">
                                                                             <Pencil size={12} />
                                                                         </span>
                                                                     </button>
                                                                     <button
                                                                         type="button"
                                                                         onClick={() => handleDelete(comment)}
-                                                                        className="min-w-11 min-h-11 -m-2 flex items-center justify-center text-gray-300 hover:text-red-400"
+                                                                        className="min-w-11 min-h-11 -m-2 flex items-center justify-center text-[var(--color-text-secondary)] hover:text-[var(--color-vermilion)]"
                                                                         aria-label="Delete message"
                                                                     >
-                                                                        <span className="p-1.5 rounded-full bg-[#1e293b] border border-gray-700 flex items-center justify-center">
+                                                                        <span className="p-1.5 rounded-full bg-[var(--color-bg-card)] border border-[var(--color-border)] flex items-center justify-center">
                                                                             <Trash2 size={12} />
                                                                         </span>
                                                                     </button>
@@ -564,22 +565,22 @@ export default function TripFeed() {
                                                     )}
                                                 </div>
 
-                                                <div className={`flex items-center gap-1.5 text-xs text-gray-500 mt-1 ${isMe ? 'flex-row-reverse' : ''}`}>
+                                                <div className={`flex items-center gap-1.5 text-xs text-[var(--color-text-muted)] mt-1 ${isMe ? 'flex-row-reverse' : ''}`}>
                                                     {isPending ? (
                                                         isErrored ? (
-                                                            <span className="flex items-center gap-1 text-red-400">
+                                                            <span className="flex items-center gap-1 text-[var(--color-vermilion)]">
                                                                 <AlertCircle size={11} /> Failed to send
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => retryPending(comment._pending!)}
-                                                                    className="underline hover:text-red-300"
+                                                                    className="underline hover:brightness-125"
                                                                 >
                                                                     Retry
                                                                 </button>
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => discardPending(comment._pending!.clientId)}
-                                                                    className="underline hover:text-red-300"
+                                                                    className="underline hover:brightness-125"
                                                                 >
                                                                     Discard
                                                                 </button>
@@ -592,7 +593,7 @@ export default function TripFeed() {
                                                             <span>{formatTime(comment.created_at)}</span>
                                                             {comment.edited_at && <span>(edited)</span>}
                                                             {showDeleteError && (
-                                                                <span className="text-red-400">Couldn't delete, try again</span>
+                                                                <span className="text-[var(--color-vermilion)]">Couldn't delete, try again</span>
                                                             )}
                                                         </>
                                                     )}
@@ -623,7 +624,7 @@ export default function TripFeed() {
                         <button
                             type="button"
                             onClick={() => scrollToBottom(true)}
-                            className="absolute bottom-20 left-1/2 -translate-x-1/2 flex items-center gap-1 px-3 py-1.5 rounded-full bg-brand-teal text-white text-xs font-medium shadow-lg"
+                            className="cx-label absolute bottom-20 left-1/2 -translate-x-1/2 flex items-center gap-1 px-3 py-1.5 rounded-full bg-brand-teal text-[var(--color-carbon)] text-xs shadow-lg"
                         >
                             <ChevronDown size={14} />
                             New messages
@@ -632,7 +633,7 @@ export default function TripFeed() {
 
                     {/* Typing indicator — height is always reserved (even when empty) so its
                         appearance/disappearance never shifts the scroll container above it. */}
-                    <div className="h-4 mb-1 px-1 text-xs text-gray-400 italic" data-testid="typing-indicator">
+                    <div className="h-4 mb-1 px-1 text-xs text-[var(--color-text-secondary)] italic" data-testid="typing-indicator">
                         {typingUsers.length > 0 && (
                             <span>
                                 {typingUsers.length === 1
@@ -664,12 +665,12 @@ export default function TripFeed() {
                             value={newComment}
                             onChange={handleComposeChange}
                             placeholder="Type a message..."
-                            className="flex-1 bg-[#1e293b] border border-gray-700 rounded-full px-4 py-3 text-white text-base focus:outline-none focus:border-brand-teal"
+                            className="flex-1 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-full px-4 py-3 text-[var(--color-text-primary)] text-base focus:outline-none focus:border-brand-teal"
                         />
                         <button
                             type="submit"
                             disabled={!newComment.trim()}
-                            className="w-12 h-12 bg-brand-teal rounded-full flex items-center justify-center text-white disabled:opacity-50 shrink-0"
+                            className="w-12 h-12 bg-brand-teal rounded-full flex items-center justify-center text-[var(--color-carbon)] disabled:opacity-50 shrink-0"
                         >
                             <Send size={18} />
                         </button>
@@ -679,35 +680,35 @@ export default function TripFeed() {
                 /* Activity section */
                 <div className="flex-1 overflow-y-auto space-y-3">
                     {activity.length === 0 ? (
-                        <div className="text-center py-12 text-gray-500">
-                            <Activity size={32} className="mx-auto mb-2 opacity-50" />
-                            <p>No activity yet. Start planning!</p>
-                            <p className="text-xs mt-1 text-gray-600">Add a task, event, or poll and it'll show up here.</p>
-                        </div>
+                        <EmptyState
+                            icon={<Activity size={32} className="opacity-50" />}
+                            title="No activity yet. Start planning!"
+                            hint="Add a task, event, or poll and it'll show up here."
+                        />
                     ) : (
                         activity.map(entry => {
                             const profile = profiles.get(entry.user_id);
                             return (
                                 <div key={entry.id} className="flex items-start gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden shrink-0 mt-0.5">
+                                    <div className="w-8 h-8 rounded-full bg-[var(--color-bg-secondary)] flex items-center justify-center overflow-hidden shrink-0 mt-0.5">
                                         {profile?.photo_url ? (
                                             <img src={profile.photo_url} alt="" className="w-full h-full object-cover" />
                                         ) : (
-                                            <span className="text-white text-xs font-bold">
+                                            <span className="text-[var(--color-text-primary)] text-xs font-bold">
                                                 {(profile?.display_name?.[0] ?? '?').toUpperCase()}
                                             </span>
                                         )}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm text-gray-300">
-                                            <span className="font-medium text-white">{profile?.display_name ?? 'Someone'}</span>
+                                        <p className="text-sm text-[var(--color-text-secondary)]">
+                                            <span className="font-medium text-[var(--color-text-primary)]">{profile?.display_name ?? 'Someone'}</span>
                                             {' '}{entry.action}
                                         </p>
                                         {entry.detail && (
-                                            <p className="text-xs text-gray-500 mt-0.5 truncate">{entry.detail}</p>
+                                            <p className="text-xs text-[var(--color-text-muted)] mt-0.5 truncate">{entry.detail}</p>
                                         )}
                                     </div>
-                                    <span className="text-xs text-gray-600 shrink-0">{formatTime(entry.created_at)}</span>
+                                    <span className="text-xs text-[var(--color-text-muted)] shrink-0">{formatTime(entry.created_at)}</span>
                                 </div>
                             );
                         })

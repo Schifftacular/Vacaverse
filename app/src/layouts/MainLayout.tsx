@@ -5,7 +5,7 @@ import { FeedbackWidget } from '../components/FeedbackWidget';
 export function MainLayout() {
     return (
         <div className="min-h-screen bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] font-sans flex flex-col">
-            <main className="flex-1 overflow-y-auto pb-[calc(5rem_+_env(safe-area-inset-bottom))]">
+            <main className="flex-1 overflow-y-auto pb-[calc(5rem_+_env(safe-area-inset-bottom))] bg-[image:radial-gradient(circle_at_top,_rgb(var(--shadow-tint)/0.06),_transparent_60%)]">
                 <Outlet />
             </main>
             <BottomNav />

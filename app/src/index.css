@@ -1,38 +1,174 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Condensed:wght@500;600;700;800&display=swap');
 @import "tailwindcss";
 
+/*
+  CONCOURSE — VacaVerse's design system.
+  A lit departures-board language: warm goldenrod ground, tinted glass panels
+  in carbon / ivory / vermilion / bottle-green, one prose size ranked by
+  weight/case/rule, panels raked off a shared axis. Dark mode is the board
+  unlit at night (carbon ground, amber-lit panel edges), not an inverted
+  palette. See index.html's opening comment for the full direction contract.
+*/
+
 @theme {
-    --color-brand-teal: #14b8a6;
-    --color-brand-dark: #0f172a;
+    --font-display: "Archivo Condensed", "Arial Narrow", sans-serif;
+
+    /* Raw palette roles — used directly for state colors that must read the
+       same regardless of theme (success/danger fills, family-member tags). */
+    --color-carbon: #17130f;
+    --color-ivory: #f7ecd9;
+    --color-goldenrod: #d99a1f;
+    --color-vermilion: #d1502c;
+    --color-bottle-green: #1f6f4a;
+
+    /* Kept as `brand-teal` / `brand-dark` so every existing text-/bg-/border-
+       brand-teal utility across the app repoints automatically; both now
+       carry Concourse's amber, tuned per theme below, not literal teal. */
+    --color-brand-teal: #b0700f;
+    --color-brand-dark: #17130f;
 }
 
-/* Light mode overrides */
+/* Light mode — the board lit, daytime */
 html[data-theme="light"] {
-    --color-bg-primary: #ffffff;
-    --color-bg-secondary: #f1f5f9;
-    --color-bg-card: #ffffff;
-    --color-border: #e2e8f0;
-    --color-text-primary: #0f172a;
-    --color-text-secondary: #475569;
-    --color-text-muted: #64748b;
+    --color-bg-primary: #f6ecd3;
+    --color-bg-secondary: #eeddb4;
+    --color-bg-card: #fffcf4;
+    --color-border: #dcc596;
+    --color-text-primary: #201a12;
+    --color-text-secondary: #5b4d38;
+    --color-text-muted: #8a7a5d;
+    --color-brand-teal: #9c5c17;
+    --shadow-tint: 32 22 8;
 }
 
-/* Dark mode (default) */
+/* Dark mode (default) — the board at night, panels lit from within */
 html, html[data-theme="dark"] {
-    --color-bg-primary: #0f172a;
-    --color-bg-secondary: #1e293b;
-    --color-bg-card: #1e293b;
-    --color-border: #1e293b;
-    --color-text-primary: #ffffff;
-    --color-text-secondary: #cbd5e1;
-    --color-text-muted: #94a3b8;
+    --color-bg-primary: #15100a;
+    --color-bg-secondary: #1d160d;
+    --color-bg-card: #221a10;
+    --color-border: #3c2e18;
+    --color-text-primary: #f7ecd9;
+    --color-text-secondary: #cbb897;
+    --color-text-muted: #8c7d63;
+    --color-brand-teal: #dda233;
+    --shadow-tint: 0 0 0;
 }
 
 body {
     background-color: var(--color-bg-primary);
     color: var(--color-text-primary);
+    font-feature-settings: "tnum" 1;
 }
 
 /* Ensure minimum text sizes for accessibility */
 html {
     font-size: 16px;
+}
+
+::selection {
+    background-color: var(--color-goldenrod);
+    color: var(--color-carbon);
+}
+
+/* Wrapped in Tailwind's `components` layer (it runs before `utilities` in
+   the layer order `@import "tailwindcss"` sets up) so any Tailwind utility —
+   `focus:border-brand-teal`, a one-off `border-*` override, etc. — always
+   wins the cascade over these shared classes instead of fighting them. */
+@layer components {
+    /* Condensed, tracked, cased label voice — nav items, tags, section heads,
+       the "timetable" register. Never the body-copy face. */
+    .cx-label {
+        font-family: var(--font-display);
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        font-weight: 700;
+    }
+
+    /* The same condensed face, sentence case, for headlines — trip titles,
+       page H1s, modal titles. cx-label is for small tracked tags; this is
+       for the words a visitor actually reads as the heading. */
+    .cx-headline {
+        font-family: var(--font-display);
+        font-weight: 700;
+        letter-spacing: -0.01em;
+    }
+
+    /* The disciplined two-step scale: cx-h1 for the one hero/page-title size,
+       cx-h2 for the one section/modal-title size. Rank below that is carried
+       by weight/case (cx-label) and rule, not a size ramp. */
+    .cx-h1 {
+        font-family: var(--font-display);
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        font-size: 1.75rem;
+        line-height: 1.15;
+    }
+    .cx-h2 {
+        font-family: var(--font-display);
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        font-size: 1.25rem;
+        line-height: 1.2;
+    }
+
+    /* One shared card surface: an actual tinted glass slide — translucent,
+       blurred to whatever sits behind it (a hero photo, the board itself) —
+       not an opaque card. Elevation is carried once, by the shadow; the
+       border is a barely-there glass edge, not a second elevation signal. */
+    .cx-slide {
+        background-color: color-mix(in srgb, var(--color-bg-card) 62%, transparent);
+        backdrop-filter: blur(18px) saturate(160%);
+        -webkit-backdrop-filter: blur(18px) saturate(160%);
+        border: 1px solid color-mix(in srgb, var(--color-border) 45%, transparent);
+        border-radius: 14px;
+        box-shadow: 0 14px 32px -16px rgb(var(--shadow-tint) / 0.55);
+    }
+
+    /* The signature raked edge — a full parallelogram lean off a shared
+       axis, applied to headers, the trip rack, and hero bands. clip-path
+       only affects the silhouette, so content inside stays fully upright
+       and legible. */
+    .cx-rake {
+        clip-path: polygon(0 0, 100% 0, 100% calc(100% - 2.5rem), calc(100% - 2.5rem) 100%, 0 100%);
+    }
+
+    .cx-rake-b {
+        clip-path: polygon(2.5rem 0, 100% 0, 100% 100%, 0 100%, 0 2.5rem);
+    }
+
+    @keyframes cx-sweep {
+        0%, 15% { transform: translateX(-130%); }
+        65%, 100% { transform: translateX(130%); }
+    }
+
+    /* The one authored motion moment: a light sweeping across the active
+       position — the current trip tab, the primary FAB, today's marker.
+       The static ring says "this is lit"; the sweep says "this is the one
+       that's live right now." */
+    .cx-lit {
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 0 0 1px var(--color-goldenrod), 0 0 20px -4px var(--color-goldenrod);
+    }
+    .cx-lit::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(100deg, transparent 35%, color-mix(in srgb, var(--color-ivory) 55%, transparent) 50%, transparent 65%);
+        animation: cx-sweep 3.6s ease-in-out infinite;
+        pointer-events: none;
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .cx-lit::after {
+            animation: none;
+        }
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
 }

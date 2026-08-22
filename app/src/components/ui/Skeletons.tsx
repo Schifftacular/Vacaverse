@@ -2,7 +2,7 @@ export const ListSkeleton = () => {
     return (
         <div className="space-y-4 animate-pulse">
             {[1, 2, 3].map((i) => (
-                <div key={i} className="h-20 bg-gray-800/50 rounded-xl" />
+                <div key={i} className="h-20 bg-[var(--color-bg-secondary)] rounded-xl" />
             ))}
         </div>
     );
@@ -10,7 +10,7 @@ export const ListSkeleton = () => {
 
 export const CardSkeleton = () => {
     return (
-        <div className="h-48 bg-gray-800/50 rounded-2xl animate-pulse" />
+        <div className="h-48 bg-[var(--color-bg-secondary)] rounded-2xl animate-pulse" />
     );
 };
 
@@ -20,8 +20,8 @@ export const GridSkeleton = () => {
             {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div key={i} className="space-y-3">
                     <CardSkeleton />
-                    <div className="h-4 bg-gray-800/50 rounded w-3/4" />
-                    <div className="h-4 bg-gray-800/50 rounded w-1/2" />
+                    <div className="h-4 bg-[var(--color-bg-secondary)] rounded w-3/4" />
+                    <div className="h-4 bg-[var(--color-bg-secondary)] rounded w-1/2" />
                 </div>
             ))}
         </div>

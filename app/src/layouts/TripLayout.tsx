@@ -6,6 +6,7 @@ import { differenceInDays, format, parseISO } from 'date-fns';
 import { updateTrip } from '../services/tripService';
 import { db } from '../lib/client';
 import { useUserProfiles } from '../hooks/useUserProfiles';
+import { Panel } from '../components/ui/Concourse';
 
 const tabs = [
     { name: 'Itinerary', path: '' },
@@ -81,7 +82,7 @@ export default function TripLayout() {
         return (
             <div className="p-8 text-center">
                 <div className="w-8 h-8 border-2 border-brand-teal border-t-transparent rounded-full animate-spin mx-auto" />
-                <p className="text-gray-400 mt-4">Loading trip...</p>
+                <p className="text-[var(--color-text-secondary)] mt-4">Loading trip...</p>
             </div>
         );
     }
@@ -89,8 +90,8 @@ export default function TripLayout() {
     if (!trip) {
         return (
             <div className="p-8 text-center">
-                <p className="text-gray-400">Trip not found</p>
-                <Link to="/trips" className="text-brand-teal mt-4 inline-block">Back to Trips</Link>
+                <p className="text-[var(--color-text-secondary)]">Trip not found</p>
+                <Link to="/trips" className="text-brand-teal mt-4 inline-block font-semibold">Back to Trips</Link>
             </div>
         );
     }
@@ -99,39 +100,48 @@ export default function TripLayout() {
 
     return (
         <div className="pb-8 min-h-screen bg-[var(--color-bg-primary)]">
-            {/* Header with Background */}
-            <div className="relative h-48 bg-gradient-to-b from-gray-800 to-[var(--color-bg-primary)]">
-                <Link to="/trips" className="absolute top-4 left-4 p-2 bg-black/30 rounded-full z-20">
-                    <ArrowLeft size={24} className="text-white" />
+            {/* Hero — the trip's own lit slide, raked at the bottom edge */}
+            <div className="relative h-52 bg-[var(--color-carbon)] cx-rake-b overflow-hidden">
+                <div className="absolute inset-0 bg-[image:linear-gradient(160deg,_var(--color-carbon),_#2a1f10_70%)]" />
+                <Link to="/trips" className="absolute top-4 left-4 p-2 bg-black/40 rounded-full z-20 backdrop-blur-sm">
+                    <ArrowLeft size={22} className="text-[var(--color-ivory)]" />
                 </Link>
                 <button
                     onClick={handleShare}
                     disabled={sharingLoading}
-                    className="absolute top-4 right-4 p-2 bg-black/30 rounded-full z-20 disabled:opacity-50"
+                    className="absolute top-4 right-4 p-2 bg-black/40 rounded-full z-20 disabled:opacity-50 backdrop-blur-sm"
                     aria-label="Share trip"
                 >
                     {sharingLoading
-                        ? <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        : <Share2 size={24} className="text-white" />
+                        ? <div className="w-5 h-5 border-2 border-[var(--color-ivory)] border-t-transparent rounded-full animate-spin" />
+                        : <Share2 size={22} className="text-[var(--color-ivory)]" />
                     }
                 </button>
                 {trip.image && (
-                    <img src={trip.image} alt="cover" className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-overlay" />
+                    <img src={trip.image} alt="" className="absolute inset-0 w-full h-full object-cover opacity-50 mix-blend-luminosity" />
                 )}
-                <div className="absolute bottom-6 left-4 right-4 z-10">
-                    <h1 className="text-2xl font-bold text-white">{trip.title}</h1>
-                    <p className="text-gray-300 text-sm flex items-center gap-2 mt-1">
-                        <Calendar size={16} />
-                        {format(parseISO(trip.start_date), 'MMM d')} - {format(parseISO(trip.end_date), 'MMM d, yyyy')} •{' '}
-                        {daysAway > 0 ? `${daysAway} days to go` : 'In progress'}
+                {/* Scrim dedicated to the title band, independent of the hero's base
+                    gradient — guarantees contrast even when a bright photo region
+                    (sky, snow) sits directly behind the title on tall trip names. */}
+                <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[var(--color-carbon)] via-[var(--color-carbon)]/75 to-transparent" />
+                <div className="absolute bottom-8 left-4 right-4 z-10">
+                    <h1 className="cx-h1 text-[2rem] text-[var(--color-ivory)] leading-tight" style={{ textShadow: '0 2px 12px rgb(0 0 0 / 0.45)' }}>{trip.title}</h1>
+                    <p className="text-[var(--color-ivory)]/80 text-sm flex items-center gap-3 mt-2 flex-wrap">
+                        <span className="flex items-center gap-1.5 tabular-nums">
+                            <Calendar size={15} />
+                            {format(parseISO(trip.start_date), 'MMM d')} – {format(parseISO(trip.end_date), 'MMM d, yyyy')}
+                        </span>
+                        <span className="cx-label text-[11px] text-brand-teal">
+                            {daysAway > 0 ? `${daysAway} days to departure` : 'Trip in progress'}
+                        </span>
                     </p>
                 </div>
             </div>
 
             {/* Family Roster — answers "who else is here" on the very first screen */}
             {familyMemberIds.length > 0 && (
-                <div className="px-4 pt-4">
-                    <div className="bg-[var(--color-bg-card)] rounded-xl p-3 border border-[var(--color-border)] flex items-center gap-3">
+                <div className="px-4 -mt-3 relative z-10">
+                    <Panel className="p-3 flex items-center gap-3">
                         <div className="flex -space-x-2 shrink-0">
                             {familyMemberIds.slice(0, 5).map(uid => {
                                 const profile = profiles.get(uid);
@@ -139,12 +149,12 @@ export default function TripLayout() {
                                     <div
                                         key={uid}
                                         title={profile?.display_name}
-                                        className="w-8 h-8 rounded-full bg-gray-700 border-2 border-[var(--color-bg-card)] flex items-center justify-center overflow-hidden"
+                                        className="w-8 h-8 rounded-full bg-[var(--color-bg-secondary)] border-2 border-[var(--color-bg-card)] flex items-center justify-center overflow-hidden"
                                     >
                                         {profile?.photo_url ? (
                                             <img src={profile.photo_url} alt="" className="w-full h-full object-cover" />
                                         ) : (
-                                            <span className="text-white text-xs font-bold">
+                                            <span className="text-[var(--color-text-primary)] text-xs font-bold">
                                                 {(profile?.display_name || '?').charAt(0).toUpperCase()}
                                             </span>
                                         )}
@@ -152,8 +162,8 @@ export default function TripLayout() {
                                 );
                             })}
                             {familyMemberIds.length > 5 && (
-                                <div className="w-8 h-8 rounded-full bg-gray-800 border-2 border-[var(--color-bg-card)] flex items-center justify-center">
-                                    <span className="text-white text-[10px] font-bold">+{familyMemberIds.length - 5}</span>
+                                <div className="w-8 h-8 rounded-full bg-[var(--color-bg-secondary)] border-2 border-[var(--color-bg-card)] flex items-center justify-center">
+                                    <span className="text-[var(--color-text-primary)] text-[10px] font-bold">+{familyMemberIds.length - 5}</span>
                                 </div>
                             )}
                         </div>
@@ -170,7 +180,7 @@ export default function TripLayout() {
                                 </>
                             )}
                         </div>
-                    </div>
+                    </Panel>
                 </div>
             )}
 
@@ -178,10 +188,10 @@ export default function TripLayout() {
             {showSharePopup && shareUrl && (
                 <div className="fixed inset-0 z-50 flex items-end justify-center p-4 bg-black/50" onClick={() => setShowSharePopup(false)}>
                     <div
-                        className="bg-[var(--color-bg-card)] rounded-2xl p-6 w-full max-w-md border border-[var(--color-border)]"
+                        className="cx-slide p-6 w-full max-w-md"
                         onClick={e => e.stopPropagation()}
                     >
-                        <h3 className="text-lg font-bold text-[var(--color-text-primary)] mb-1">Share Trip</h3>
+                        <h3 className="cx-label text-lg text-[var(--color-text-primary)] mb-1">Share Trip</h3>
                         <p className="text-sm text-[var(--color-text-secondary)] mb-4">
                             Anyone with this link can view the itinerary without signing in.
                         </p>
@@ -189,14 +199,14 @@ export default function TripLayout() {
                             <span className="text-xs text-[var(--color-text-secondary)] flex-1 truncate">{shareUrl}</span>
                             <button
                                 onClick={handleCopy}
-                                className="shrink-0 p-2 rounded-lg bg-brand-teal text-white"
+                                className="shrink-0 p-2 rounded-lg bg-brand-teal text-[var(--color-carbon)]"
                                 aria-label="Copy link"
                             >
                                 {copied ? <Check size={16} /> : <Copy size={16} />}
                             </button>
                         </div>
                         {copied && (
-                            <p className="text-xs text-brand-teal mt-2 text-center">Link copied!</p>
+                            <p className="text-xs text-brand-teal mt-2 text-center font-semibold">Link copied!</p>
                         )}
                         <button
                             onClick={() => setShowSharePopup(false)}
@@ -210,16 +220,16 @@ export default function TripLayout() {
 
             {/* Stats Summary Row */}
             <div className="grid grid-cols-2 gap-3 p-4">
-                <div className="bg-[var(--color-bg-card)] rounded-xl p-3 text-center border border-[var(--color-border)]">
-                    <div className="text-xs text-[var(--color-text-secondary)] mb-1">Budget</div>
-                    <div className="text-xl font-bold text-[var(--color-text-primary)]">${trip.budget?.toLocaleString() || '0'}</div>
-                </div>
-                <div className="bg-[var(--color-bg-card)] rounded-xl p-3 text-center border border-[var(--color-border)]">
-                    <div className="text-xs text-[var(--color-text-secondary)] mb-1">Days Away</div>
-                    <div className="text-xl font-bold text-[var(--color-text-primary)]">
+                <Panel className="p-3 text-center">
+                    <div className="cx-label text-[11px] text-[var(--color-text-muted)] mb-1">Budget</div>
+                    <div className="text-xl font-bold text-[var(--color-text-primary)] tabular-nums">${trip.budget?.toLocaleString() || '0'}</div>
+                </Panel>
+                <Panel className="p-3 text-center">
+                    <div className="cx-label text-[11px] text-[var(--color-text-muted)] mb-1">Days Away</div>
+                    <div className="text-xl font-bold text-[var(--color-text-primary)] tabular-nums">
                         {daysAway > 0 ? daysAway : 'In progress'}
                     </div>
-                </div>
+                </Panel>
             </div>
 
             {/* Tabs */}
@@ -229,9 +239,9 @@ export default function TripLayout() {
                         key={tab.name}
                         to={tab.path}
                         end={tab.path === ''}
-                        className={({ isActive }) => `px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${isActive
-                                ? 'text-brand-teal border-brand-teal'
-                                : 'text-gray-400 border-transparent hover:text-gray-300'
+                        className={({ isActive }) => `cx-label px-4 py-3 mt-1 text-xs rounded-t-lg border-b-2 transition-colors whitespace-nowrap ${isActive
+                                ? 'text-brand-teal border-brand-teal cx-lit'
+                                : 'text-[var(--color-text-muted)] border-transparent hover:text-[var(--color-text-secondary)]'
                             }`}
                     >
                         {tab.name}
