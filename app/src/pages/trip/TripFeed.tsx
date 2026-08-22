@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useUserProfiles } from '../../hooks/useUserProfiles';
-import { subscribeToActivity, subscribeToComments, addComment } from '../../services/activityService';
+import { subscribeToActivity, subscribeToComments, subscribeToPresence, addComment, type PresenceUser } from '../../services/activityService';
 import { Send, MessageCircle, Activity } from 'lucide-react';
 import type { Trip, ActivityEntry, Comment } from '../../types';
 
@@ -12,6 +12,7 @@ export default function TripFeed() {
     const [activeTab, setActiveTab] = useState<'activity' | 'comments'>('comments');
     const [activity, setActivity] = useState<ActivityEntry[]>([]);
     const [comments, setComments] = useState<Comment[]>([]);
+    const [presence, setPresence] = useState<PresenceUser[]>([]);
     const [newComment, setNewComment] = useState('');
     const [sending, setSending] = useState(false);
     const commentsEndRef = useRef<HTMLDivElement>(null);
@@ -30,7 +31,8 @@ export default function TripFeed() {
         if (!trip?.id) return;
         const unsub1 = subscribeToActivity(trip.id, setActivity);
         const unsub2 = subscribeToComments(trip.id, setComments);
-        return () => { unsub1(); unsub2(); };
+        const unsub3 = subscribeToPresence(trip.id, setPresence);
+        return () => { unsub1(); unsub2(); unsub3(); };
     }, [trip?.id]);
 
     useEffect(() => {
@@ -66,6 +68,28 @@ export default function TripFeed() {
 
     return (
         <div className="px-4 pb-24 flex flex-col" style={{ height: 'calc(100vh - 300px)' }}>
+            {/* Presence */}
+            {presence.length > 0 && (
+                <div className="flex items-center gap-2 mb-3 text-xs text-gray-400" data-testid="presence-bar">
+                    <div className="flex -space-x-2">
+                        {presence.slice(0, 5).map(p => (
+                            <div
+                                key={p.id}
+                                title={p.display_name}
+                                className="w-6 h-6 rounded-full bg-brand-teal border-2 border-[var(--color-bg-primary)] flex items-center justify-center overflow-hidden"
+                            >
+                                {p.photo_url ? (
+                                    <img src={p.photo_url} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="text-white text-[9px] font-bold">{(p.display_name?.[0] ?? '?').toUpperCase()}</span>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                    <span>{presence.length} online now</span>
+                </div>
+            )}
+
             {/* Tab toggles */}
             <div className="flex gap-2 mb-4">
                 <button

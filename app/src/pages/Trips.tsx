@@ -3,8 +3,9 @@ import { Plus, ChevronRight, X, Loader2, Image as ImageIcon, Trash2 } from 'luci
 import { Link } from 'react-router-dom';
 import { differenceInDays, format, parseISO } from 'date-fns';
 import { useAuth } from '../contexts/AuthContext';
+import { useFamily } from '../contexts/FamilyContext';
 import { createTrip, deleteTrip } from '../services/tripService';
-import { supabase } from '../lib/supabase';
+import { db, storage } from '../lib/client';
 
 import { useToast } from '../contexts/ToastContext';
 import { GridSkeleton } from '../components/ui/Skeletons';
@@ -68,6 +69,7 @@ function TripListCard({ trip, onDelete }: { trip: Trip; onDelete: (id: string, e
 
 export default function Trips() {
     const { user } = useAuth();
+    const { currentFamily } = useFamily();
     const { showToast } = useToast();
     const [trips, setTrips] = useState<Trip[]>([]);
     const [loading, setLoading] = useState(true);
@@ -89,7 +91,7 @@ export default function Trips() {
             return;
         }
         try {
-            const { data, error } = await supabase
+            const { data, error } = await db
                 .from('trips')
                 .select('*')
                 .eq('user_id', user.id)
@@ -140,9 +142,9 @@ export default function Trips() {
 
             if (selectedImage) {
                 const path = `trip-covers/${user.id}/${Date.now()}_${selectedImage.name}`;
-                const { error: uploadError } = await supabase.storage.from('trip-documents').upload(path, selectedImage);
+                const { error: uploadError } = await storage.from('trip-documents').upload(path, selectedImage);
                 if (!uploadError) {
-                    const { data: urlData } = supabase.storage.from('trip-documents').getPublicUrl(path);
+                    const { data: urlData } = storage.from('trip-documents').getPublicUrl(path);
                     imageUrl = urlData.publicUrl;
                 }
             }
@@ -153,6 +155,7 @@ export default function Trips() {
                 end_date: newTripEndDate,
                 image: imageUrl,
                 budget: parseFloat(newTripBudget) || 0,
+                family_id: currentFamily?.id ?? null,
             });
             await fetchTrips();
             showToast('Trip created successfully!', 'success');

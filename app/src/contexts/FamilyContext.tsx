@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { db } from '../lib/client';
 import { useAuth } from './AuthContext';
 
 interface Family {
@@ -30,28 +30,30 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const fetchFamilies = async () => {
         if (!user) { setFamilies([]); setLoading(false); return; }
 
-        const { data: memberships } = await supabase
+        const { data: memberships } = await db
             .from('family_members')
             .select('family_id')
             .eq('user_id', user.id);
 
         if (!memberships?.length) { setFamilies([]); setLoading(false); return; }
 
-        const familyIds = memberships.map(m => m.family_id);
-        const { data: familyRows } = await supabase
+        const familyIds = memberships.map((m: { family_id: string }) => m.family_id);
+        const { data: familyRows } = await db
             .from('families')
             .select('*')
             .in('id', familyIds);
 
         // Get members for each family
-        const { data: allMembers } = await supabase
+        const { data: allMembers } = await db
             .from('family_members')
             .select('family_id, user_id')
             .in('family_id', familyIds);
 
-        const familiesWithMembers: Family[] = (familyRows || []).map(f => ({
+        const familiesWithMembers: Family[] = (familyRows || []).map((f: Omit<Family, 'members'>) => ({
             ...f,
-            members: (allMembers || []).filter(m => m.family_id === f.id).map(m => m.user_id),
+            members: (allMembers || [])
+                .filter((m: { family_id: string; user_id: string }) => m.family_id === f.id)
+                .map((m: { user_id: string }) => m.user_id),
         }));
 
         setFamilies(familiesWithMembers);
@@ -62,14 +64,14 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     const createFamily = async (name: string) => {
         if (!user) return;
-        const { data, error } = await supabase
+        const { data, error } = await db
             .from('families')
             .insert({ name, created_by: user.id })
             .select()
             .single();
         if (error) throw error;
 
-        await supabase.from('family_members').insert({
+        await db.from('family_members').insert({
             family_id: data.id,
             user_id: user.id,
             role: 'admin',
@@ -80,7 +82,7 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     const joinFamily = async (familyId: string) => {
         if (!user) return;
-        const { error } = await supabase.from('family_members').insert({
+        const { error } = await db.from('family_members').insert({
             family_id: familyId,
             user_id: user.id,
             role: 'member',

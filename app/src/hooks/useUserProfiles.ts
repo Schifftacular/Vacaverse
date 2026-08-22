@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
 
 interface UserProfile {
     id: string;
@@ -30,12 +29,11 @@ export function useUserProfiles(userIds: string[]): { profiles: Map<string, User
             }
 
             if (toFetch.length > 0) {
-                const { data } = await supabase
-                    .from('profiles')
-                    .select('id, display_name, email, photo_url')
-                    .in('id', toFetch);
+                const res = await fetch(`/api/profiles?ids=${toFetch.join(',')}`, { credentials: 'include' });
+                const body = await res.json().catch(() => ({ data: [] }));
+                const data: UserProfile[] = body.data || [];
 
-                for (const profile of (data || [])) {
+                for (const profile of data) {
                     profileCache.set(profile.id, profile);
                     result.set(profile.id, profile);
                 }

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
+import { storage } from '../../lib/client';
 import { useAuth } from '../../contexts/AuthContext';
 import { useUserProfiles } from '../../hooks/useUserProfiles';
 import { useToast } from '../../contexts/ToastContext';
@@ -95,8 +95,8 @@ export default function TripDocuments() {
         setUploadProgress(0);
 
         try {
-            // Upload to Supabase Storage
-            const { error: uploadError } = await supabase.storage
+            // Upload to local file storage
+            const { error: uploadError } = await storage
                 .from('trip-documents')
                 .upload(storagePath, file);
 
@@ -105,7 +105,7 @@ export default function TripDocuments() {
             setUploadProgress(50);
 
             // Get public URL
-            const { data: urlData } = supabase.storage
+            const { data: urlData } = storage
                 .from('trip-documents')
                 .getPublicUrl(storagePath);
 
@@ -151,7 +151,7 @@ export default function TripDocuments() {
         try {
             // Try to delete from Storage (best-effort)
             try {
-                await supabase.storage
+                await storage
                     .from('trip-documents')
                     .remove([doc.storage_path]);
             } catch {

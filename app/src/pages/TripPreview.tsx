@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { db } from '../lib/client';
 import { MapPin, Calendar, Users, LogIn } from 'lucide-react';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import type { Trip, TripEvent } from '../types';
@@ -19,7 +19,7 @@ export default function TripPreview() {
 
     const fetchTripByToken = async (token: string) => {
         try {
-            const { data: tripData, error: tripError } = await supabase
+            const { data: tripData, error: tripError } = await db
                 .from('trips')
                 .select('*')
                 .eq('share_token', token)
@@ -34,7 +34,7 @@ export default function TripPreview() {
             setTrip(tripData as Trip);
 
             // Fetch events
-            const { data: eventsData, error: eventsError } = await supabase
+            const { data: eventsData, error: eventsError } = await db
                 .from('trip_events')
                 .select('*')
                 .eq('trip_id', tripData.id)

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { MessageSquarePlus, X, Send, Loader2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase';
+import { db } from '../lib/client';
 
 export function FeedbackWidget() {
     const { user } = useAuth();
@@ -19,7 +19,7 @@ export function FeedbackWidget() {
 
         setSending(true);
         try {
-            const { error } = await supabase.from('feedback').insert({
+            const { error } = await db.from('feedback').insert({
                 user_id: user.id,
                 email: user.email,
                 type,

@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useUserProfiles } from '../../hooks/useUserProfiles';
-import { supabase } from '../../lib/supabase';
+import { db } from '../../lib/client';
 import { addTripItem, getTripItems } from '../../services/tripService';
 import { Plus, X, BarChart2, Check } from 'lucide-react';
 import type { Trip, Poll, PollVote } from '../../types';
@@ -41,7 +41,7 @@ export default function TripPolls() {
 
             if (pollData.length > 0) {
                 const pollIds = pollData.map(p => p.id);
-                const { data: voteData, error } = await supabase
+                const { data: voteData, error } = await db
                     .from('poll_votes')
                     .select('*')
                     .in('poll_id', pollIds);
@@ -66,7 +66,7 @@ export default function TripPolls() {
         });
 
         try {
-            const { error } = await supabase
+            const { error } = await db
                 .from('poll_votes')
                 .upsert({ poll_id: poll.id, user_id: user.id, option_index: optionIndex });
             if (error) throw error;

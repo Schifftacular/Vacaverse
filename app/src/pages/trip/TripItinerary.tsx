@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { addTripItem, getTripItems } from '../../services/tripService';
-import { supabase } from '../../lib/supabase';
+import { db } from '../../lib/client';
 import { useToast } from '../../contexts/ToastContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useUserProfiles } from '../../hooks/useUserProfiles';
@@ -57,7 +57,7 @@ export default function TripItinerary() {
             // Fetch RSVPs for all events
             if (sorted.length > 0) {
                 const eventIds = sorted.map(e => e.id);
-                const { data: rsvpData, error } = await supabase
+                const { data: rsvpData, error } = await db
                     .from('event_rsvps')
                     .select('*')
                     .in('event_id', eventIds);
@@ -116,7 +116,7 @@ export default function TripItinerary() {
         });
 
         try {
-            const { error } = await supabase
+            const { error } = await db
                 .from('event_rsvps')
                 .upsert({ event_id: event.id, user_id: user.id, status });
             if (error) throw error;

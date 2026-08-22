@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { db } from '../lib/client';
 import { useAuth } from './AuthContext';
 import { useFamily } from './FamilyContext';
 
@@ -19,6 +19,7 @@ interface Trip {
 interface TripContextType {
     trips: Trip[];
     loading: boolean;
+    refetch: () => Promise<void>;
 }
 
 const TripContext = createContext<TripContextType | undefined>(undefined);
@@ -29,38 +30,23 @@ export const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [trips, setTrips] = useState<Trip[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
+    const fetchTrips = async () => {
         if (!user) { setTrips([]); setLoading(false); return; }
 
-        const fetchTrips = async () => {
-            let query = supabase.from('trips').select('*');
+        let query = db.from('trips').select('*');
+        query = currentFamily ? query.eq('family_id', currentFamily.id) : query.eq('user_id', user.id);
 
-            if (currentFamily) {
-                query = query.eq('family_id', currentFamily.id);
-            } else {
-                query = query.eq('user_id', user.id);
-            }
+        const { data } = await query.order('created_at', { ascending: false });
+        setTrips(data || []);
+        setLoading(false);
+    };
 
-            const { data } = await query.order('created_at', { ascending: false });
-            setTrips(data || []);
-            setLoading(false);
-        };
-
+    useEffect(() => {
         fetchTrips();
-
-        // Realtime subscription
-        const channel = supabase
-            .channel('trips-changes')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'trips' }, () => {
-                fetchTrips();
-            })
-            .subscribe();
-
-        return () => { supabase.removeChannel(channel); };
     }, [user, currentFamily]);
 
     return (
-        <TripContext.Provider value={{ trips, loading }}>
+        <TripContext.Provider value={{ trips, loading, refetch: fetchTrips }}>
             {children}
         </TripContext.Provider>
     );

@@ -12,7 +12,7 @@ export default function Home() {
         .filter(t => differenceInDays(parseISO(t.start_date), new Date()) > 0)
         .sort((a, b) => parseISO(a.start_date).getTime() - parseISO(b.start_date).getTime())[0];
 
-    const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Traveler';
+    const displayName = user?.display_name || user?.email?.split('@')[0] || 'Traveler';
 
     return (
         <div className="pb-8">
@@ -23,8 +23,8 @@ export default function Home() {
                     <p className="text-sm text-[var(--color-text-secondary)]">Welcome back, {displayName}!</p>
                 </div>
                 <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden border-2 border-brand-teal">
-                    {user?.user_metadata?.avatar_url ? (
-                        <img src={user.user_metadata.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                    {user?.photo_url ? (
+                        <img src={user.photo_url} alt="Avatar" className="w-full h-full object-cover" />
                     ) : (
                         <span className="text-white font-bold">{displayName.charAt(0).toUpperCase()}</span>
                     )}

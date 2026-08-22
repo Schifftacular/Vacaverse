@@ -13,7 +13,7 @@ const menuItems = [
 ];
 
 export default function Profile() {
-    const { user, signInWithGoogle, signInWithEmail, signUpWithEmail, logout } = useAuth();
+    const { user, signInWithEmail, signUpWithEmail, logout } = useAuth();
     const { trips } = useTrip();
     const { families } = useFamily();
     const { theme, toggleTheme } = useTheme();
@@ -77,20 +77,6 @@ export default function Profile() {
                         {isSignUp ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}
                     </button>
                 </form>
-
-                <div className="flex items-center gap-2 mb-4">
-                    <div className="h-px bg-[var(--color-border)] w-12"></div>
-                    <span className="text-[var(--color-text-muted)] text-sm">Or</span>
-                    <div className="h-px bg-[var(--color-border)] w-12"></div>
-                </div>
-
-                <button
-                    onClick={() => signInWithGoogle()}
-                    className="flex items-center gap-3 bg-white text-black px-6 py-3 rounded-full font-bold hover:bg-gray-200 transition-colors"
-                >
-                    <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5" />
-                    Sign in with Google
-                </button>
             </div>
         );
     }
@@ -110,13 +96,13 @@ export default function Profile() {
                 <div className="bg-[var(--color-bg-card)] rounded-2xl p-6 border border-[var(--color-border)] flex items-center gap-4">
                     <div className="w-20 h-20 rounded-full bg-gray-700 overflow-hidden border-4 border-brand-teal">
                         <img
-                            src={user.user_metadata?.avatar_url || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200"}
+                            src={user.photo_url || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200"}
                             alt="Avatar"
                             className="w-full h-full object-cover"
                         />
                     </div>
                     <div>
-                        <h2 className="text-xl font-bold text-[var(--color-text-primary)]">{user.user_metadata?.full_name || user.email?.split('@')[0] || "User"}</h2>
+                        <h2 className="text-xl font-bold text-[var(--color-text-primary)]">{user.display_name || user.email?.split('@')[0] || "User"}</h2>
                         <p className="text-[var(--color-text-secondary)]">{user.email}</p>
                         <button className="text-brand-teal text-sm font-medium mt-2">Edit Profile</button>
                     </div>
