@@ -225,6 +225,15 @@ export function ThreadPanel({
         if (el) el.scrollTop = el.scrollHeight;
     }, [replies.length]);
 
+    // Focus the reply input on mount via a ref callback rather than the
+    // `autoFocus` prop, with `preventScroll` set. This guarantees the panel
+    // opening can never trigger a browser scroll-into-view on any ancestor
+    // (including the main feed behind it) on any browser/viewport, rather
+    // than relying on autoFocus's default (which does scroll ancestors).
+    const focusReplyInput = (el: HTMLInputElement | null) => {
+        el?.focus({ preventScroll: true });
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const text = replyText.trim();
@@ -307,11 +316,11 @@ export function ThreadPanel({
 
                 <form onSubmit={handleSubmit} className="flex gap-2 p-4 border-t border-gray-800 shrink-0">
                     <input
+                        ref={focusReplyInput}
                         type="text"
                         value={replyText}
                         onChange={e => setReplyText(e.target.value)}
                         placeholder="Reply in thread..."
-                        autoFocus
                         className="flex-1 bg-[#0f172a] border border-gray-700 rounded-full px-4 py-2.5 text-white text-sm focus:outline-none focus:border-brand-teal"
                     />
                     <button
