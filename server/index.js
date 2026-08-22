@@ -11,6 +11,7 @@ import dbRoutes from './routes/db.js';
 import profilesRoutes from './routes/profiles.js';
 import invitesRoutes from './routes/invites.js';
 import uploadsRoutes, { uploadsRoot } from './routes/uploads.js';
+import searchRoutes from './routes/search.js';
 import { attachSockets } from './sockets.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -28,6 +29,7 @@ app.use('/api/db', dbRoutes);
 app.use('/api/profiles', profilesRoutes);
 app.use('/api/invites', invitesRoutes);
 app.use('/api/upload', uploadsRoutes);
+app.use('/api/search', searchRoutes);
 
 app.use((err, req, res, _next) => {
     console.error(err);
