@@ -455,7 +455,7 @@ export default function TripNotes() {
 
             <button
                 onClick={handleCreateNote}
-                className="fixed bottom-6 right-6 w-14 h-14 bg-brand-teal rounded-full flex items-center justify-center shadow-lg text-white hover:bg-teal-400 transition-colors"
+                className="fixed bottom-24 right-6 w-14 h-14 bg-brand-teal rounded-full flex items-center justify-center shadow-lg text-white hover:bg-teal-400 transition-colors"
                 aria-label="New note"
             >
                 <Plus size={24} />

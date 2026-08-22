@@ -187,7 +187,7 @@ export default function TripTasks() {
                     {/* Expand toggle */}
                     <button
                         onClick={() => setExpandedTaskId(isExpanded ? null : task.id)}
-                        className="text-gray-500 hover:text-gray-300 shrink-0"
+                        className="p-2 -m-2 text-gray-500 hover:text-gray-300 shrink-0"
                         aria-label="Expand task"
                     >
                         {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
@@ -264,7 +264,7 @@ export default function TripTasks() {
             {/* FAB */}
             <button
                 onClick={() => setIsModalOpen(true)}
-                className="fixed bottom-6 right-6 w-14 h-14 bg-brand-teal rounded-full flex items-center justify-center shadow-lg text-white hover:bg-teal-600 transition-colors z-30"
+                className="fixed bottom-24 right-6 w-14 h-14 bg-brand-teal rounded-full flex items-center justify-center shadow-lg text-white hover:bg-teal-600 transition-colors z-30"
             >
                 <Plus size={24} />
             </button>
@@ -272,7 +272,7 @@ export default function TripTasks() {
             {/* Add Task Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/80 z-50 flex items-end sm:items-center justify-center p-4">
-                    <div className="bg-[#1e293b] w-full max-w-md rounded-2xl p-6 relative animate-in slide-in-from-bottom-10 fade-in border border-gray-800">
+                    <div className="bg-[#1e293b] w-full max-w-md rounded-2xl p-6 relative animate-in slide-in-from-bottom-10 fade-in border border-gray-800 max-h-[85vh] overflow-y-auto">
                         <button
                             onClick={() => setIsModalOpen(false)}
                             className="absolute top-4 right-4 text-gray-400 hover:text-white"

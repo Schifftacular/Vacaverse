@@ -5,7 +5,7 @@ import { FeedbackWidget } from '../components/FeedbackWidget';
 export function MainLayout() {
     return (
         <div className="min-h-screen bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] font-sans flex flex-col">
-            <main className="flex-1 pb-20 overflow-y-auto">
+            <main className="flex-1 overflow-y-auto pb-[calc(5rem+env(safe-area-inset-bottom))]">
                 <Outlet />
             </main>
             <BottomNav />

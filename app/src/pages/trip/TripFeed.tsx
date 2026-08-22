@@ -361,7 +361,7 @@ export default function TripFeed() {
     };
 
     return (
-        <div className="px-4 pb-24 flex flex-col" style={{ height: 'calc(100vh - 300px)' }}>
+        <div className="px-4 pb-24 flex flex-col" style={{ height: 'calc(100dvh - 300px)' }}>
             {/* Presence */}
             {presence.length > 0 && (
                 <div className="flex items-center gap-2 mb-3 text-xs text-gray-400" data-testid="presence-bar">
@@ -645,7 +645,7 @@ export default function TripFeed() {
                             value={newComment}
                             onChange={handleComposeChange}
                             placeholder="Type a message..."
-                            className="flex-1 bg-[#1e293b] border border-gray-700 rounded-full px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-teal"
+                            className="flex-1 bg-[#1e293b] border border-gray-700 rounded-full px-4 py-3 text-white text-base focus:outline-none focus:border-brand-teal"
                         />
                         <button
                             type="submit"

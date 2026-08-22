@@ -149,7 +149,7 @@ export default function TripSearch() {
                     onChange={e => setQuery(e.target.value)}
                     placeholder="Search comments, tasks, and notes..."
                     autoFocus
-                    className="w-full bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl pl-10 pr-4 py-3 text-[var(--color-text-primary)] text-sm focus:outline-none focus:border-brand-teal"
+                    className="w-full bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl pl-10 pr-4 py-3 text-[var(--color-text-primary)] text-base focus:outline-none focus:border-brand-teal"
                 />
                 {loading && (
                     <Loader2 size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 animate-spin" />

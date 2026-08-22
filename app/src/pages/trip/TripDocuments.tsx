@@ -283,7 +283,7 @@ export default function TripDocuments() {
             <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadProgress !== null}
-                className="fixed bottom-6 right-6 w-14 h-14 bg-brand-teal rounded-full flex items-center justify-center shadow-lg text-white hover:bg-teal-400 transition-colors disabled:opacity-50"
+                className="fixed bottom-24 right-6 w-14 h-14 bg-brand-teal rounded-full flex items-center justify-center shadow-lg text-white hover:bg-teal-400 transition-colors disabled:opacity-50"
                 aria-label="Upload document"
             >
                 <Plus size={24} />

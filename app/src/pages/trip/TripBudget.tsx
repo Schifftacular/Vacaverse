@@ -181,7 +181,7 @@ export default function TripBudget() {
                                 </div>
                                 <button
                                     onClick={() => handleDeleteExpense(expense.id)}
-                                    className="text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    className="text-gray-500 hover:text-red-400 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                                 >
                                     <Trash2 size={18} />
                                 </button>
@@ -207,7 +207,7 @@ export default function TripBudget() {
             {/* Add Expense Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/80 z-50 flex items-end sm:items-center justify-center p-4">
-                    <div className="bg-[#1e293b] w-full max-w-md rounded-2xl p-6 relative animate-in slide-in-from-bottom-10 fade-in border border-gray-800">
+                    <div className="bg-[#1e293b] w-full max-w-md rounded-2xl p-6 relative animate-in slide-in-from-bottom-10 fade-in border border-gray-800 max-h-[85vh] overflow-y-auto">
                         <button
                             onClick={() => setIsModalOpen(false)}
                             className="absolute top-4 right-4 text-gray-400 hover:text-white"

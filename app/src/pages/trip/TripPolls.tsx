@@ -232,7 +232,7 @@ export default function TripPolls() {
             {/* FAB */}
             <button
                 onClick={() => setShowModal(true)}
-                className="fixed bottom-6 right-6 w-14 h-14 bg-brand-teal rounded-full flex items-center justify-center shadow-lg text-white"
+                className="fixed bottom-24 right-6 w-14 h-14 bg-brand-teal rounded-full flex items-center justify-center shadow-lg text-white"
                 aria-label="Create poll"
             >
                 <Plus size={24} />
@@ -245,7 +245,7 @@ export default function TripPolls() {
                     onClick={resetModal}
                 >
                     <div
-                        className="bg-[var(--color-bg-card)] rounded-2xl p-6 w-full max-w-md border border-[var(--color-border)] mb-2"
+                        className="bg-[var(--color-bg-card)] rounded-2xl p-6 w-full max-w-md border border-[var(--color-border)] mb-2 max-h-[85vh] overflow-y-auto"
                         onClick={e => e.stopPropagation()}
                     >
                         <div className="flex items-center justify-between mb-4">
