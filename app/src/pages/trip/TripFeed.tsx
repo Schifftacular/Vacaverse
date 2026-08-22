@@ -520,7 +520,7 @@ export default function TripFeed() {
                                                     {/* Hover (desktop) / tap-to-pin (touch) actions */}
                                                     {(showEditDelete || showReply) && (
                                                         <div
-                                                            className={`flex gap-2 transition-opacity ${
+                                                            className={`flex gap-4 transition-opacity ${
                                                                 actionsOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
                                                             }`}
                                                         >

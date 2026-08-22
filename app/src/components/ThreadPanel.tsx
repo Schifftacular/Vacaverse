@@ -141,7 +141,7 @@ function ThreadMessage({
                     )}
 
                     {canEditDelete && !isEditing && (
-                        <div className={`flex gap-2 shrink-0 transition-opacity ${actionsOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                        <div className={`flex gap-4 shrink-0 transition-opacity ${actionsOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                             <button
                                 type="button"
                                 onClick={onStartEdit}
