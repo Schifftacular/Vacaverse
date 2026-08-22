@@ -9,9 +9,12 @@ import { db, storage } from '../lib/client';
 
 import { useToast } from '../contexts/ToastContext';
 import { GridSkeleton } from '../components/ui/Skeletons';
+import { Panel } from '../components/ui/Concourse';
 import type { Trip } from '../types';
 
-function TripListCard({ trip, onDelete }: { trip: Trip; onDelete: (id: string, e: React.MouseEvent) => void }) {
+// The hero slide: the one trip at the near edge of the rack, lit and full
+// detail. Everything else in the rack is a receding strip (below).
+function TripHeroSlide({ trip, onDelete }: { trip: Trip; onDelete: (id: string, e: React.MouseEvent) => void }) {
     const daysAway = differenceInDays(parseISO(trip.start_date), new Date());
     const daysLabel = daysAway > 0
         ? `${daysAway} days away`
@@ -21,37 +24,39 @@ function TripListCard({ trip, onDelete }: { trip: Trip; onDelete: (id: string, e
 
     return (
         <Link to={`/trips/${trip.id}`} className="block group">
-            <div className="bg-[var(--color-bg-card)] rounded-2xl overflow-hidden border border-[var(--color-border)] hover:border-gray-700 transition-colors relative">
-
+            <Panel raked className="cx-lit overflow-hidden relative">
                 {/* Delete Button (visible on hover) */}
                 <button
                     onClick={(e) => onDelete(trip.id, e)}
-                    className="absolute top-3 right-3 z-10 p-2 bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/80"
+                    className="absolute top-3 right-3 z-10 p-2 bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[var(--color-vermilion)]/80"
                     title="Delete Trip"
                 >
                     <Trash2 size={16} />
                 </button>
 
-                <div className="relative h-40">
+                <div className="relative h-48">
                     <img src={trip.image} alt={trip.title} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                    <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[var(--color-carbon)] via-[var(--color-carbon)]/80 to-transparent" />
                     <div className="absolute bottom-4 left-4 right-4">
-                        <h3 className="text-xl font-bold text-white">{trip.title}</h3>
-                        <p className="text-sm text-gray-300">
-                            {format(parseISO(trip.start_date), 'MMM d')} - {format(parseISO(trip.end_date), 'MMM d, yyyy')} • {daysLabel}
+                        <h3 className="cx-h1 text-2xl text-[var(--color-ivory)]" style={{ textShadow: '0 2px 10px rgb(0 0 0 / 0.4)' }}>{trip.title}</h3>
+                        <p className="text-sm text-[var(--color-ivory)]/80 flex items-center gap-3 mt-1.5 flex-wrap">
+                            <span className="tabular-nums">
+                                {format(parseISO(trip.start_date), 'MMM d')} – {format(parseISO(trip.end_date), 'MMM d, yyyy')}
+                            </span>
+                            <span className="cx-label text-[11px] text-brand-teal">{daysLabel}</span>
                         </p>
                     </div>
                 </div>
 
                 <div className="p-4">
                     <div className="grid grid-cols-2 gap-4 text-center">
-                        <div className="bg-[var(--color-bg-primary)] rounded-lg p-3">
-                            <div className="text-sm text-[var(--color-text-secondary)]">Budget</div>
-                            <div className="text-xl font-bold text-brand-teal">${trip.budget.toLocaleString()}</div>
+                        <div className="bg-[var(--color-bg-secondary)] rounded-lg p-3">
+                            <div className="cx-label text-[11px] text-[var(--color-text-muted)]">Budget</div>
+                            <div className="text-xl font-bold text-brand-teal tabular-nums">${trip.budget.toLocaleString()}</div>
                         </div>
-                        <div className="bg-[var(--color-bg-primary)] rounded-lg p-3">
-                            <div className="text-sm text-[var(--color-text-secondary)]">Days Away</div>
-                            <div className="text-xl font-bold text-brand-teal">
+                        <div className="bg-[var(--color-bg-secondary)] rounded-lg p-3">
+                            <div className="cx-label text-[11px] text-[var(--color-text-muted)]">Days Away</div>
+                            <div className="text-xl font-bold text-brand-teal tabular-nums">
                                 {daysAway > 0 ? daysAway : daysAway === 0 ? 'Today' : 'Done'}
                             </div>
                         </div>
@@ -62,8 +67,54 @@ function TripListCard({ trip, onDelete }: { trip: Trip; onDelete: (id: string, e
                     <span className="text-sm text-[var(--color-text-secondary)]">View itinerary</span>
                     <ChevronRight size={20} className="text-[var(--color-text-secondary)]" />
                 </div>
-            </div>
+            </Panel>
         </Link>
+    );
+}
+
+// A receding rack strip — every trip behind the hero slide. Each one sits
+// further from the rail than the last (real indent, real width loss, real
+// dimming), so the list reads as a rack seen at an angle, not a stack of
+// identical cards with a coat of paint.
+function TripRackStrip({ trip, onDelete, depth }: { trip: Trip; onDelete: (id: string, e: React.MouseEvent) => void; depth: number }) {
+    const daysAway = differenceInDays(parseISO(trip.start_date), new Date());
+    const daysLabel = daysAway > 0 ? `${daysAway}d` : daysAway === 0 ? 'Today' : 'Done';
+    const indent = Math.min(depth, 5) * 14;
+    const dim = Math.max(1 - Math.min(depth, 5) * 0.09, 0.6);
+
+    return (
+        <div className="relative flex items-stretch" style={{ paddingLeft: `${indent + 20}px` }}>
+            <div className="absolute left-[9px] top-0 bottom-0 w-px bg-[var(--color-border)]" aria-hidden="true" />
+            <div
+                className="absolute rounded-full bg-brand-teal"
+                style={{ left: '5px', top: '50%', width: 9, height: 9, transform: 'translateY(-50%)', opacity: dim }}
+                aria-hidden="true"
+            />
+            <Link to={`/trips/${trip.id}`} className="group flex-1 min-w-0">
+                <div
+                    className="cx-slide cx-rake flex items-center gap-3 pl-3 pr-2 py-2.5 hover:border-brand-teal/50 transition-colors"
+                    style={{ opacity: dim }}
+                >
+                    <div className="w-12 h-12 rounded-md overflow-hidden shrink-0">
+                        <img src={trip.image} alt="" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                        <h4 className="font-semibold text-[var(--color-text-primary)] truncate">{trip.title}</h4>
+                        <p className="text-xs text-[var(--color-text-muted)] tabular-nums">
+                            {format(parseISO(trip.start_date), 'MMM d')} – {format(parseISO(trip.end_date), 'MMM d, yyyy')}
+                        </p>
+                    </div>
+                    <span className="cx-label text-[10px] text-brand-teal shrink-0">{daysLabel}</span>
+                    <button
+                        onClick={(e) => { e.preventDefault(); onDelete(trip.id, e); }}
+                        className="shrink-0 p-2 -m-1 text-[var(--color-text-muted)] opacity-0 group-hover:opacity-100 transition-opacity hover:text-[var(--color-vermilion)]"
+                        title="Delete Trip"
+                    >
+                        <Trash2 size={14} />
+                    </button>
+                </div>
+            </Link>
+        </div>
     );
 }
 
@@ -202,9 +253,9 @@ export default function Trips() {
     if (!user) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] p-4 text-center">
-                <h2 className="text-2xl font-bold text-white mb-2">Sign in to view your trips</h2>
-                <p className="text-gray-400 mb-6">You need an account to plan and save your trips.</p>
-                <Link to="/profile" className="px-6 py-3 bg-brand-teal text-white rounded-lg font-bold">
+                <h2 className="cx-h2 text-[var(--color-text-primary)] mb-2">Sign in to view your trips</h2>
+                <p className="text-[var(--color-text-secondary)] mb-6">You need an account to plan and save your trips.</p>
+                <Link to="/profile" className="px-6 py-3 bg-brand-teal text-[var(--color-carbon)] rounded-lg font-bold">
                     Go to Login
                 </Link>
             </div>
@@ -215,34 +266,41 @@ export default function Trips() {
         <div className="pb-24">
             {/* Header */}
             <div className="flex justify-between items-center p-4 bg-[var(--color-bg-primary)] sticky top-0 z-10 border-b border-[var(--color-border)]">
-                <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">My Trips</h1>
-                <button className="text-brand-teal font-medium text-sm">Past Trips</button>
+                <h1 className="cx-h1 text-[var(--color-text-primary)]">My Trips</h1>
+                <button className="cx-label text-brand-teal text-xs">Past Trips</button>
             </div>
 
-            <div className="px-4 space-y-4 pt-4">
+            <div className="px-4 pt-4">
                 {trips.length === 0 ? (
-                    <div className="text-center py-10 text-gray-500">
+                    <div className="text-center py-10 text-[var(--color-text-muted)]">
                         No trips found. Start planning one!
                     </div>
                 ) : (
-                    trips.map((trip) => (
-                        <TripListCard key={trip.id} trip={trip} onDelete={handleDeleteTrip} />
-                    ))
+                    <div className="space-y-4">
+                        <TripHeroSlide trip={trips[0]} onDelete={handleDeleteTrip} />
+                        {trips.length > 1 && (
+                            <div className="space-y-2 pt-1">
+                                {trips.slice(1).map((trip, i) => (
+                                    <TripRackStrip key={trip.id} trip={trip} onDelete={handleDeleteTrip} depth={i} />
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 )}
 
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="w-full bg-[var(--color-bg-card)] border-2 border-dashed border-[var(--color-border)] rounded-2xl p-8 flex flex-col items-center justify-center hover:border-gray-500 transition-colors"
+                    className="cx-slide cx-rake w-full mt-4 p-6 flex items-center justify-center gap-3 text-brand-teal hover:border-brand-teal/60 transition-colors"
                 >
-                    <Plus size={32} className="text-gray-400 mb-2" />
-                    <span className="text-gray-400">Plan a New Trip</span>
+                    <Plus size={22} />
+                    <span className="cx-label text-sm">Plan a New Trip</span>
                 </button>
             </div>
 
             {/* FAB */}
             <button
                 onClick={() => setIsModalOpen(true)}
-                className="fixed bottom-24 right-4 w-14 h-14 bg-brand-teal rounded-full flex items-center justify-center shadow-lg text-white hover:bg-teal-600 transition-colors z-20"
+                className="fixed bottom-24 right-4 w-14 h-14 bg-brand-teal rounded-full flex items-center justify-center shadow-lg text-[var(--color-carbon)] hover:brightness-110 transition-all z-20 cx-lit"
             >
                 <Plus size={32} />
             </button>
@@ -250,15 +308,15 @@ export default function Trips() {
             {/* Create Trip Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/80 z-50 flex items-end sm:items-center justify-center p-4">
-                    <div className="bg-[var(--color-bg-card)] w-full max-w-md rounded-2xl p-6 relative animate-in slide-in-from-bottom-10 fade-in border border-[var(--color-border)]">
+                    <div className="cx-slide w-full max-w-md p-6 relative animate-in slide-in-from-bottom-10 fade-in">
                         <button
                             onClick={() => setIsModalOpen(false)}
-                            className="absolute top-4 right-4 text-gray-400 hover:text-white"
+                            className="absolute top-4 right-4 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
                         >
                             <X size={24} />
                         </button>
 
-                        <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-6">Plan a New Trip</h2>
+                        <h2 className="cx-h2 text-[var(--color-text-primary)] mb-6">Plan a New Trip</h2>
 
                         <form onSubmit={handleCreateTrip} className="space-y-4">
                             <div>
@@ -315,7 +373,7 @@ export default function Trips() {
                                     {imagePreview ? (
                                         <img src={imagePreview} alt="Preview" className="w-16 h-16 rounded-lg object-cover" />
                                     ) : (
-                                        <div className="w-16 h-16 rounded-lg bg-gray-800 flex items-center justify-center text-gray-500">
+                                        <div className="w-16 h-16 rounded-lg bg-[var(--color-bg-secondary)] flex items-center justify-center text-[var(--color-text-muted)]">
                                             <ImageIcon size={24} />
                                         </div>
                                     )}
@@ -323,7 +381,7 @@ export default function Trips() {
                                         type="file"
                                         accept="image/*"
                                         onChange={handleImageChange}
-                                        className="text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-teal file:text-white hover:file:bg-teal-600"
+                                        className="text-sm text-[var(--color-text-secondary)] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-teal file:text-[var(--color-carbon)] hover:file:brightness-90"
                                     />
                                 </div>
                             </div>
@@ -331,7 +389,7 @@ export default function Trips() {
                             <button
                                 type="submit"
                                 disabled={createLoading}
-                                className="w-full bg-brand-teal text-white font-bold py-4 rounded-xl mt-4 hover:bg-teal-600 transition-colors disabled:opacity-50"
+                                className="w-full bg-brand-teal text-[var(--color-carbon)] font-bold py-4 rounded-xl mt-4 hover:brightness-110 transition-all disabled:opacity-50"
                             >
                                 {createLoading ? <Loader2 className="animate-spin mx-auto" /> : 'Create Trip'}
                             </button>

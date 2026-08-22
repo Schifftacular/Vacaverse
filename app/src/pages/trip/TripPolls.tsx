@@ -5,6 +5,7 @@ import { useUserProfiles } from '../../hooks/useUserProfiles';
 import { db } from '../../lib/client';
 import { addTripItem, getTripItems } from '../../services/tripService';
 import { Plus, X, BarChart2, Check } from 'lucide-react';
+import { Panel, Button, EmptyState } from '../../components/ui/Concourse';
 import type { Trip, Poll, PollVote } from '../../types';
 
 export default function TripPolls() {
@@ -139,18 +140,19 @@ export default function TripPolls() {
 
     return (
         <div className="px-4 pb-24">
-            <h2 className="text-xl font-bold text-white mb-6">Polls</h2>
+            <h2 className="cx-h2 text-[var(--color-text-primary)] mb-6">Polls</h2>
 
             {polls.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 text-center">
-                    <BarChart2 size={48} className="text-gray-600 mb-4" />
-                    <h3 className="text-lg font-medium text-white mb-2">No polls yet</h3>
-                    <p className="text-gray-400 text-sm">Create a poll to vote on trip decisions with your family.</p>
-                    <p className="text-gray-500 text-xs mt-1 mb-4">e.g. "Boat tour or zip line?"</p>
-                    <button onClick={() => setShowModal(true)} className="text-brand-teal font-bold hover:underline">
-                        Create the first poll
-                    </button>
-                </div>
+                <EmptyState
+                    icon={<BarChart2 size={48} />}
+                    title="No polls yet"
+                    hint='Create a poll to vote on trip decisions with your family — e.g. "Boat tour or zip line?"'
+                    action={
+                        <button onClick={() => setShowModal(true)} className="text-brand-teal font-bold hover:underline">
+                            Create the first poll
+                        </button>
+                    }
+                />
             ) : (
                 <div className="space-y-4">
                     {polls.map(poll => {
@@ -164,12 +166,9 @@ export default function TripPolls() {
                         const maxVotes = Math.max(...voteCounts, 1);
 
                         return (
-                            <div
-                                key={poll.id}
-                                className="bg-[var(--color-bg-card)] rounded-2xl p-4 border border-[var(--color-border)]"
-                            >
-                                <p className="text-white font-semibold text-base mb-1">{poll.question}</p>
-                                <p className="text-xs text-gray-500 mb-4">
+                            <Panel key={poll.id} className="p-4">
+                                <p className="text-[var(--color-text-primary)] font-semibold text-base mb-1">{poll.question}</p>
+                                <p className="text-xs text-[var(--color-text-muted)] mb-4">
                                     Asked by {profile?.display_name ?? 'Someone'} · {formatTime(poll.created_at)} · {totalVotes} vote{totalVotes !== 1 ? 's' : ''}
                                 </p>
 
@@ -184,37 +183,33 @@ export default function TripPolls() {
                                             <button
                                                 key={index}
                                                 onClick={() => handleVote(poll, index)}
-                                                className="w-full text-left relative overflow-hidden rounded-xl border transition-all"
-                                                style={{
-                                                    borderColor: isMyVote ? 'var(--color-brand-teal, #14b8a6)' : 'var(--color-border)'
-                                                }}
+                                                className={`w-full text-left relative overflow-hidden rounded-xl border transition-colors ${isMyVote ? 'border-brand-teal' : 'border-[var(--color-border)]'
+                                                    }`}
                                             >
-                                                {/* Background bar */}
+                                                {/* Background bar — flat fill, no gradient */}
                                                 <div
-                                                    className="absolute inset-y-0 left-0 transition-all duration-500"
-                                                    style={{
-                                                        width: `${pct}%`,
-                                                        backgroundColor: isMyVote
-                                                            ? 'rgba(20,184,166,0.25)'
+                                                    className={`absolute inset-y-0 left-0 transition-all duration-500 ${isMyVote
+                                                            ? 'bg-brand-teal/25'
                                                             : isWinning
-                                                                ? 'rgba(20,184,166,0.10)'
-                                                                : 'rgba(255,255,255,0.04)'
-                                                    }}
+                                                                ? 'bg-brand-teal/10'
+                                                                : 'bg-[var(--color-bg-secondary)]'
+                                                        }`}
+                                                    style={{ width: `${pct}%` }}
                                                 />
                                                 <div className="relative flex items-center justify-between px-3 py-2.5">
                                                     <div className="flex items-center gap-2">
                                                         {isMyVote && (
                                                             <Check size={14} className="text-brand-teal shrink-0" />
                                                         )}
-                                                        <span className={`text-sm ${isMyVote ? 'text-white font-medium' : 'text-gray-300'}`}>
+                                                        <span className={`text-sm ${isMyVote ? 'text-[var(--color-text-primary)] font-medium' : 'text-[var(--color-text-secondary)]'}`}>
                                                             {option}
                                                         </span>
                                                     </div>
                                                     <div className="flex items-center gap-2 shrink-0 ml-2">
-                                                        <span className={`text-xs font-medium ${isMyVote ? 'text-brand-teal' : 'text-gray-500'}`}>
+                                                        <span className={`text-xs font-medium ${isMyVote ? 'text-brand-teal' : 'text-[var(--color-text-muted)]'} tabular-nums`}>
                                                             {count} {count === 1 ? 'vote' : 'votes'}
                                                         </span>
-                                                        <span className={`text-xs ${isMyVote ? 'text-brand-teal' : 'text-gray-600'}`}>
+                                                        <span className={`text-xs ${isMyVote ? 'text-brand-teal' : 'text-[var(--color-text-muted)]'} tabular-nums`}>
                                                             {pct}%
                                                         </span>
                                                     </div>
@@ -223,7 +218,7 @@ export default function TripPolls() {
                                         );
                                     })}
                                 </div>
-                            </div>
+                            </Panel>
                         );
                     })}
                 </div>
@@ -232,7 +227,7 @@ export default function TripPolls() {
             {/* FAB */}
             <button
                 onClick={() => setShowModal(true)}
-                className="fixed bottom-24 right-6 w-14 h-14 bg-brand-teal rounded-full flex items-center justify-center shadow-lg text-white"
+                className="cx-lit fixed bottom-24 right-6 w-14 h-14 bg-brand-teal rounded-full flex items-center justify-center shadow-lg text-[var(--color-carbon)]"
                 aria-label="Create poll"
             >
                 <Plus size={24} />
@@ -244,32 +239,32 @@ export default function TripPolls() {
                     className="fixed inset-0 z-50 flex items-end justify-center p-4 bg-black/60"
                     onClick={resetModal}
                 >
-                    <div
-                        className="bg-[var(--color-bg-card)] rounded-2xl p-6 w-full max-w-md border border-[var(--color-border)] mb-2 max-h-[85vh] overflow-y-auto"
+                    <Panel
+                        className="p-6 w-full max-w-md mb-2 max-h-[85vh] overflow-y-auto"
                         onClick={e => e.stopPropagation()}
                     >
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-lg font-bold text-[var(--color-text-primary)]">Create Poll</h3>
-                            <button onClick={resetModal} className="p-1 text-gray-400 hover:text-white">
+                            <button onClick={resetModal} className="p-1 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]">
                                 <X size={20} />
                             </button>
                         </div>
 
                         <form onSubmit={handleCreatePoll} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-1">Question</label>
+                                <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">Question</label>
                                 <input
                                     type="text"
                                     value={question}
                                     onChange={e => setQuestion(e.target.value)}
                                     placeholder="e.g. Should we do the boat tour or zip line?"
-                                    className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-teal"
+                                    className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl px-4 py-3 text-[var(--color-text-primary)] text-base focus:outline-none focus:border-brand-teal"
                                     required
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">Options</label>
+                                <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">Options</label>
                                 <div className="space-y-2">
                                     {options.map((opt, index) => (
                                         <div key={index} className="flex items-center gap-2">
@@ -278,14 +273,14 @@ export default function TripPolls() {
                                                 value={opt}
                                                 onChange={e => handleOptionChange(index, e.target.value)}
                                                 placeholder={`Option ${index + 1}`}
-                                                className="flex-1 bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-brand-teal"
+                                                className="flex-1 bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl px-4 py-2.5 text-[var(--color-text-primary)] text-base focus:outline-none focus:border-brand-teal"
                                                 required
                                             />
                                             {options.length > 2 && (
                                                 <button
                                                     type="button"
                                                     onClick={() => handleRemoveOption(index)}
-                                                    className="p-1.5 text-gray-500 hover:text-red-400"
+                                                    className="p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-vermilion)]"
                                                 >
                                                     <X size={16} />
                                                 </button>
@@ -298,7 +293,7 @@ export default function TripPolls() {
                                     <button
                                         type="button"
                                         onClick={handleAddOption}
-                                        className="mt-2 text-sm text-brand-teal hover:text-teal-300 flex items-center gap-1"
+                                        className="mt-2 text-sm text-brand-teal hover:opacity-80 flex items-center gap-1"
                                     >
                                         <Plus size={14} />
                                         Add Option
@@ -306,15 +301,16 @@ export default function TripPolls() {
                                 )}
                             </div>
 
-                            <button
+                            <Button
                                 type="submit"
+                                variant="primary"
+                                size="lg"
                                 disabled={submitting || !question.trim() || options.filter(o => o.trim()).length < 2}
-                                className="w-full py-3 bg-brand-teal text-white rounded-xl font-medium text-sm disabled:opacity-50"
                             >
                                 {submitting ? 'Creating...' : 'Create Poll'}
-                            </button>
+                            </Button>
                         </form>
-                    </div>
+                    </Panel>
                 </div>
             )}
         </div>

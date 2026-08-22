@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-22T00:00:00Z",
+  "title": "Design System: VacaVerse — Concourse",
+  "extensions": {
+    "colorMeta": {
+      "brand-teal-dark": { "role": "primary", "displayName": "Concourse Amber (dark)", "canonical": "#dda233", "tonalRamp": ["#1d1204", "#3a2408", "#57360c", "#744810", "#915a14", "#b06718", "#dda233", "#f0c775"] },
+      "brand-teal-light": { "role": "primary", "displayName": "Concourse Amber (light)", "canonical": "#9c5c17", "tonalRamp": ["#1a0f04", "#341e08", "#4e2d0c", "#683c10", "#824b14", "#9c5c17", "#c07d3a", "#e0a865"] },
+      "goldenrod": { "role": "primary", "displayName": "Goldenrod", "canonical": "#d99a1f", "tonalRamp": ["#221604", "#432c08", "#65420c", "#875810", "#a96e14", "#d99a1f", "#e8ba5f", "#f5d89e"] },
+      "vermilion": { "role": "secondary", "displayName": "Vermilion", "canonical": "#d1502c", "tonalRamp": ["#210b05", "#42160a", "#63200f", "#842b14", "#a53619", "#d1502c", "#e17d5f", "#f0ab93"] },
+      "bottle-green": { "role": "secondary", "displayName": "Bottle Green", "canonical": "#1f6f4a", "tonalRamp": ["#06120c", "#0c2418", "#123624", "#184830", "#1e5a3c", "#1f6f4a", "#4f9873", "#8fc2a8"] },
+      "carbon": { "role": "neutral", "displayName": "Carbon", "canonical": "#17130f", "tonalRamp": ["#0b0906", "#17130f", "#241d16", "#31281d", "#3f3324", "#5c4a35", "#8c7458", "#c2ab8c"] },
+      "ivory": { "role": "neutral", "displayName": "Ivory", "canonical": "#f7ecd9", "tonalRamp": ["#3c2e18", "#5b4728", "#7a6038", "#9a7a4c", "#bb9c6f", "#dbc094", "#eeddb4", "#f7ecd9"] }
+    },
+    "typographyMeta": {
+      "headline": { "displayName": "Headline (cx-h1)", "purpose": "The one hero/page-title size — trip titles, page H1s, modal titles." },
+      "title": { "displayName": "Title (cx-h2)", "purpose": "The one section/modal-title size." },
+      "label": { "displayName": "Label (cx-label)", "purpose": "Condensed, tracked, cased nav/tag/section-head voice. Never body copy." },
+      "body": { "displayName": "Body", "purpose": "All reading copy on the system font stack for cross-generational legibility." }
+    },
+    "shadows": [
+      { "name": "slide-shadow", "value": "0 14px 32px -16px rgb(var(--shadow-tint) / 0.55)", "purpose": "The single elevation shadow shared by every .cx-slide panel/card." },
+      { "name": "lit-ring", "value": "0 0 0 1px var(--color-goldenrod), 0 0 20px -4px var(--color-goldenrod)", "purpose": "Marks the one 'live right now' element per view, paired with the cx-sweep animation." }
+    ],
+    "motion": [
+      { "name": "cx-sweep", "value": "linear-gradient sweep, translateX(-130%) to translateX(130%), 3.6s ease-in-out infinite", "purpose": "The system's one authored motion moment — a light sweeping across the active position. Disabled under prefers-reduced-motion." }
+    ],
+    "breakpoints": []
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Amber-filled primary action button, condensed tracked label type.",
+      "html": "<button class=\"ds-btn-primary\">Plan a New Trip</button>",
+      "css": ".ds-btn-primary { font-family: 'Archivo Condensed', 'Arial Narrow', sans-serif; text-transform: uppercase; letter-spacing: 0.02em; font-weight: 700; background: #dda233; color: #17130f; border: none; border-radius: 12px; padding: 10px 16px; transition: filter 0.15s; } .ds-btn-primary:hover { filter: brightness(1.1); } .ds-btn-primary:focus-visible { outline: 2px solid #dda233; outline-offset: 2px; } .ds-btn-primary:disabled { opacity: 0.5; pointer-events: none; }"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Vermilion destructive-action button (delete, logout).",
+      "html": "<button class=\"ds-btn-danger\">Delete Trip</button>",
+      "css": ".ds-btn-danger { font-family: 'Archivo Condensed', 'Arial Narrow', sans-serif; text-transform: uppercase; letter-spacing: 0.02em; font-weight: 700; background: #d1502c; color: #fff; border: none; border-radius: 12px; padding: 10px 16px; transition: filter 0.15s; } .ds-btn-danger:hover { filter: brightness(1.1); }"
+    },
+    {
+      "name": "Glass Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "The signature translucent, blurred, single-shadow card surface (.cx-slide).",
+      "html": "<div class=\"ds-panel\"><div class=\"ds-panel-label\">Budget</div><div class=\"ds-panel-value\">$4,200</div></div>",
+      "css": ".ds-panel { background: rgba(34,26,16,0.62); backdrop-filter: blur(18px) saturate(160%); -webkit-backdrop-filter: blur(18px) saturate(160%); border: 1px solid rgba(60,46,24,0.45); border-radius: 14px; box-shadow: 0 14px 32px -16px rgba(0,0,0,0.55); padding: 16px; text-align: center; } .ds-panel-label { font-family: 'Archivo Condensed', 'Arial Narrow', sans-serif; text-transform: uppercase; letter-spacing: 0.02em; font-weight: 700; font-size: 11px; color: #8c7d63; margin-bottom: 4px; } .ds-panel-value { font-size: 20px; font-weight: 700; color: #f7ecd9; }"
+    },
+    {
+      "name": "Raked Hero Slide",
+      "kind": "custom",
+      "refersTo": "panel",
+      "description": "The signature parallelogram-clipped panel with the 'lit' active-state ring and sweep, as used for the near-edge trip in the Trips rack.",
+      "html": "<div class=\"ds-slide-raked ds-lit\"><div class=\"ds-slide-title\">Summer in Italy</div></div>",
+      "css": ".ds-slide-raked { position: relative; overflow: hidden; background: rgba(34,26,16,0.62); backdrop-filter: blur(18px) saturate(160%); border: 1px solid rgba(60,46,24,0.45); border-radius: 14px; clip-path: polygon(0 0, 100% 0, 100% calc(100% - 2.5rem), calc(100% - 2.5rem) 100%, 0 100%); padding: 16px; } .ds-lit { box-shadow: 0 0 0 1px #d99a1f, 0 0 20px -4px #d99a1f; } .ds-lit::after { content: ''; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 35%, rgba(247,236,217,0.55) 50%, transparent 65%); animation: ds-sweep 3.6s ease-in-out infinite; pointer-events: none; } @keyframes ds-sweep { 0%, 15% { transform: translateX(-130%); } 65%, 100% { transform: translateX(130%); } } .ds-slide-title { font-family: 'Archivo Condensed', 'Arial Narrow', sans-serif; font-weight: 700; letter-spacing: -0.01em; font-size: 1.75rem; color: #f7ecd9; } @media (prefers-reduced-motion: reduce) { .ds-lit::after { animation: none; } }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Standard themed text field with amber focus border.",
+      "html": "<input class=\"ds-input\" type=\"email\" placeholder=\"Email\" />",
+      "css": ".ds-input { width: 100%; padding: 12px; border-radius: 12px; background: #15100a; color: #f7ecd9; border: 1px solid #3c2e18; font-size: 16px; } .ds-input:focus { outline: none; border-color: #dda233; } .ds-input::placeholder { color: #8c7d63; }"
+    },
+    {
+      "name": "Tag / Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Small rounded state-tone chip; tone follows meaning (gold/green/vermilion/neutral).",
+      "html": "<span class=\"ds-tag ds-tag-gold\">RSVP&#39;d</span>",
+      "css": ".ds-tag { font-family: 'Archivo Condensed', 'Arial Narrow', sans-serif; text-transform: uppercase; letter-spacing: 0.02em; font-weight: 700; font-size: 11px; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; border: 1px solid; } .ds-tag-gold { background: rgba(221,162,51,0.15); color: #dda233; border-color: rgba(221,162,51,0.3); } .ds-tag-green { background: rgba(31,111,74,0.15); color: #1f6f4a; border-color: rgba(31,111,74,0.3); } .ds-tag-vermilion { background: rgba(209,80,44,0.15); color: #d1502c; border-color: rgba(209,80,44,0.3); }"
+    },
+    {
+      "name": "Bottom Navigation (in-trip)",
+      "kind": "nav",
+      "refersTo": "nav",
+      "description": "Fixed 8-item icon-only bottom nav for the 8 trip surfaces; amber active state with top indicator pill.",
+      "html": "<nav class=\"ds-bottomnav\"><a class=\"ds-navitem ds-navitem-active\" aria-label=\"Itinerary\"><span class=\"ds-navitem-indicator\"></span><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M12 2l2 7h7l-5.5 4 2 7-5.5-4.5L6.5 20l2-7L3 9h7z\"/></svg></a></nav>",
+      "css": ".ds-bottomnav { position: fixed; bottom: 0; left: 0; right: 0; background: #221a10; border-top: 1px solid #3c2e18; padding-bottom: env(safe-area-inset-bottom); } .ds-navitem { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 64px; flex: 1; min-width: 44px; color: #8c7d63; } .ds-navitem-active { color: #dda233; } .ds-navitem-indicator { position: absolute; top: 0; height: 2px; width: 24px; background: #dda233; border-radius: 9999px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Lit Departures Board",
+    "overview": "Concourse reads a family trip the way an airport departures board reads a flight: one shared surface, one prose register ranked by weight/case/rule instead of a size ramp, panels leaning off a common raked axis like boards seen at an angle, and a single light sweep marking whichever position is live right now (the current trip, the active tab, today's marker). The ground is warm goldenrod/amber, not the generic dark-slate-and-teal SaaS dashboard the redesign explicitly rejects; surfaces are tinted glass slides — translucent, blurred to whatever sits behind them — rather than opaque cards. Night mode is the board unlit (carbon ground, amber-lit panel edges), not an inverted palette swap. The system is deliberately restrained in its type scale (two heading sizes, everything else carried by weight/case/tracking) and deliberately committed in its geometry (the raked parallelogram edge recurs on hero bands, the trip rack, and headers as the one signature silhouette). It is built to work for a grandparent and a teenager on the same screen: 16px minimum body text and 44px minimum touch targets are load-bearing accessibility floors, not incidental choices.",
+    "keyCharacteristics": [
+      "Warm amber/goldenrod ground in both themes; dark mode is the board at night, not an inverted palette",
+      "Tinted glass panels (.cx-slide) with backdrop blur, never opaque flat cards",
+      "One raked (parallelogram) edge as the system's signature silhouette, applied to hero bands, headers, and the trip rack",
+      "Two-step heading scale; rank below that carried by weight, case, and rule — not more sizes",
+      "One authored motion moment (the sweeping light, .cx-lit) reserved for 'this is live right now'"
+    ],
+    "rules": [
+      { "name": "The Amber-Not-Teal Rule", "body": "The single interactive accent is always warm amber/goldenrod, tuned per theme (#dda233 dark, #9c5c17 light). It is never rendered as literal teal, despite the brand-teal token name carried forward for repoint compatibility.", "section": "colors" },
+      { "name": "The Four-State-Colors Rule", "body": "Vermilion (danger), bottle-green (positive), goldenrod, and carbon/ivory (contrast-on-photo) are the only fixed-regardless-of-theme colors. They exist because state meaning (delete vs. confirm) must read the same in both themes; no other color is theme-invariant.", "section": "colors" },
+      { "name": "The Two-Step Scale Rule", "body": "There are exactly two heading sizes (cx-h1, cx-h2). Everything ranked below that is carried by weight, case, and rule (cx-label), never by adding a third size.", "section": "typography" },
+      { "name": "The Label-Is-Not-Body Rule", "body": "cx-label (condensed, uppercase, tracked) is reserved for tags, nav, and section captions. Reading copy always uses the body stack, never the display face at small sizes.", "section": "typography" },
+      { "name": "The One Shadow Rule", "body": "Every panel carries the same .cx-slide shadow; elevation is not tiered by importance. Importance is instead signaled by the .cx-lit ring/sweep, a separate and rarer device.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use .cx-slide for every card/panel surface — glass translucency + blur + the one shared shadow, never an opaque flat card.",
+      "Do reserve .cx-lit (glow ring + sweep) for exactly one 'this is live' element per view (active trip, active tab, primary FAB) — its rarity is what makes it legible.",
+      "Do carry rank through weight/case/tracking (cx-label vs. cx-h1/cx-h2) rather than adding a third heading size.",
+      "Do keep the raked edge (.cx-rake/.cx-rake-b) on the same shared lean axis everywhere it appears — hero bands, headers, the rack's hero slide.",
+      "Do hold the 16px body-text and 44px touch-target floors on every new surface; they are durable accessibility constraints, not legacy leftovers."
+    ],
+    "donts": [
+      "Don't invert the palette for dark mode. Dark mode is the unlit board (carbon ground, amber-lit edges); it is a different lighting state of the same amber world, not a color swap.",
+      "Don't use vermilion as a primary CTA color — it is reserved for destructive/danger meaning only.",
+      "Don't stack a border and a shadow as two separate elevation signals on the same panel; .cx-slide's border is a glass edge, not a second depth cue.",
+      "Don't treat the condensed display face (cx-label/cx-headline) as a body-copy font at small sizes; body copy stays on the system stack for cross-generational legibility."
+    ]
+  }
+}

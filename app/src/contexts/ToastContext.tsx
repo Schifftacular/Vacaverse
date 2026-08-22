@@ -40,19 +40,19 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                     <div
                         key={toast.id}
                         className={`
-                            flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl border min-w-[300px] animate-in slide-in-from-right-full
-                            ${toast.type === 'success' ? 'bg-[#0f172a] border-teal-500/50 text-teal-400' : ''}
-                            ${toast.type === 'error' ? 'bg-[#0f172a] border-red-500/50 text-red-400' : ''}
-                            ${toast.type === 'info' ? 'bg-[#0f172a] border-blue-500/50 text-blue-400' : ''}
+                            cx-slide flex items-center gap-3 px-4 py-3 min-w-[300px] animate-in slide-in-from-right-full
+                            ${toast.type === 'success' ? 'text-[var(--color-bottle-green)]' : ''}
+                            ${toast.type === 'error' ? 'text-[var(--color-vermilion)]' : ''}
+                            ${toast.type === 'info' ? 'text-brand-teal' : ''}
                         `}
                     >
                         {toast.type === 'success' && <CheckCircle size={20} />}
                         {toast.type === 'error' && <AlertCircle size={20} />}
                         {toast.type === 'info' && <Info size={20} />}
 
-                        <p className="text-sm font-medium flex-1 text-white">{toast.message}</p>
+                        <p className="text-sm font-medium flex-1 text-[var(--color-text-primary)]">{toast.message}</p>
 
-                        <button onClick={() => removeToast(toast.id)} className="text-gray-500 hover:text-white transition-colors">
+                        <button onClick={() => removeToast(toast.id)} className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors">
                             <X size={16} />
                         </button>
                     </div>

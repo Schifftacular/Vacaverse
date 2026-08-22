@@ -32,7 +32,7 @@ export function BottomNav() {
 
     if (tripId) {
         return (
-            <nav className="fixed bottom-0 left-0 right-0 bg-[var(--color-bg-primary)] border-t border-[var(--color-border)] pb-[env(safe-area-inset-bottom)]">
+            <nav className="fixed bottom-0 left-0 right-0 bg-[var(--color-bg-card)] border-t border-[var(--color-border)] pb-[env(safe-area-inset-bottom)]">
                 <div className="flex justify-around items-center h-16">
                     {tripNavItems.map(({ icon: Icon, label, path, end }) => (
                         <NavLink
@@ -43,13 +43,18 @@ export function BottomNav() {
                             aria-label={label}
                             className={({ isActive }) =>
                                 twMerge(
-                                    'flex flex-col items-center justify-center h-full flex-1 min-w-11 transition-colors',
-                                    isActive ? 'text-brand-teal' : 'text-gray-500 hover:text-gray-300'
+                                    'relative flex flex-col items-center justify-center h-full flex-1 min-w-11 transition-colors',
+                                    isActive ? 'text-brand-teal' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]'
                                 )
                             }
                         >
-                            <Icon size={20} />
-                            <span className="sr-only">{label}</span>
+                            {({ isActive }) => (
+                                <>
+                                    {isActive && <span className="absolute top-0 h-0.5 w-6 bg-brand-teal rounded-full" />}
+                                    <Icon size={20} />
+                                    <span className="sr-only">{label}</span>
+                                </>
+                            )}
                         </NavLink>
                     ))}
                 </div>
@@ -58,21 +63,27 @@ export function BottomNav() {
     }
 
     return (
-        <nav className="fixed bottom-0 left-0 right-0 bg-[var(--color-bg-primary)] border-t border-[var(--color-border)] pb-[env(safe-area-inset-bottom)]">
+        <nav className="fixed bottom-0 left-0 right-0 bg-[var(--color-bg-card)] border-t border-[var(--color-border)] pb-[env(safe-area-inset-bottom)]">
             <div className="flex justify-around items-center h-16">
                 {navItems.map(({ icon: Icon, label, path }) => (
                     <NavLink
                         key={path}
                         to={path}
+                        end={path === '/'}
                         className={({ isActive }) =>
                             twMerge(
-                                'flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors',
-                                isActive ? 'text-brand-teal' : 'text-gray-500 hover:text-gray-300'
+                                'relative flex flex-col items-center justify-center w-full h-full gap-1 transition-colors',
+                                isActive ? 'text-brand-teal' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]'
                             )
                         }
                     >
-                        <Icon size={24} />
-                        <span className="text-xs font-medium">{label}</span>
+                        {({ isActive }) => (
+                            <>
+                                {isActive && <span className="absolute top-0 h-0.5 w-6 bg-brand-teal rounded-full" />}
+                                <Icon size={24} />
+                                <span className="cx-label text-[10px]">{label}</span>
+                            </>
+                        )}
                     </NavLink>
                 ))}
             </div>

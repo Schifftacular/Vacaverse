@@ -25,6 +25,7 @@ import {
     Heading2,
     Loader2,
 } from 'lucide-react';
+import { Panel, Button, EmptyState } from '../../components/ui/Concourse';
 import type { Trip, TripNote } from '../../types';
 
 const AUTOSAVE_DELAY = 1000;
@@ -112,7 +113,7 @@ function Toolbar({ editor }: { editor: Editor | null }) {
                         className={`p-2 rounded-lg transition-colors ${
                             active
                                 ? 'bg-brand-teal/20 text-brand-teal'
-                                : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-primary)]'
+                                : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)] hover:text-[var(--color-text-primary)]'
                         }`}
                     >
                         <Icon size={16} />
@@ -320,7 +321,7 @@ export default function TripNotes() {
                         )}
                         <button
                             onClick={() => setConfirmDelete(activeNote)}
-                            className="p-2 text-gray-500 hover:text-red-400 transition-colors"
+                            className="min-w-11 min-h-11 flex items-center justify-center text-[var(--color-text-secondary)] hover:text-[var(--color-vermilion)] transition-colors"
                             aria-label="Delete note"
                         >
                             <Trash2 size={16} />
@@ -332,15 +333,15 @@ export default function TripNotes() {
                     value={title}
                     onChange={e => handleTitleChange(e.target.value)}
                     placeholder="Untitled note"
-                    className="w-full text-xl font-bold bg-transparent text-[var(--color-text-primary)] placeholder:text-gray-600 outline-none mb-4"
+                    className="w-full text-xl font-bold bg-transparent text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] outline-none mb-4"
                 />
 
-                <div className="bg-[var(--color-bg-card)] rounded-xl border border-[var(--color-border)] overflow-hidden">
+                <Panel className="overflow-hidden">
                     <Toolbar editor={editor} />
                     <div className="notes-editor px-4 py-3 min-h-[300px]">
                         <EditorContent editor={editor} />
                     </div>
-                </div>
+                </Panel>
 
                 <style>{`
                     .notes-editor .ProseMirror {
@@ -350,7 +351,7 @@ export default function TripNotes() {
                     }
                     .notes-editor .ProseMirror p.is-editor-empty:first-child::before {
                         content: attr(data-placeholder);
-                        color: #6b7280;
+                        color: var(--color-text-muted);
                         float: left;
                         height: 0;
                         pointer-events: none;
@@ -387,8 +388,8 @@ export default function TripNotes() {
                         className="fixed inset-0 z-50 flex items-end justify-center p-4 bg-black/60"
                         onClick={() => setConfirmDelete(null)}
                     >
-                        <div
-                            className="bg-[var(--color-bg-card)] rounded-2xl p-6 w-full max-w-md border border-[var(--color-border)]"
+                        <Panel
+                            className="p-6 w-full max-w-md"
                             onClick={e => e.stopPropagation()}
                         >
                             <h3 className="text-lg font-bold text-[var(--color-text-primary)] mb-2">Delete Note?</h3>
@@ -396,20 +397,24 @@ export default function TripNotes() {
                                 "{confirmDelete.title}" will be permanently deleted.
                             </p>
                             <div className="flex gap-3">
-                                <button
+                                <Button
+                                    variant="outline"
+                                    size="lg"
+                                    className="flex-1"
                                     onClick={() => setConfirmDelete(null)}
-                                    className="flex-1 py-3 rounded-xl border border-[var(--color-border)] text-[var(--color-text-secondary)] text-sm font-medium"
                                 >
                                     Cancel
-                                </button>
-                                <button
+                                </Button>
+                                <Button
+                                    variant="danger"
+                                    size="lg"
+                                    className="flex-1"
                                     onClick={() => handleDelete(confirmDelete)}
-                                    className="flex-1 py-3 rounded-xl bg-red-500 text-white text-sm font-medium hover:bg-red-400 transition-colors"
                                 >
                                     Delete
-                                </button>
+                                </Button>
                             </div>
-                        </div>
+                        </Panel>
                     </div>
                 )}
             </div>
@@ -419,26 +424,26 @@ export default function TripNotes() {
     // --- List view ---
     return (
         <div className="px-4 pb-24">
-            <h2 className="text-xl font-bold text-[var(--color-text-primary)] mb-6">Notes</h2>
+            <h2 className="cx-h2 text-[var(--color-text-primary)] mb-6">Notes</h2>
 
             {notes.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 text-center">
-                    <FileText size={48} className="text-gray-600 mb-4" />
-                    <h3 className="text-lg font-medium text-[var(--color-text-primary)] mb-2">No notes yet</h3>
-                    <p className="text-[var(--color-text-secondary)] text-sm mb-4">
-                        Create packing lists, itinerary notes, or free-form pages for this trip.
-                    </p>
-                    <button onClick={handleCreateNote} className="text-brand-teal font-bold hover:underline">
-                        Create your first note
-                    </button>
-                </div>
+                <EmptyState
+                    icon={<FileText size={48} />}
+                    title="No notes yet"
+                    hint="Create packing lists, itinerary notes, or free-form pages for this trip."
+                    action={
+                        <button onClick={handleCreateNote} className="text-brand-teal font-bold hover:underline">
+                            Create your first note
+                        </button>
+                    }
+                />
             ) : (
                 <div className="space-y-3">
                     {notes.map(note => (
                         <button
                             key={note.id}
                             onClick={() => handleOpenNote(note)}
-                            className="w-full text-left bg-[var(--color-bg-card)] rounded-xl border border-[var(--color-border)] p-4 flex items-start gap-3 hover:border-brand-teal/50 transition-colors"
+                            className="cx-slide w-full text-left p-4 flex items-start gap-3 hover:border-brand-teal/50 transition-colors"
                         >
                             <div className="w-10 h-10 rounded-lg bg-[var(--color-bg-primary)] flex items-center justify-center shrink-0">
                                 <FileText size={18} className="text-brand-teal" />
@@ -450,7 +455,7 @@ export default function TripNotes() {
                                 <p className="text-xs text-[var(--color-text-secondary)] mt-0.5 truncate">
                                     {previewText(note.content_json) || 'Empty note'}
                                 </p>
-                                <p className="text-xs text-gray-600 mt-1">{formatDate(note.updated_at)}</p>
+                                <p className="text-xs text-[var(--color-text-muted)] mt-1">{formatDate(note.updated_at)}</p>
                             </div>
                         </button>
                     ))}
@@ -459,7 +464,7 @@ export default function TripNotes() {
 
             <button
                 onClick={handleCreateNote}
-                className="fixed bottom-24 right-6 w-14 h-14 bg-brand-teal rounded-full flex items-center justify-center shadow-lg text-white hover:bg-teal-400 transition-colors"
+                className="cx-lit fixed bottom-24 right-6 w-14 h-14 bg-brand-teal rounded-full flex items-center justify-center shadow-lg text-[var(--color-carbon)] hover:brightness-110 transition-all"
                 aria-label="New note"
             >
                 <Plus size={24} />
