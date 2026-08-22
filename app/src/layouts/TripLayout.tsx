@@ -1,9 +1,11 @@
 import { Outlet, NavLink, Link, useParams } from 'react-router-dom';
 import { ArrowLeft, Calendar, Share2, Copy, Check } from 'lucide-react';
 import { useTrip } from '../contexts/TripContext';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { differenceInDays, format, parseISO } from 'date-fns';
 import { updateTrip } from '../services/tripService';
+import { db } from '../lib/client';
+import { useUserProfiles } from '../hooks/useUserProfiles';
 
 const tabs = [
     { name: 'Itinerary', path: '' },
@@ -25,6 +27,24 @@ export default function TripLayout() {
     const [sharingLoading, setSharingLoading] = useState(false);
 
     const trip = useMemo(() => trips.find(t => t.id === tripId), [trips, tripId]);
+
+    // Who else is in this trip's family, so a new joiner's first screen answers
+    // "who else is here" rather than showing an empty-feeling shell. Queried
+    // directly off trip.family_id (not FamilyContext.currentFamily) so it stays
+    // correct even when currentFamily hasn't been set for this session yet.
+    const [familyMemberIds, setFamilyMemberIds] = useState<string[]>([]);
+    useEffect(() => {
+        if (!trip?.family_id) { setFamilyMemberIds([]); return; }
+        let cancelled = false;
+        db.from('family_members')
+            .select('user_id')
+            .eq('family_id', trip.family_id)
+            .then(({ data }: { data: { user_id: string }[] | null }) => {
+                if (!cancelled) setFamilyMemberIds((data || []).map(m => m.user_id));
+            });
+        return () => { cancelled = true; };
+    }, [trip?.family_id]);
+    const { profiles } = useUserProfiles(familyMemberIds);
 
     const handleShare = async () => {
         if (!trip || !tripId) return;
@@ -107,6 +127,52 @@ export default function TripLayout() {
                     </p>
                 </div>
             </div>
+
+            {/* Family Roster — answers "who else is here" on the very first screen */}
+            {familyMemberIds.length > 0 && (
+                <div className="px-4 pt-4">
+                    <div className="bg-[var(--color-bg-card)] rounded-xl p-3 border border-[var(--color-border)] flex items-center gap-3">
+                        <div className="flex -space-x-2 shrink-0">
+                            {familyMemberIds.slice(0, 5).map(uid => {
+                                const profile = profiles.get(uid);
+                                return (
+                                    <div
+                                        key={uid}
+                                        title={profile?.display_name}
+                                        className="w-8 h-8 rounded-full bg-gray-700 border-2 border-[var(--color-bg-card)] flex items-center justify-center overflow-hidden"
+                                    >
+                                        {profile?.photo_url ? (
+                                            <img src={profile.photo_url} alt="" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <span className="text-white text-xs font-bold">
+                                                {(profile?.display_name || '?').charAt(0).toUpperCase()}
+                                            </span>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                            {familyMemberIds.length > 5 && (
+                                <div className="w-8 h-8 rounded-full bg-gray-800 border-2 border-[var(--color-bg-card)] flex items-center justify-center">
+                                    <span className="text-white text-[10px] font-bold">+{familyMemberIds.length - 5}</span>
+                                </div>
+                            )}
+                        </div>
+                        <div className="text-sm text-[var(--color-text-secondary)] truncate">
+                            {familyMemberIds.length === 1 ? (
+                                "Just you so far — share an invite to bring the family in"
+                            ) : (
+                                <>
+                                    {familyMemberIds
+                                        .slice(0, 3)
+                                        .map(uid => profiles.get(uid)?.display_name?.split(' ')[0] || 'Someone')
+                                        .join(', ')}
+                                    {familyMemberIds.length > 3 ? ` +${familyMemberIds.length - 3} more` : ''} in this trip
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Share Popup */}
             {showSharePopup && shareUrl && (
