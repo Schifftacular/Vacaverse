@@ -127,5 +127,45 @@ export const subscribeToPresence = (
     const onUpdate = (users: PresenceUser[]) => callback(users);
     socket.on('presence:update', onUpdate);
 
-    return () => { socket.off('presence:update', onUpdate); };
+    return () => {
+        socket.off('presence:update', onUpdate);
+        // Without this, leaving the trip page (while the app's socket stays
+        // connected) would leave the user showing as "online now" here forever.
+        socket.emit('trip:leave', tripId);
+    };
+};
+
+export interface TypingUser {
+    id: string;
+    display_name: string;
+    photo_url: string | null;
+}
+
+export const emitTypingStart = (tripId: string) => {
+    getSocket().emit('typing:start', tripId);
+};
+
+export const emitTypingStop = (tripId: string) => {
+    getSocket().emit('typing:stop', tripId);
+};
+
+// tripId isn't used to filter here: the server only broadcasts typing:update
+// to sockets already joined to that trip's room (via trip:join), so every
+// event this listener receives already belongs to the current trip.
+export const subscribeToTyping = (
+    _tripId: string,
+    callback: (users: TypingUser[]) => void
+) => {
+    const socket = getSocket();
+    let typing: TypingUser[] = [];
+
+    const onUpdate = (payload: { user: TypingUser; typing: boolean }) => {
+        typing = payload.typing
+            ? [...typing.filter(u => u.id !== payload.user.id), payload.user]
+            : typing.filter(u => u.id !== payload.user.id);
+        callback(typing);
+    };
+    socket.on('typing:update', onUpdate);
+
+    return () => { socket.off('typing:update', onUpdate); };
 };

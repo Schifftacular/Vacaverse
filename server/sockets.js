@@ -113,6 +113,10 @@ export function attachSockets(io) {
             for (const tripId of joinedTrips) {
                 presenceByTrip.get(tripId)?.delete(socket.id);
                 io.to(`trip:${tripId}`).emit('presence:update', presenceList(tripId));
+                // If this socket was mid-"typing" when it dropped (including a
+                // hard kill caught only by the ping timeout), make sure other
+                // clients don't get stuck showing a typing indicator forever.
+                socket.to(`trip:${tripId}`).emit('typing:update', { user: socket.user, typing: false });
             }
         });
     });

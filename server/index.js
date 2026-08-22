@@ -37,6 +37,12 @@ app.use((err, req, res, _next) => {
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
     cors: { origin: CLIENT_ORIGIN, credentials: true },
+    // Tighter than the socket.io defaults (25s/20s, ~45s worst case) so a
+    // hard-killed connection (network drop, crashed tab, unplugged laptop —
+    // anything that skips the TCP FIN/socket.io disconnect handshake) stops
+    // showing as "present" within ~15s instead of ~45s.
+    pingInterval: 10000,
+    pingTimeout: 5000,
 });
 attachSockets(io);
 

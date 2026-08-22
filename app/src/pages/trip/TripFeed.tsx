@@ -6,10 +6,14 @@ import {
     subscribeToActivity,
     subscribeToComments,
     subscribeToPresence,
+    subscribeToTyping,
+    emitTypingStart,
+    emitTypingStop,
     addComment,
     editComment,
     deleteComment,
     type PresenceUser,
+    type TypingUser,
 } from '../../services/activityService';
 import { Send, MessageCircle, Activity, Pencil, Trash2, X, Check, ChevronDown, AlertCircle, Reply } from 'lucide-react';
 import type { Trip, ActivityEntry, Comment } from '../../types';
@@ -40,6 +44,13 @@ export default function TripFeed() {
     const [pending, setPending] = useState<PendingComment[]>([]);
     const [presence, setPresence] = useState<PresenceUser[]>([]);
     const [newComment, setNewComment] = useState('');
+    const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
+
+    // Typing indicator: emit typing:start once per burst (not per keystroke),
+    // and typing:stop after a short idle gap or immediately on send.
+    const TYPING_IDLE_MS = 2000;
+    const isTypingRef = useRef(false);
+    const typingIdleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Editing a single comment in place.
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -84,7 +95,16 @@ export default function TripFeed() {
         const unsub1 = subscribeToActivity(trip.id, setActivity);
         const unsub2 = subscribeToComments(trip.id, setComments);
         const unsub3 = subscribeToPresence(trip.id, setPresence);
-        return () => { unsub1(); unsub2(); unsub3(); };
+        const unsub4 = subscribeToTyping(trip.id, setTypingUsers);
+        return () => {
+            unsub1(); unsub2(); unsub3(); unsub4();
+            if (typingIdleTimer.current) clearTimeout(typingIdleTimer.current);
+            if (isTypingRef.current) {
+                isTypingRef.current = false;
+                emitTypingStop(trip.id);
+            }
+            setTypingUsers([]);
+        };
     }, [trip?.id]);
 
     // Track whether the comments tab is actually being looked at (tab selected
@@ -230,11 +250,34 @@ export default function TripFeed() {
         }
     };
 
+    const stopTyping = () => {
+        if (typingIdleTimer.current) {
+            clearTimeout(typingIdleTimer.current);
+            typingIdleTimer.current = null;
+        }
+        if (isTypingRef.current && trip?.id) {
+            isTypingRef.current = false;
+            emitTypingStop(trip.id);
+        }
+    };
+
+    const handleComposeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setNewComment(e.target.value);
+        if (!trip?.id) return;
+        if (!isTypingRef.current) {
+            isTypingRef.current = true;
+            emitTypingStart(trip.id);
+        }
+        if (typingIdleTimer.current) clearTimeout(typingIdleTimer.current);
+        typingIdleTimer.current = setTimeout(stopTyping, TYPING_IDLE_MS);
+    };
+
     const handleSendComment = async (e: React.FormEvent) => {
         e.preventDefault();
         const text = newComment.trim();
         if (!text) return;
         setNewComment('');
+        stopTyping();
         await sendComment(text);
     };
 
@@ -337,7 +380,11 @@ export default function TripFeed() {
                             </div>
                         ))}
                     </div>
-                    <span>{presence.length} online now</span>
+                    <span>
+                        {presence.length <= 3
+                            ? `${presence.map(p => p.display_name).join(', ')} online now`
+                            : `${presence.length} online now`}
+                    </span>
                 </div>
             )}
 
@@ -576,12 +623,26 @@ export default function TripFeed() {
                         </button>
                     )}
 
+                    {/* Typing indicator — height is always reserved (even when empty) so its
+                        appearance/disappearance never shifts the scroll container above it. */}
+                    <div className="h-4 mb-1 px-1 text-xs text-gray-400 italic" data-testid="typing-indicator">
+                        {typingUsers.length > 0 && (
+                            <span>
+                                {typingUsers.length === 1
+                                    ? `${typingUsers[0].display_name} is typing…`
+                                    : typingUsers.length === 2
+                                        ? `${typingUsers[0].display_name} and ${typingUsers[1].display_name} are typing…`
+                                        : `${typingUsers.length} people are typing…`}
+                            </span>
+                        )}
+                    </div>
+
                     {/* Comment input */}
                     <form onSubmit={handleSendComment} className="flex gap-2">
                         <input
                             type="text"
                             value={newComment}
-                            onChange={(e) => setNewComment(e.target.value)}
+                            onChange={handleComposeChange}
                             placeholder="Type a message..."
                             className="flex-1 bg-[#1e293b] border border-gray-700 rounded-full px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-teal"
                         />
