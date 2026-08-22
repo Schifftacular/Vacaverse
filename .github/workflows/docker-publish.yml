@@ -36,3 +36,11 @@ jobs:
           context: .
           push: true
           tags: ${{ steps.tag.outputs.image }}
+
+      - name: Make package public (so the deploy target can pull without auth)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api --method PATCH /user/packages/container/vacaverse -f visibility=public || \
+          gh api --method PATCH /orgs/${{ github.repository_owner }}/packages/container/vacaverse -f visibility=public || \
+          echo "Could not set visibility automatically — GITHUB_TOKEN likely lacks permission; needs a manual toggle in package settings."
