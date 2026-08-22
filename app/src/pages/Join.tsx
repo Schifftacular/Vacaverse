@@ -76,7 +76,14 @@ export default function Join() {
                 if (!message.includes('UNIQUE constraint failed')) throw error;
             }
 
-            setCurrentFamily({ id: found.familyId, name: found.familyName, created_by: '', created_at: '', members: [] });
+            // Pull the real member list so the Family page doesn't show the
+            // newly-selected family with zero members (including themselves).
+            const { data: memberRows } = await db
+                .from('family_members')
+                .select('*')
+                .eq('family_id', found.familyId);
+            const memberIds = (memberRows ?? []).map((m: { user_id: string }) => m.user_id);
+            setCurrentFamily({ id: found.familyId, name: found.familyName, created_by: '', created_at: '', members: memberIds });
 
             // Send them straight into a real trip when the family has one, so
             // they land somewhere with context instead of an empty dashboard.
