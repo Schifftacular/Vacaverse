@@ -16,6 +16,7 @@ export const TABLES = {
     polls: { pk: 'id', json: ['options'] },
     poll_votes: { pk: null, conflict: ['poll_id', 'user_id'], json: [] },
     documents: { pk: 'id', json: [] },
+    notes: { pk: 'id', json: ['content_json'] },
     feedback: { pk: 'id', json: [] },
 };
 

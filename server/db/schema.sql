@@ -149,6 +149,16 @@ CREATE TABLE IF NOT EXISTS documents (
     created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
 
+CREATE TABLE IF NOT EXISTS notes (
+    id TEXT PRIMARY KEY,
+    trip_id TEXT NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    content_json TEXT, -- TipTap JSON document
+    created_by TEXT REFERENCES users(id),
+    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+
 CREATE TABLE IF NOT EXISTS feedback (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL REFERENCES users(id),
@@ -160,6 +170,93 @@ CREATE TABLE IF NOT EXISTS feedback (
     created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
 
+-- Full-text search over comments, tasks, and notes (trip Search tab).
+-- Standalone FTS5 table (not "external content") because our source PKs are
+-- TEXT, not rowids, so it duplicates the searchable text and is kept in sync
+-- by the triggers below. Notes' content_json is a TipTap JSON doc, not plain
+-- text, so it's flattened with json_tree() to pull out just the text-node
+-- leaves (see the extraction expression reused across the notes triggers).
+CREATE VIRTUAL TABLE IF NOT EXISTS search_index USING fts5(
+    trip_id UNINDEXED,
+    item_type UNINDEXED,
+    item_id UNINDEXED,
+    title,
+    body,
+    tokenize = 'porter unicode61'
+);
+
+-- One-time backfill for rows that predate the index (safe to re-run: only
+-- inserts ids not already present, so it's a no-op on every later startup).
+INSERT INTO search_index (trip_id, item_type, item_id, title, body)
+SELECT trip_id, 'comment', id, '', text FROM comments
+WHERE id NOT IN (SELECT item_id FROM search_index WHERE item_type = 'comment');
+
+INSERT INTO search_index (trip_id, item_type, item_id, title, body)
+SELECT trip_id, 'task', id, title, '' FROM tasks
+WHERE id NOT IN (SELECT item_id FROM search_index WHERE item_type = 'task');
+
+INSERT INTO search_index (trip_id, item_type, item_id, title, body)
+SELECT trip_id, 'note', id, title,
+    CASE WHEN content_json IS NOT NULL AND json_valid(content_json)
+        THEN COALESCE((SELECT group_concat(value, ' ') FROM json_tree(notes.content_json) WHERE key = 'text' AND type = 'text'), '')
+        ELSE ''
+    END
+FROM notes
+WHERE id NOT IN (SELECT item_id FROM search_index WHERE item_type = 'note');
+
+CREATE TRIGGER IF NOT EXISTS trg_search_comments_ai AFTER INSERT ON comments BEGIN
+    INSERT INTO search_index (trip_id, item_type, item_id, title, body)
+    VALUES (NEW.trip_id, 'comment', NEW.id, '', NEW.text);
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_search_comments_au AFTER UPDATE OF text ON comments BEGIN
+    DELETE FROM search_index WHERE item_type = 'comment' AND item_id = OLD.id;
+    INSERT INTO search_index (trip_id, item_type, item_id, title, body)
+    VALUES (NEW.trip_id, 'comment', NEW.id, '', NEW.text);
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_search_comments_ad AFTER DELETE ON comments BEGIN
+    DELETE FROM search_index WHERE item_type = 'comment' AND item_id = OLD.id;
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_search_tasks_ai AFTER INSERT ON tasks BEGIN
+    INSERT INTO search_index (trip_id, item_type, item_id, title, body)
+    VALUES (NEW.trip_id, 'task', NEW.id, NEW.title, '');
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_search_tasks_au AFTER UPDATE OF title ON tasks BEGIN
+    DELETE FROM search_index WHERE item_type = 'task' AND item_id = OLD.id;
+    INSERT INTO search_index (trip_id, item_type, item_id, title, body)
+    VALUES (NEW.trip_id, 'task', NEW.id, NEW.title, '');
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_search_tasks_ad AFTER DELETE ON tasks BEGIN
+    DELETE FROM search_index WHERE item_type = 'task' AND item_id = OLD.id;
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_search_notes_ai AFTER INSERT ON notes BEGIN
+    INSERT INTO search_index (trip_id, item_type, item_id, title, body)
+    VALUES (NEW.trip_id, 'note', NEW.id, NEW.title,
+        CASE WHEN NEW.content_json IS NOT NULL AND json_valid(NEW.content_json)
+            THEN COALESCE((SELECT group_concat(value, ' ') FROM json_tree(NEW.content_json) WHERE key = 'text' AND type = 'text'), '')
+            ELSE ''
+        END);
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_search_notes_au AFTER UPDATE OF title, content_json ON notes BEGIN
+    DELETE FROM search_index WHERE item_type = 'note' AND item_id = OLD.id;
+    INSERT INTO search_index (trip_id, item_type, item_id, title, body)
+    VALUES (NEW.trip_id, 'note', NEW.id, NEW.title,
+        CASE WHEN NEW.content_json IS NOT NULL AND json_valid(NEW.content_json)
+            THEN COALESCE((SELECT group_concat(value, ' ') FROM json_tree(NEW.content_json) WHERE key = 'text' AND type = 'text'), '')
+            ELSE ''
+        END);
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_search_notes_ad AFTER DELETE ON notes BEGIN
+    DELETE FROM search_index WHERE item_type = 'note' AND item_id = OLD.id;
+END;
+
 CREATE INDEX IF NOT EXISTS idx_trips_family ON trips(family_id);
 CREATE INDEX IF NOT EXISTS idx_trips_user ON trips(user_id);
 CREATE INDEX IF NOT EXISTS idx_comments_trip ON comments(trip_id);
@@ -170,5 +267,6 @@ CREATE INDEX IF NOT EXISTS idx_expenses_trip ON expenses(trip_id);
 CREATE INDEX IF NOT EXISTS idx_tasks_trip ON tasks(trip_id);
 CREATE INDEX IF NOT EXISTS idx_polls_trip ON polls(trip_id);
 CREATE INDEX IF NOT EXISTS idx_documents_trip ON documents(trip_id);
+CREATE INDEX IF NOT EXISTS idx_notes_trip ON notes(trip_id);
 CREATE INDEX IF NOT EXISTS idx_family_members_user ON family_members(user_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);

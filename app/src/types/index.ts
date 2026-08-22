@@ -109,3 +109,13 @@ export interface TripDocument {
     uploaded_by: string;
     created_at: string;
 }
+
+export interface TripNote {
+    id: string;
+    trip_id: string;
+    title: string;
+    content_json: Record<string, unknown> | null;
+    created_by: string;
+    created_at: string;
+    updated_at: string;
+}
