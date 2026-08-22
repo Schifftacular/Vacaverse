@@ -7,6 +7,7 @@ on:
       - "app/**"
       - "server/**"
       - "Dockerfile"
+      - "docker-compose.yml"
       - ".github/workflows/docker-publish.yml"
   workflow_dispatch: {}
 
@@ -44,3 +45,17 @@ jobs:
           gh api --method PATCH /user/packages/container/vacaverse -f visibility=public || \
           gh api --method PATCH /orgs/${{ github.repository_owner }}/packages/container/vacaverse -f visibility=public || \
           echo "Could not set visibility automatically — GITHUB_TOKEN likely lacks permission; needs a manual toggle in package settings."
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Hostinger VPS
+        uses: hostinger/deploy-on-vps@v2
+        with:
+          api-key: ${{ secrets.HOSTINGER_API_KEY }}
+          virtual-machine: ${{ vars.HOSTINGER_VM_ID }}
+          project-name: vacaverse
+          docker-compose-path: docker-compose.yml
