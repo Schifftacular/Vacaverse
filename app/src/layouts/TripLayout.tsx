@@ -10,7 +10,9 @@ const tabs = [
     { name: 'Budget', path: 'budget' },
     { name: 'Tasks', path: 'tasks' },
     { name: 'Feed', path: 'feed' },
-    { name: 'Docs', path: 'documents' },
+    { name: 'Notes', path: 'notes' },
+    { name: 'Search', path: 'search' },
+    { name: 'Files', path: 'documents' },
     { name: 'Polls', path: 'polls' },
 ];
 
