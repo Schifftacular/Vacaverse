@@ -7,6 +7,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useUserProfiles } from '../../hooks/useUserProfiles';
 import { Plus, MapPin, X, Loader2, Check, HelpCircle, XCircle } from 'lucide-react';
 import { GridSkeleton } from '../../components/ui/Skeletons';
+import { Button, EmptyState, Tag } from '../../components/ui/Concourse';
 import type { Trip, TripEvent, EventRsvp } from '../../types';
 
 type RsvpStatus = 'going' | 'maybe' | 'not_going';
@@ -136,28 +137,40 @@ export default function TripItinerary() {
     }, {} as Record<string, TripEvent[]>);
 
     const sortedDates = Object.keys(eventsByDate).sort();
+    const todayKey = new Date().toLocaleDateString('en-CA');
 
     if (loading) return <div className="p-4"><GridSkeleton /></div>;
 
     return (
         <div className="px-4 pb-24">
             {events.length === 0 ? (
-                <div className="text-center py-20 text-gray-500">
-                    <p className="mb-4">No events scheduled yet.</p>
-                    <button onClick={() => setIsModalOpen(true)} className="text-brand-teal font-bold hover:underline">
-                        Add your first event
-                    </button>
-                </div>
+                <EmptyState
+                    title="No events scheduled yet"
+                    hint="Add the first stop on the itinerary."
+                    action={<Button onClick={() => setIsModalOpen(true)}>Add your first event</Button>}
+                />
             ) : (
-                sortedDates.map((dateKey) => (
+                sortedDates.map((dateKey) => {
+                    const isToday = dateKey === todayKey;
+                    const formattedDate = new Date(dateKey).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+                    return (
                     <div key={dateKey} className="mb-8">
-                        <div className="flex items-center gap-4 mb-4">
-                            <h2 className="text-lg font-bold text-white">
-                                {new Date(dateKey).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
-                            </h2>
-                            <div className="h-[1px] bg-gray-800 flex-1" />
-                        </div>
-                        <div className="space-y-4 relative pl-4 border-l-2 border-gray-800/50">
+                        {isToday ? (
+                            <div className="cx-lit inline-flex rounded-[14px] mb-4">
+                                <div className="cx-slide cx-rake flex items-center gap-2 px-4 py-2">
+                                    <Tag tone="gold">Today</Tag>
+                                    <h2 className="cx-label text-sm text-[var(--color-text-primary)]">{formattedDate}</h2>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-4 mb-4">
+                                <h2 className="cx-label text-sm text-[var(--color-text-secondary)]">
+                                    {formattedDate}
+                                </h2>
+                                <div className="h-[1px] bg-[var(--color-border)] flex-1" />
+                            </div>
+                        )}
+                        <div className="space-y-4 relative pl-4 border-l-2 border-[var(--color-border)]">
                             {eventsByDate[dateKey].map((event) => {
                                 const myRsvp = user
                                     ? rsvps.find(r => r.event_id === event.id && r.user_id === user.id)?.status
@@ -167,17 +180,17 @@ export default function TripItinerary() {
                                     .map(r => r.user_id);
 
                                 return (
-                                    <div key={event.id} className="flex items-start bg-[#1e293b] rounded-xl p-4 border border-gray-800 ml-4 relative">
+                                    <div key={event.id} className="cx-slide flex items-start p-4 ml-4 relative">
                                         {/* Timeline Dot */}
-                                        <div className="absolute -left-[25px] top-6 w-4 h-4 rounded-full bg-brand-teal border-4 border-[#0f172a]" />
+                                        <div className="absolute -left-[25px] top-6 w-4 h-4 rounded-full bg-brand-teal border-4 border-[var(--color-bg-primary)]" />
 
                                         <div className="w-20 pt-1 shrink-0">
-                                            <div className="text-sm font-bold text-white">{event.time}</div>
+                                            <div className="cx-label text-sm tabular-nums text-[var(--color-text-primary)]">{event.time}</div>
                                         </div>
-                                        <div className="flex-1 border-l border-gray-700 pl-4 ml-2 min-w-0">
-                                            <h3 className="font-medium text-white text-lg">{event.title}</h3>
+                                        <div className="flex-1 border-l border-[var(--color-border)] pl-4 ml-2 min-w-0">
+                                            <h3 className="font-medium text-[var(--color-text-primary)] text-lg">{event.title}</h3>
                                             {event.location && (
-                                                <div className="flex items-center text-sm text-gray-400 mt-1">
+                                                <div className="flex items-center text-sm text-[var(--color-text-secondary)] mt-1">
                                                     <MapPin size={14} className="mr-1 shrink-0" />
                                                     {event.location}
                                                 </div>
@@ -189,8 +202,8 @@ export default function TripItinerary() {
                                                     <button
                                                         onClick={() => handleRsvp(event, 'going')}
                                                         className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border transition-colors ${myRsvp === 'going'
-                                                            ? 'bg-brand-teal border-brand-teal text-white'
-                                                            : 'border-gray-700 text-gray-400 hover:border-brand-teal hover:text-brand-teal'
+                                                            ? 'bg-[var(--color-bottle-green)] border-[var(--color-bottle-green)] text-white'
+                                                            : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-bottle-green)] hover:text-[var(--color-bottle-green)]'
                                                             }`}
                                                     >
                                                         <Check size={12} />
@@ -199,8 +212,8 @@ export default function TripItinerary() {
                                                     <button
                                                         onClick={() => handleRsvp(event, 'maybe')}
                                                         className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border transition-colors ${myRsvp === 'maybe'
-                                                            ? 'bg-yellow-500 border-yellow-500 text-white'
-                                                            : 'border-gray-700 text-gray-400 hover:border-yellow-500 hover:text-yellow-500'
+                                                            ? 'bg-brand-teal border-brand-teal text-[var(--color-carbon)]'
+                                                            : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-brand-teal hover:text-brand-teal'
                                                             }`}
                                                     >
                                                         <HelpCircle size={12} />
@@ -209,8 +222,8 @@ export default function TripItinerary() {
                                                     <button
                                                         onClick={() => handleRsvp(event, 'not_going')}
                                                         className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border transition-colors ${myRsvp === 'not_going'
-                                                            ? 'bg-red-500 border-red-500 text-white'
-                                                            : 'border-gray-700 text-gray-400 hover:border-red-500 hover:text-red-500'
+                                                            ? 'bg-[var(--color-vermilion)] border-[var(--color-vermilion)] text-white'
+                                                            : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-vermilion)] hover:text-[var(--color-vermilion)]'
                                                             }`}
                                                     >
                                                         <XCircle size={12} />
@@ -229,13 +242,13 @@ export default function TripItinerary() {
                                                                             src={profile.photo_url}
                                                                             alt={profile.display_name}
                                                                             title={profile.display_name}
-                                                                            className="w-5 h-5 rounded-full border border-[#1e293b] object-cover"
+                                                                            className="w-5 h-5 rounded-full border border-[var(--color-bg-card)] object-cover"
                                                                         />
                                                                     ) : (
                                                                         <div
                                                                             key={uid}
                                                                             title={profile?.display_name ?? uid}
-                                                                            className="w-5 h-5 rounded-full border border-[#1e293b] bg-brand-teal flex items-center justify-center text-[8px] text-white font-bold"
+                                                                            className="w-5 h-5 rounded-full border border-[var(--color-bg-card)] bg-brand-teal flex items-center justify-center text-[8px] text-[var(--color-carbon)] font-bold"
                                                                         >
                                                                             {(profile?.display_name?.[0] ?? '?').toUpperCase()}
                                                                         </div>
@@ -243,7 +256,7 @@ export default function TripItinerary() {
                                                                 })}
                                                             </div>
                                                             {goingUserIds.length > 5 && (
-                                                                <span className="text-xs text-gray-400">+{goingUserIds.length - 5}</span>
+                                                                <span className="text-xs text-[var(--color-text-secondary)]">+{goingUserIds.length - 5}</span>
                                                             )}
                                                         </div>
                                                     )}
@@ -255,12 +268,13 @@ export default function TripItinerary() {
                             })}
                         </div>
                     </div>
-                ))
+                    );
+                })
             )}
 
             <button
                 onClick={() => setIsModalOpen(true)}
-                className="fixed bottom-24 right-6 w-14 h-14 bg-brand-teal rounded-full flex items-center justify-center shadow-lg text-white hover:bg-teal-600 transition-colors z-30"
+                className="fixed bottom-24 right-6 w-14 h-14 bg-brand-teal rounded-full flex items-center justify-center shadow-lg text-[var(--color-carbon)] hover:brightness-110 transition-colors z-30"
             >
                 <Plus size={24} />
             </button>
@@ -268,70 +282,71 @@ export default function TripItinerary() {
             {/* Add Event Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/80 z-50 flex items-end sm:items-center justify-center p-4">
-                    <div className="bg-[#1e293b] w-full max-w-md rounded-2xl p-6 relative animate-in slide-in-from-bottom-10 fade-in border border-gray-800 max-h-[85vh] overflow-y-auto">
+                    <div className="cx-slide w-full max-w-md rounded-2xl p-6 relative animate-in slide-in-from-bottom-10 fade-in max-h-[85vh] overflow-y-auto">
                         <button
                             onClick={() => setIsModalOpen(false)}
-                            className="absolute top-4 right-4 text-gray-400 hover:text-white"
+                            className="absolute top-4 right-4 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
                         >
                             <X size={24} />
                         </button>
 
-                        <h2 className="text-2xl font-bold text-white mb-6">Add Event</h2>
+                        <h2 className="cx-h2 text-[var(--color-text-primary)] mb-6">Add Event</h2>
 
                         <form onSubmit={handleAddEvent} className="space-y-4">
                             <div>
-                                <label className="block text-sm text-gray-400 mb-1">Title</label>
+                                <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Title</label>
                                 <input
                                     type="text"
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                     placeholder="e.g., Dinner at Mario's"
-                                    className="w-full bg-[#0f172a] border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-brand-teal"
+                                    className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
                                     required
                                 />
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm text-gray-400 mb-1">Date</label>
+                                    <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Date</label>
                                     <input
                                         type="date"
                                         value={date}
                                         onChange={(e) => setDate(e.target.value)}
-                                        className="w-full bg-[#0f172a] border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-brand-teal"
+                                        className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm text-gray-400 mb-1">Time</label>
+                                    <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Time</label>
                                     <input
                                         type="time"
                                         value={time}
                                         onChange={(e) => setTime(e.target.value)}
-                                        className="w-full bg-[#0f172a] border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-brand-teal"
+                                        className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
                                         required
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm text-gray-400 mb-1">Location</label>
+                                <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Location</label>
                                 <input
                                     type="text"
                                     value={location}
                                     onChange={(e) => setLocation(e.target.value)}
                                     placeholder="e.g., 123 Main St"
-                                    className="w-full bg-[#0f172a] border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-brand-teal"
+                                    className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
                                 />
                             </div>
 
-                            <button
+                            <Button
                                 type="submit"
                                 disabled={submitLoading}
-                                className="w-full bg-brand-teal text-white font-bold py-4 rounded-xl mt-4 hover:bg-teal-600 transition-colors disabled:opacity-50"
+                                size="lg"
+                                className="mt-4"
                             >
                                 {submitLoading ? <Loader2 className="animate-spin mx-auto" /> : 'Add Event'}
-                            </button>
+                            </Button>
                         </form>
                     </div>
                 </div>

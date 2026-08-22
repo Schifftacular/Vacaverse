@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo, Fragment } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { useUserProfiles } from '../../hooks/useUserProfiles';
 import { Search, MessageCircle, CheckSquare, FileText, Loader2 } from 'lucide-react';
+import { SectionLabel, Tag, EmptyState } from '../../components/ui/Concourse';
 import type { Trip } from '../../types';
 
 // The server wraps each matched term in the snippet with these control
@@ -139,10 +140,10 @@ export default function TripSearch() {
 
     return (
         <div className="px-4 pb-24">
-            <h2 className="text-xl font-bold text-[var(--color-text-primary)] mb-4">Search</h2>
+            <h2 className="cx-h2 text-[var(--color-text-primary)] mb-4">Search</h2>
 
             <div className="relative mb-6">
-                <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
                 <input
                     type="text"
                     value={query}
@@ -152,25 +153,26 @@ export default function TripSearch() {
                     className="w-full bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl pl-10 pr-4 py-3 text-[var(--color-text-primary)] text-base focus:outline-none focus:border-brand-teal"
                 />
                 {loading && (
-                    <Loader2 size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 animate-spin" />
+                    <Loader2 size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] animate-spin" />
                 )}
             </div>
 
             {!query.trim() && (
-                <div className="text-center py-16 text-gray-500">
-                    <Search size={32} className="mx-auto mb-2 opacity-50" />
-                    <p>Search this trip's comments, tasks, and notes.</p>
-                </div>
+                <EmptyState
+                    icon={<Search size={32} className="opacity-50" />}
+                    title="Search this trip"
+                    hint="Find comments, tasks, and notes."
+                />
             )}
 
             {query.trim() && error && (
-                <div className="text-center py-16 text-red-400">
+                <div className="text-center py-16 text-[var(--color-vermilion)]">
                     <p>Something went wrong. Try again.</p>
                 </div>
             )}
 
             {query.trim() && !error && searched && !loading && results.length === 0 && (
-                <div className="text-center py-16 text-gray-500">
+                <div className="text-center py-16 text-[var(--color-text-muted)]">
                     <p>No results for "{query.trim()}"</p>
                 </div>
             )}
@@ -192,27 +194,20 @@ export default function TripSearch() {
                             <button
                                 key={`${result.type}-${result.id}`}
                                 onClick={() => goTo(result)}
-                                className="w-full text-left bg-[var(--color-bg-card)] rounded-xl border border-[var(--color-border)] p-4 flex items-start gap-3 hover:border-brand-teal/50 transition-colors"
+                                className="w-full text-left cx-slide p-4 flex items-start gap-3 hover:border-brand-teal/50 transition-colors"
                             >
                                 <div className="w-9 h-9 rounded-lg bg-[var(--color-bg-primary)] flex items-center justify-center shrink-0">
                                     <Icon size={16} className="text-brand-teal" />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2">
-                                        <span className="text-[10px] uppercase tracking-wide text-gray-500">
+                                        <SectionLabel className="text-[10px]">
                                             {result.type === 'comment' ? 'Comment' : result.type === 'task' ? 'Task' : 'Note'}
-                                        </span>
+                                        </SectionLabel>
                                         {result.type === 'task' && (
-                                            <span
-                                                className={`text-[10px] px-1.5 py-0.5 rounded-full ${result.status === 'done'
-                                                    ? 'bg-gray-800 text-gray-500'
-                                                    : result.status === 'doing'
-                                                        ? 'bg-yellow-900/40 text-yellow-400'
-                                                        : 'bg-gray-800 text-gray-400'
-                                                    }`}
-                                            >
+                                            <Tag tone={result.status === 'done' ? 'green' : result.status === 'doing' ? 'gold' : 'neutral'} className="text-[10px]">
                                                 {result.status === 'done' ? 'Done' : result.status === 'doing' ? 'In progress' : 'To do'}
-                                            </span>
+                                            </Tag>
                                         )}
                                     </div>
                                     {(result.type === 'task' || result.type === 'note') && (
@@ -223,7 +218,7 @@ export default function TripSearch() {
                                     <p className="text-sm text-[var(--color-text-secondary)] mt-0.5 line-clamp-2 break-words">
                                         {renderSnippet(result.snippet)}
                                     </p>
-                                    <p className="text-xs text-gray-600 mt-1">
+                                    <p className="text-xs text-[var(--color-text-muted)] mt-1">
                                         {author && `${author.display_name} · `}
                                         {formatDate(result.type === 'note' ? result.updated_at : result.created_at)}
                                     </p>

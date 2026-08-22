@@ -78,9 +78,9 @@ export function FeedbackWidget() {
                                         key={t}
                                         type="button"
                                         onClick={() => setType(t)}
-                                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                                        className={`cx-label px-3 py-1.5 rounded-full text-[11px] border transition-colors ${
                                             type === t
-                                                ? 'bg-brand-teal border-brand-teal text-white'
+                                                ? 'bg-brand-teal border-brand-teal text-[var(--color-carbon)]'
                                                 : 'border-[var(--color-border)] text-[var(--color-text-secondary)]'
                                         }`}
                                     >
@@ -99,7 +99,7 @@ export function FeedbackWidget() {
                             <button
                                 type="submit"
                                 disabled={sending || !text.trim()}
-                                className="w-full flex items-center justify-center gap-2 py-2.5 bg-brand-teal text-white rounded-xl text-sm font-medium disabled:opacity-50"
+                                className="w-full flex items-center justify-center gap-2 py-2.5 bg-brand-teal text-[var(--color-carbon)] rounded-xl text-sm font-medium disabled:opacity-50"
                             >
                                 {sending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
                                 {sending ? 'Sending...' : 'Send Feedback'}

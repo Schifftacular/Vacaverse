@@ -20,6 +20,7 @@ import {
     Download,
     Loader2,
 } from 'lucide-react';
+import { Panel, Button, EmptyState } from '../../components/ui/Concourse';
 import type { Trip, TripDocument } from '../../types';
 
 const formatSize = (bytes: number): string => {
@@ -179,11 +180,11 @@ export default function TripDocuments() {
 
     return (
         <div className="px-4 pb-24">
-            <h2 className="text-xl font-bold text-[var(--color-text-primary)] mb-6">Documents</h2>
+            <h2 className="cx-h2 text-[var(--color-text-primary)] mb-6">Documents</h2>
 
             {/* Upload progress bar */}
             {uploadProgress !== null && (
-                <div className="mb-4 bg-[var(--color-bg-card)] rounded-xl p-4 border border-[var(--color-border)]">
+                <Panel className="mb-4 p-4">
                     <div className="flex items-center gap-3 mb-2">
                         <Loader2 size={16} className="text-brand-teal animate-spin" />
                         <span className="text-sm text-[var(--color-text-primary)]">Uploading... {uploadProgress}%</span>
@@ -194,17 +195,15 @@ export default function TripDocuments() {
                             style={{ width: `${uploadProgress}%` }}
                         />
                     </div>
-                </div>
+                </Panel>
             )}
 
             {docs.length === 0 && uploadProgress === null ? (
-                <div className="flex flex-col items-center justify-center py-20 text-center">
-                    <FileText size={48} className="text-gray-600 mb-4" />
-                    <h3 className="text-lg font-medium text-[var(--color-text-primary)] mb-2">No documents yet</h3>
-                    <p className="text-[var(--color-text-secondary)] text-sm">
-                        Upload travel docs, confirmations, tickets, and anything else the group needs.
-                    </p>
-                </div>
+                <EmptyState
+                    icon={<FileText size={48} />}
+                    title="No documents yet"
+                    hint="Upload travel docs, confirmations, tickets, and anything else the group needs."
+                />
             ) : (
                 <div className="space-y-3">
                     {docs.map(doc => {
@@ -213,10 +212,7 @@ export default function TripDocuments() {
                         const isDeleting = deletingId === doc.id;
 
                         return (
-                            <div
-                                key={doc.id}
-                                className="bg-[var(--color-bg-card)] rounded-xl border border-[var(--color-border)] p-4 flex items-center gap-3"
-                            >
+                            <Panel key={doc.id} className="p-4 flex items-center gap-3">
                                 {/* Icon */}
                                 <div className="w-10 h-10 rounded-lg bg-[var(--color-bg-primary)] flex items-center justify-center shrink-0">
                                     <IconComponent size={20} className="text-brand-teal" />
@@ -233,7 +229,7 @@ export default function TripDocuments() {
                                     <p className="text-sm font-medium text-[var(--color-text-primary)] truncate group-hover:text-brand-teal transition-colors">
                                         {doc.name}
                                     </p>
-                                    <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+                                    <p className="text-xs text-[var(--color-text-secondary)] mt-0.5 tabular-nums">
                                         {formatSize(doc.size)}
                                         {uploader && ` · ${uploader.display_name}`}
                                         {doc.created_at && ` · ${formatDate(doc.created_at)}`}
@@ -246,7 +242,7 @@ export default function TripDocuments() {
                                         href={doc.storage_url}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="p-2 text-gray-500 hover:text-brand-teal transition-colors"
+                                        className="p-2 text-[var(--color-text-muted)] hover:text-brand-teal transition-colors"
                                         aria-label="Download"
                                     >
                                         <Download size={16} />
@@ -254,7 +250,7 @@ export default function TripDocuments() {
                                     <button
                                         onClick={() => setConfirmDelete(doc)}
                                         disabled={isDeleting}
-                                        className="p-2 text-gray-500 hover:text-red-400 transition-colors disabled:opacity-50"
+                                        className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-vermilion)] transition-colors disabled:opacity-50"
                                         aria-label="Delete"
                                     >
                                         {isDeleting ? (
@@ -264,7 +260,7 @@ export default function TripDocuments() {
                                         )}
                                     </button>
                                 </div>
-                            </div>
+                            </Panel>
                         );
                     })}
                 </div>
@@ -283,7 +279,7 @@ export default function TripDocuments() {
             <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadProgress !== null}
-                className="fixed bottom-24 right-6 w-14 h-14 bg-brand-teal rounded-full flex items-center justify-center shadow-lg text-white hover:bg-teal-400 transition-colors disabled:opacity-50"
+                className="cx-lit fixed bottom-24 right-6 w-14 h-14 bg-brand-teal rounded-full flex items-center justify-center shadow-lg text-[var(--color-carbon)] hover:brightness-110 transition-all disabled:opacity-50"
                 aria-label="Upload document"
             >
                 <Plus size={24} />
@@ -295,8 +291,8 @@ export default function TripDocuments() {
                     className="fixed inset-0 z-50 flex items-end justify-center p-4 bg-black/60"
                     onClick={() => setConfirmDelete(null)}
                 >
-                    <div
-                        className="bg-[var(--color-bg-card)] rounded-2xl p-6 w-full max-w-md border border-[var(--color-border)]"
+                    <Panel
+                        className="p-6 w-full max-w-md"
                         onClick={e => e.stopPropagation()}
                     >
                         <h3 className="text-lg font-bold text-[var(--color-text-primary)] mb-2">Delete Document?</h3>
@@ -304,20 +300,24 @@ export default function TripDocuments() {
                             "{confirmDelete.name}" will be permanently deleted.
                         </p>
                         <div className="flex gap-3">
-                            <button
+                            <Button
+                                variant="outline"
+                                size="lg"
+                                className="flex-1"
                                 onClick={() => setConfirmDelete(null)}
-                                className="flex-1 py-3 rounded-xl border border-[var(--color-border)] text-[var(--color-text-secondary)] text-sm font-medium"
                             >
                                 Cancel
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                                variant="danger"
+                                size="lg"
+                                className="flex-1"
                                 onClick={() => handleDelete(confirmDelete)}
-                                className="flex-1 py-3 rounded-xl bg-red-500 text-white text-sm font-medium hover:bg-red-400 transition-colors"
                             >
                                 Delete
-                            </button>
+                            </Button>
                         </div>
-                    </div>
+                    </Panel>
                 </div>
             )}
         </div>

@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { createFamilyInvite } from '../services/inviteService';
 import { useUserProfiles } from '../hooks/useUserProfiles';
 import { Users, Plus, X, Check, Copy, Link2, Loader2 } from 'lucide-react';
+import { Button, Panel, EmptyState } from '../components/ui/Concourse';
 
 export default function Family() {
     const { families, currentFamily, setCurrentFamily, createFamily, loading } = useFamily();
@@ -65,41 +66,42 @@ export default function Family() {
         return (
             <div className="p-4 pb-24 min-h-screen bg-[var(--color-bg-primary)]">
                 <div className="space-y-4 animate-pulse">
-                    <div className="h-8 bg-gray-800/50 rounded w-1/2" />
-                    <div className="h-24 bg-gray-800/50 rounded-xl" />
-                    <div className="h-24 bg-gray-800/50 rounded-xl" />
+                    <div className="h-8 bg-[var(--color-bg-secondary)] rounded w-1/2" />
+                    <div className="h-24 bg-[var(--color-bg-secondary)] rounded-xl" />
+                    <div className="h-24 bg-[var(--color-bg-secondary)] rounded-xl" />
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="p-4 pb-24 min-h-screen bg-[#0f172a]">
+        <div className="p-4 pb-24 min-h-screen bg-[var(--color-bg-primary)]">
             <div className="flex justify-between items-center mb-8">
                 <div>
-                    <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">My Families</h1>
+                    <h1 className="cx-h1 text-[var(--color-text-primary)]">My Families</h1>
                     <p className="text-[var(--color-text-secondary)] text-sm">Manage your family groups</p>
                 </div>
-                <button
+                <Button
+                    variant="outline"
+                    size="icon"
                     onClick={() => setIsModalOpen(true)}
-                    className="w-10 h-10 bg-[var(--color-bg-card)] rounded-full flex items-center justify-center text-brand-teal border border-[var(--color-border)]"
+                    className="rounded-full text-brand-teal"
                 >
                     <Plus size={20} />
-                </button>
+                </Button>
             </div>
 
             {families.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 text-center">
-                    <Users size={48} className="text-gray-600 mb-4" />
-                    <h2 className="text-xl font-bold text-[var(--color-text-primary)] mb-2">No family groups yet</h2>
-                    <p className="text-[var(--color-text-secondary)] mb-6">Create a family group to start planning together.</p>
-                    <button
-                        onClick={() => setIsModalOpen(true)}
-                        className="px-6 py-3 bg-brand-teal text-white rounded-lg font-bold"
-                    >
-                        Create Family Group
-                    </button>
-                </div>
+                <EmptyState
+                    icon={<Users size={48} />}
+                    title="No family groups yet"
+                    hint="Create a family group to start planning together."
+                    action={
+                        <Button variant="primary" onClick={() => setIsModalOpen(true)}>
+                            Create Family Group
+                        </Button>
+                    }
+                />
             ) : (
                 <div className="space-y-3">
                     {families.map(family => (
@@ -109,10 +111,10 @@ export default function Family() {
                                 setCurrentFamily(currentFamily?.id === family.id ? null : family);
                                 setInviteCode(null);
                             }}
-                            className={`w-full bg-[var(--color-bg-card)] p-4 rounded-xl border transition-colors text-left ${
+                            className={`w-full cx-slide p-4 transition-colors text-left ${
                                 currentFamily?.id === family.id
                                     ? 'border-brand-teal'
-                                    : 'border-[var(--color-border)] hover:border-gray-700'
+                                    : 'hover:border-brand-teal/50'
                             }`}
                         >
                             <div className="flex items-center justify-between">
@@ -135,7 +137,7 @@ export default function Family() {
             {currentFamily && (
                 <div className="mt-6">
                     <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">Members</h2>
+                        <h2 className="cx-label text-sm text-[var(--color-text-muted)]">Members</h2>
                         <button
                             onClick={handleGenerateInvite}
                             disabled={inviteLoading}
@@ -148,12 +150,12 @@ export default function Family() {
 
                     {/* Invite code display */}
                     {inviteCode && (
-                        <div className="bg-[var(--color-bg-card)] rounded-2xl p-5 border border-brand-teal mb-4 text-center">
+                        <Panel raked className="cx-lit p-5 border-brand-teal mb-4 text-center">
                             <p className="text-[var(--color-text-secondary)] text-sm mb-2">Share this code with your family</p>
-                            <div className="text-4xl font-mono font-bold text-[var(--color-text-primary)] tracking-widest mb-3">
+                            <div className="text-4xl font-mono font-bold text-[var(--color-text-primary)] tracking-widest mb-3 tabular-nums">
                                 {inviteCode}
                             </div>
-                            <p className="text-xs text-gray-500 mb-4">Expires in 7 days · anyone with the code or link can join</p>
+                            <p className="text-xs text-[var(--color-text-muted)] mb-4">Expires in 7 days · anyone with the code or link can join</p>
                             <div className="flex items-center justify-center gap-2">
                                 <button
                                     onClick={handleCopyCode}
@@ -170,19 +172,19 @@ export default function Family() {
                                     {linkCopied ? 'Copied!' : 'Copy Link'}
                                 </button>
                             </div>
-                        </div>
+                        </Panel>
                     )}
 
                     {/* Member list */}
                     {currentFamily.members.map(uid => {
                         const profile = profiles.get(uid);
                         return (
-                            <div key={uid} className="flex items-center gap-3 bg-[var(--color-bg-card)] p-3 rounded-xl border border-[var(--color-border)] mb-2">
-                                <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden flex-shrink-0">
+                            <div key={uid} className="flex items-center gap-3 cx-slide p-3 mb-2">
+                                <div className="w-10 h-10 rounded-full bg-[var(--color-bg-secondary)] flex items-center justify-center overflow-hidden border-2 border-brand-teal flex-shrink-0">
                                     {profile?.photo_url ? (
                                         <img src={profile.photo_url} alt="" className="w-full h-full object-cover" />
                                     ) : (
-                                        <span className="text-white text-sm font-bold">
+                                        <span className="text-[var(--color-text-primary)] text-sm font-bold">
                                             {(profile?.display_name || '?').charAt(0).toUpperCase()}
                                         </span>
                                     )}
@@ -200,11 +202,11 @@ export default function Family() {
             {/* Create Family Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/80 z-50 flex items-end sm:items-center justify-center p-4">
-                    <div className="bg-[var(--color-bg-card)] w-full max-w-md rounded-2xl p-6 relative border border-[var(--color-border)]">
-                        <button onClick={() => setIsModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">
+                    <div className="cx-slide w-full max-w-md p-6 relative">
+                        <button onClick={() => setIsModalOpen(false)} className="absolute top-4 right-4 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]">
                             <X size={24} />
                         </button>
-                        <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-6">Create Family Group</h2>
+                        <h2 className="cx-h2 text-[var(--color-text-primary)] mb-6">Create Family Group</h2>
                         <form onSubmit={handleCreateFamily} className="space-y-4">
                             <div>
                                 <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Family Name</label>
@@ -217,13 +219,9 @@ export default function Family() {
                                     required
                                 />
                             </div>
-                            <button
-                                type="submit"
-                                disabled={createLoading}
-                                className="w-full bg-brand-teal text-white font-bold py-4 rounded-xl hover:bg-teal-600 transition-colors disabled:opacity-50"
-                            >
+                            <Button type="submit" variant="primary" size="lg" disabled={createLoading}>
                                 {createLoading ? 'Creating...' : 'Create Family'}
-                            </button>
+                            </Button>
                         </form>
                     </div>
                 </div>

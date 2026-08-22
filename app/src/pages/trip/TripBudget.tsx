@@ -5,9 +5,10 @@ import { addTripItem, getTripItems, deleteTripItem } from '../../services/tripSe
 import { useToast } from '../../contexts/ToastContext';
 import { DollarSign, Plus, Trash2, X, Loader2 } from 'lucide-react';
 import { GridSkeleton } from '../../components/ui/Skeletons';
+import { Panel, EmptyState } from '../../components/ui/Concourse';
 import type { Trip } from '../../types';
 
-const COLORS = ['#68A8AD', '#FFC726', '#003E51', '#E88C0C', '#2E8B84', '#EF4444', '#8B5CF6'];
+const COLORS = ['#b5603a', 'var(--color-goldenrod)', '#4a3420', '#e0982a', 'var(--color-bottle-green)', 'var(--color-vermilion)', '#c9a227'];
 
 import type { Expense } from '../../types';
 
@@ -109,26 +110,26 @@ export default function TripBudget() {
 
     return (
         <div className="px-4 pb-24">
-            <h2 className="text-xl font-bold text-white mb-6">Trip Budget</h2>
+            <h2 className="cx-h2 text-[var(--color-text-primary)] mb-6">Trip Budget</h2>
 
             {/* Summary Cards */}
             <div className="grid grid-cols-2 gap-4 mb-8">
-                <div className="bg-[#1e293b] p-4 rounded-xl border border-gray-800">
-                    <div className="text-gray-400 text-sm mb-1">Total Spent</div>
-                    <div className="text-2xl font-bold text-white">${totalSpent.toLocaleString()}</div>
-                    <div className="text-xs text-gray-500 mt-1">Target: ${totalBudget.toLocaleString()}</div>
-                </div>
-                <div className="bg-[#1e293b] p-4 rounded-xl border border-gray-800">
-                    <div className="text-gray-400 text-sm mb-1">Remaining</div>
-                    <div className={`text-2xl font-bold ${remaining < 0 ? 'text-red-400' : 'text-brand-teal'}`}>
+                <Panel className="p-4">
+                    <div className="cx-label text-xs text-[var(--color-text-muted)] mb-1">Total Spent</div>
+                    <div className="text-2xl font-bold text-[var(--color-text-primary)] tabular-nums">${totalSpent.toLocaleString()}</div>
+                    <div className="text-xs text-[var(--color-text-muted)] mt-1 tabular-nums">Target: ${totalBudget.toLocaleString()}</div>
+                </Panel>
+                <Panel className="p-4">
+                    <div className="cx-label text-xs text-[var(--color-text-muted)] mb-1">Remaining</div>
+                    <div className={`text-2xl font-bold tabular-nums ${remaining < 0 ? 'text-[var(--color-vermilion)]' : 'text-[var(--color-bottle-green)]'}`}>
                         ${remaining.toLocaleString()}
                     </div>
-                </div>
+                </Panel>
             </div>
 
             {/* Chart */}
-            <div className="bg-[#1e293b] p-4 rounded-xl border border-gray-800 mb-8 h-80">
-                <h3 className="text-white font-medium mb-4">Expenses by Category</h3>
+            <Panel raked className="p-4 mb-8 h-80">
+                <h3 className="cx-label text-xs text-[var(--color-text-muted)] mb-4">Expenses by Category</h3>
                 {chartData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
@@ -144,54 +145,56 @@ export default function TripBudget() {
                                 ))}
                             </Pie>
                             <Tooltip
-                                contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155' }}
-                                itemStyle={{ color: '#fff' }}
+                                contentStyle={{ backgroundColor: 'var(--color-bg-card)', borderColor: 'var(--color-border)' }}
+                                itemStyle={{ color: 'var(--color-text-primary)', fontVariantNumeric: 'tabular-nums' }}
                                 formatter={(value: any) => `$${value.toLocaleString()}`}
                             />
                             <Legend />
                         </PieChart>
                     </ResponsiveContainer>
                 ) : (
-                    <div className="h-full flex items-center justify-center text-gray-500">
+                    <div className="h-full flex items-center justify-center text-[var(--color-text-muted)]">
                         No expenses yet
                     </div>
                 )}
-            </div>
+            </Panel>
 
             {/* Recent Expenses List */}
             <div>
                 <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-white font-medium">Recent Expenses</h3>
+                    <h3 className="cx-label text-xs text-[var(--color-text-muted)]">Recent Expenses</h3>
                 </div>
                 <div className="space-y-3">
                     {expenses.map(expense => (
-                        <div key={expense.id} className="flex items-center justify-between bg-[#1e293b] p-4 rounded-xl border border-gray-800 group">
+                        <Panel key={expense.id} className="flex items-center justify-between p-4 group">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-gray-400">
+                                <div className="w-10 h-10 rounded-full bg-[var(--color-bg-secondary)] flex items-center justify-center text-[var(--color-text-muted)]">
                                     <DollarSign size={20} />
                                 </div>
                                 <div>
-                                    <div className="text-white font-medium">{expense.title}</div>
-                                    <div className="text-xs text-gray-400">{expense.category} • {expense.date}</div>
+                                    <div className="text-[var(--color-text-primary)] font-medium">{expense.title}</div>
+                                    <div className="cx-label text-[11px] text-[var(--color-text-muted)] tabular-nums">{expense.category} • {expense.date}</div>
                                 </div>
                             </div>
                             <div className="flex items-center gap-4">
-                                <div className="text-white font-bold">
+                                <div className="text-[var(--color-text-primary)] font-bold tabular-nums">
                                     ${expense.amount.toLocaleString()}
                                 </div>
                                 <button
                                     onClick={() => handleDeleteExpense(expense.id)}
-                                    className="text-gray-500 hover:text-red-400 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                                    className="text-[var(--color-text-muted)] hover:text-[var(--color-vermilion)] opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                                 >
                                     <Trash2 size={18} />
                                 </button>
                             </div>
-                        </div>
+                        </Panel>
                     ))}
                     {expenses.length === 0 && (
-                        <div className="text-center py-8 text-gray-500">
-                            No expenses recorded.
-                        </div>
+                        <EmptyState
+                            icon={<DollarSign size={28} />}
+                            title="No expenses recorded"
+                            hint="Add your first expense to start tracking the trip budget."
+                        />
                     )}
                 </div>
             </div>
@@ -199,7 +202,7 @@ export default function TripBudget() {
             {/* Fab */}
             <button
                 onClick={() => setIsModalOpen(true)}
-                className="fixed bottom-24 right-6 w-14 h-14 bg-brand-teal rounded-full flex items-center justify-center shadow-lg text-white hover:bg-teal-600 transition-colors z-30"
+                className="cx-lit fixed bottom-24 right-6 w-14 h-14 bg-brand-teal rounded-full flex items-center justify-center text-[var(--color-carbon)] hover:brightness-110 transition-colors z-30"
             >
                 <Plus size={24} />
             </button>
@@ -207,61 +210,61 @@ export default function TripBudget() {
             {/* Add Expense Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/80 z-50 flex items-end sm:items-center justify-center p-4">
-                    <div className="bg-[#1e293b] w-full max-w-md rounded-2xl p-6 relative animate-in slide-in-from-bottom-10 fade-in border border-gray-800 max-h-[85vh] overflow-y-auto">
+                    <div className="cx-slide w-full max-w-md p-6 relative animate-in slide-in-from-bottom-10 fade-in max-h-[85vh] overflow-y-auto">
                         <button
                             onClick={() => setIsModalOpen(false)}
-                            className="absolute top-4 right-4 text-gray-400 hover:text-white"
+                            className="absolute top-4 right-4 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
                         >
                             <X size={24} />
                         </button>
 
-                        <h2 className="text-2xl font-bold text-white mb-6">Add Expense</h2>
+                        <h2 className="cx-h2 text-[var(--color-text-primary)] mb-6">Add Expense</h2>
 
                         <form onSubmit={handleAddExpense} className="space-y-4">
                             <div>
-                                <label className="block text-sm text-gray-400 mb-1">Title</label>
+                                <label className="cx-label block text-xs text-[var(--color-text-muted)] mb-1">Title</label>
                                 <input
                                     type="text"
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                     placeholder="e.g., Resort Fee"
-                                    className="w-full bg-[#0f172a] border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-brand-teal"
+                                    className="w-full bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
                                     required
                                 />
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm text-gray-400 mb-1">Amount</label>
+                                    <label className="cx-label block text-xs text-[var(--color-text-muted)] mb-1">Amount</label>
                                     <input
                                         type="number"
                                         value={amount}
                                         onChange={(e) => setAmount(e.target.value)}
                                         placeholder="0.00"
-                                        className="w-full bg-[#0f172a] border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-brand-teal"
+                                        className="w-full bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] tabular-nums focus:outline-none focus:border-brand-teal"
                                         required
                                         min="0"
                                         step="0.01"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm text-gray-400 mb-1">Date</label>
+                                    <label className="cx-label block text-xs text-[var(--color-text-muted)] mb-1">Date</label>
                                     <input
                                         type="date"
                                         value={date}
                                         onChange={(e) => setDate(e.target.value)}
-                                        className="w-full bg-[#0f172a] border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-brand-teal"
+                                        className="w-full bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] tabular-nums focus:outline-none focus:border-brand-teal"
                                         required
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm text-gray-400 mb-1">Category</label>
+                                <label className="cx-label block text-xs text-[var(--color-text-muted)] mb-1">Category</label>
                                 <select
                                     value={category}
                                     onChange={(e) => setCategory(e.target.value)}
-                                    className="w-full bg-[#0f172a] border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-brand-teal"
+                                    className="w-full bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
                                 >
                                     {CATEGORIES.map(cat => (
                                         <option key={cat} value={cat}>{cat}</option>
@@ -272,7 +275,7 @@ export default function TripBudget() {
                             <button
                                 type="submit"
                                 disabled={submitLoading}
-                                className="w-full bg-brand-teal text-white font-bold py-4 rounded-xl mt-4 hover:bg-teal-600 transition-colors disabled:opacity-50"
+                                className="w-full bg-brand-teal text-[var(--color-carbon)] font-bold py-4 rounded-xl mt-4 hover:brightness-110 transition-colors disabled:opacity-50"
                             >
                                 {submitLoading ? <Loader2 className="animate-spin mx-auto" /> : 'Add Expense'}
                             </button>
