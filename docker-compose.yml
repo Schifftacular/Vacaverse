@@ -11,14 +11,20 @@
 # defaults the project name to the directory name, which collides with other
 # projects and makes `docker compose down` remove containers by the wrong
 # label. Always name the stack explicitly.
+#
+# IMAGE, NOT BUILD: this box's deploy mechanism (Hostinger's project API)
+# only ever materializes this compose file's contents on the VPS — it does
+# not clone the repo, so a `build:` context has no source to build from
+# (confirmed: tried both a bare repo URL and the raw compose-file URL,
+# neither produced a working build). The image is built by
+# .github/workflows/docker-publish.yml on every push and published to
+# ghcr.io/schifftacular/vacaverse:latest — that package must be public for
+# this VPS to pull it without registry credentials it doesn't have.
 name: vacaverse
 
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: vacaverse:latest
+    image: ghcr.io/schifftacular/vacaverse:latest
     container_name: vacaverse-app
     restart: unless-stopped
     environment:
