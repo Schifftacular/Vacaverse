@@ -98,7 +98,7 @@ function Toolbar({ editor }: { editor: Editor | null }) {
     ];
 
     return (
-        <div className="flex items-center gap-1 px-2 py-2 border-b border-[var(--color-border)] overflow-x-auto">
+        <div className="flex items-center gap-2 px-2 py-2 border-b border-[var(--color-border)] overflow-x-auto">
             {buttons.map(({ label, icon: Icon, active, onClick }) => (
                 <button
                     key={label}
@@ -106,13 +106,17 @@ function Toolbar({ editor }: { editor: Editor | null }) {
                     onClick={onClick}
                     aria-label={label}
                     aria-pressed={active}
-                    className={`p-2 rounded-lg shrink-0 transition-colors ${
-                        active
-                            ? 'bg-brand-teal/20 text-brand-teal'
-                            : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-primary)]'
-                    }`}
+                    className="min-w-11 min-h-11 -m-1 shrink-0 flex items-center justify-center"
                 >
-                    <Icon size={16} />
+                    <span
+                        className={`p-2 rounded-lg transition-colors ${
+                            active
+                                ? 'bg-brand-teal/20 text-brand-teal'
+                                : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-primary)]'
+                        }`}
+                    >
+                        <Icon size={16} />
+                    </span>
                 </button>
             ))}
         </div>
