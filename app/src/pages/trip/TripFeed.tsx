@@ -657,7 +657,7 @@ export default function TripFeed() {
                         which floats fixed at the same bottom-20/left-4 corner. */}
                     <form
                         onSubmit={handleSendComment}
-                        className="fixed left-20 right-4 bottom-[calc(4rem_+_env(safe-area-inset-bottom)_+_0.5rem)] z-20 flex gap-2"
+                        className="fixed left-20 right-4 bottom-[calc(4rem_+_env(safe-area-inset-bottom)_+_0.5rem)] z-20 flex gap-2 bg-[var(--color-bg-primary)] p-1 -m-1 rounded-full"
                     >
                         <input
                             type="text"
