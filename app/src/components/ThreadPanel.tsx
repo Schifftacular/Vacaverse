@@ -141,22 +141,26 @@ function ThreadMessage({
                     )}
 
                     {canEditDelete && !isEditing && (
-                        <div className={`flex gap-1 shrink-0 transition-opacity ${actionsOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                        <div className={`flex gap-2 shrink-0 transition-opacity ${actionsOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                             <button
                                 type="button"
                                 onClick={onStartEdit}
-                                className="p-1.5 rounded-full bg-[#0f172a] border border-gray-700 text-gray-300 hover:text-white"
+                                className="min-w-11 min-h-11 -m-2 flex items-center justify-center text-gray-300 hover:text-white"
                                 aria-label="Edit message"
                             >
-                                <Pencil size={12} />
+                                <span className="p-1.5 rounded-full bg-[#0f172a] border border-gray-700 flex items-center justify-center">
+                                    <Pencil size={12} />
+                                </span>
                             </button>
                             <button
                                 type="button"
                                 onClick={onDelete}
-                                className="p-1.5 rounded-full bg-[#0f172a] border border-gray-700 text-gray-300 hover:text-red-400"
+                                className="min-w-11 min-h-11 -m-2 flex items-center justify-center text-gray-300 hover:text-red-400"
                                 aria-label="Delete message"
                             >
-                                <Trash2 size={12} />
+                                <span className="p-1.5 rounded-full bg-[#0f172a] border border-gray-700 flex items-center justify-center">
+                                    <Trash2 size={12} />
+                                </span>
                             </button>
                         </div>
                     )}

@@ -520,7 +520,7 @@ export default function TripFeed() {
                                                     {/* Hover (desktop) / tap-to-pin (touch) actions */}
                                                     {(showEditDelete || showReply) && (
                                                         <div
-                                                            className={`flex gap-1 transition-opacity ${
+                                                            className={`flex gap-2 transition-opacity ${
                                                                 actionsOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
                                                             }`}
                                                         >
@@ -528,10 +528,12 @@ export default function TripFeed() {
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => setActiveThreadId(comment.id)}
-                                                                    className="p-1.5 rounded-full bg-[#1e293b] border border-gray-700 text-gray-300 hover:text-white"
+                                                                    className="min-w-11 min-h-11 -m-2 flex items-center justify-center text-gray-300 hover:text-white"
                                                                     aria-label="Reply"
                                                                 >
-                                                                    <Reply size={12} />
+                                                                    <span className="p-1.5 rounded-full bg-[#1e293b] border border-gray-700 flex items-center justify-center">
+                                                                        <Reply size={12} />
+                                                                    </span>
                                                                 </button>
                                                             )}
                                                             {showEditDelete && (
@@ -539,18 +541,22 @@ export default function TripFeed() {
                                                                     <button
                                                                         type="button"
                                                                         onClick={() => startEdit(comment)}
-                                                                        className="p-1.5 rounded-full bg-[#1e293b] border border-gray-700 text-gray-300 hover:text-white"
+                                                                        className="min-w-11 min-h-11 -m-2 flex items-center justify-center text-gray-300 hover:text-white"
                                                                         aria-label="Edit message"
                                                                     >
-                                                                        <Pencil size={12} />
+                                                                        <span className="p-1.5 rounded-full bg-[#1e293b] border border-gray-700 flex items-center justify-center">
+                                                                            <Pencil size={12} />
+                                                                        </span>
                                                                     </button>
                                                                     <button
                                                                         type="button"
                                                                         onClick={() => handleDelete(comment)}
-                                                                        className="p-1.5 rounded-full bg-[#1e293b] border border-gray-700 text-gray-300 hover:text-red-400"
+                                                                        className="min-w-11 min-h-11 -m-2 flex items-center justify-center text-gray-300 hover:text-red-400"
                                                                         aria-label="Delete message"
                                                                     >
-                                                                        <Trash2 size={12} />
+                                                                        <span className="p-1.5 rounded-full bg-[#1e293b] border border-gray-700 flex items-center justify-center">
+                                                                            <Trash2 size={12} />
+                                                                        </span>
                                                                     </button>
                                                                 </>
                                                             )}
