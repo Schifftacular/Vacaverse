@@ -116,7 +116,8 @@ CREATE TABLE IF NOT EXISTS comments (
     user_id TEXT NOT NULL REFERENCES users(id),
     text TEXT NOT NULL,
     parent_comment_id TEXT REFERENCES comments(id) ON DELETE CASCADE,
-    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    edited_at TEXT
 );
 
 CREATE TABLE IF NOT EXISTS polls (

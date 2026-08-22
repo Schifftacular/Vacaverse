@@ -59,12 +59,48 @@ export const subscribeToComments = (
     };
     socket.on('comment:new', onNew);
 
-    return () => { socket.off('comment:new', onNew); };
+    const onUpdated = (comment: any) => {
+        if (comment.trip_id !== tripId) return;
+        comments = comments.map(c => (c.id === comment.id ? comment : c));
+        callback(comments);
+    };
+    socket.on('comment:updated', onUpdated);
+
+    const onDeleted = (payload: { id: string; trip_id: string }) => {
+        if (payload.trip_id !== tripId) return;
+        comments = comments.filter(c => c.id !== payload.id);
+        callback(comments);
+    };
+    socket.on('comment:deleted', onDeleted);
+
+    return () => {
+        socket.off('comment:new', onNew);
+        socket.off('comment:updated', onUpdated);
+        socket.off('comment:deleted', onDeleted);
+    };
 };
 
 export const addComment = async (tripId: string, _userId: string, text: string) => {
+    return new Promise<any>((resolve, reject) => {
+        getSocket().emit('comment:new', { trip_id: tripId, text }, (ack: { data?: any; error?: string }) => {
+            if (ack?.error) reject(new Error(ack.error));
+            else resolve(ack.data);
+        });
+    });
+};
+
+export const editComment = async (tripId: string, commentId: string, text: string) => {
+    return new Promise<any>((resolve, reject) => {
+        getSocket().emit('comment:edit', { trip_id: tripId, id: commentId, text }, (ack: { data?: any; error?: string }) => {
+            if (ack?.error) reject(new Error(ack.error));
+            else resolve(ack.data);
+        });
+    });
+};
+
+export const deleteComment = async (tripId: string, commentId: string) => {
     return new Promise<void>((resolve, reject) => {
-        getSocket().emit('comment:new', { trip_id: tripId, text }, (ack: { error?: string }) => {
+        getSocket().emit('comment:delete', { trip_id: tripId, id: commentId }, (ack: { error?: string }) => {
             if (ack?.error) reject(new Error(ack.error));
             else resolve();
         });

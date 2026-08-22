@@ -13,4 +13,11 @@ db.pragma('foreign_keys = ON');
 const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
 db.exec(schema);
 
+// Lightweight migration: CREATE TABLE IF NOT EXISTS above won't add columns to
+// a table that already exists, so patch older databases here.
+const commentColumns = db.prepare('PRAGMA table_info(comments)').all().map(c => c.name);
+if (!commentColumns.includes('edited_at')) {
+    db.exec('ALTER TABLE comments ADD COLUMN edited_at TEXT');
+}
+
 export default db;

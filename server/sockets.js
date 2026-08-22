@@ -73,6 +73,31 @@ export function attachSockets(io) {
             ack?.({ data: row });
         });
 
+        socket.on('comment:edit', (payload, ack) => {
+            const { trip_id, id, text } = payload || {};
+            if (!trip_id || !id || !text || !text.trim()) return ack?.({ error: 'text is required' });
+            const existing = db.prepare('SELECT * FROM comments WHERE id = ? AND trip_id = ?').get(id, trip_id);
+            if (!existing) return ack?.({ error: 'Comment not found' });
+            if (existing.user_id !== socket.user.id) return ack?.({ error: 'Not authorized' });
+            db.prepare(
+                "UPDATE comments SET text = ?, edited_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?"
+            ).run(text.trim(), id);
+            const row = db.prepare('SELECT * FROM comments WHERE id = ?').get(id);
+            io.to(`trip:${trip_id}`).emit('comment:updated', row);
+            ack?.({ data: row });
+        });
+
+        socket.on('comment:delete', (payload, ack) => {
+            const { trip_id, id } = payload || {};
+            if (!trip_id || !id) return ack?.({ error: 'id is required' });
+            const existing = db.prepare('SELECT * FROM comments WHERE id = ? AND trip_id = ?').get(id, trip_id);
+            if (!existing) return ack?.({ error: 'Comment not found' });
+            if (existing.user_id !== socket.user.id) return ack?.({ error: 'Not authorized' });
+            db.prepare('DELETE FROM comments WHERE id = ?').run(id);
+            io.to(`trip:${trip_id}`).emit('comment:deleted', { id, trip_id });
+            ack?.({ data: { id, trip_id } });
+        });
+
         socket.on('activity:new', payload => {
             const { trip_id, action, detail } = payload || {};
             if (!trip_id || !action) return;
