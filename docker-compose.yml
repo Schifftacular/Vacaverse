@@ -1,0 +1,40 @@
+# vacaverse — deployed as a standalone container publishing a direct host
+# port, deliberately NOT behind this box's shared Traefik. There's no DNS
+# record pointed at this VPS for a vacaverse domain (and no way to provision
+# one from this deploy), so Traefik's Host()-rule routing and Let's Encrypt
+# cert issuance can't work here. A direct published port needs neither and
+# is fully isolated from the other live projects' Traefik routing — this
+# stack cannot affect them, and `docker compose down` here only ever touches
+# containers under this project name.
+#
+# PINNED PROJECT NAME — same reason as every other stack on this box: Compose
+# defaults the project name to the directory name, which collides with other
+# projects and makes `docker compose down` remove containers by the wrong
+# label. Always name the stack explicitly.
+name: vacaverse
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: vacaverse:latest
+    container_name: vacaverse-app
+    restart: unless-stopped
+    environment:
+      PORT: "8080"
+      # Must match wherever the browser actually reaches this — the raw
+      # VPS IP + published port, since there's no domain in front of it.
+      CLIENT_ORIGIN: "http://187.127.255.209:8095"
+    ports:
+      - "0.0.0.0:8095:8080"
+    volumes:
+      # Named volumes (not bind mounts) so first-run creation copies the
+      # image's baked-in server/db/schema.sql into the volume — a bind mount
+      # would start empty and shadow it, breaking schema init on first boot.
+      - vacaverse-db:/app/server/db
+      - vacaverse-uploads:/app/server/uploads
+
+volumes:
+  vacaverse-db:
+  vacaverse-uploads:
