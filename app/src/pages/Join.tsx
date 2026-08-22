@@ -1,27 +1,39 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useFamily } from '../contexts/FamilyContext';
-import { lookupInviteCode, markInviteUsed } from '../services/inviteService';
+import { lookupInviteCode } from '../services/inviteService';
 import { useToast } from '../contexts/ToastContext';
-import { Users, Loader2 } from 'lucide-react';
+import { db } from '../lib/client';
+import { Users, Loader2, PartyPopper } from 'lucide-react';
 
 export default function Join() {
-    const { user } = useAuth();
-    const { joinFamily } = useFamily();
+    const { user, signInWithEmail, signUpWithEmail } = useAuth();
+    const { setCurrentFamily, joinFamily } = useFamily();
     const { showToast } = useToast();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
 
     const [code, setCode] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [lookupLoading, setLookupLoading] = useState(false);
+    const [joinLoading, setJoinLoading] = useState(false);
     const [found, setFound] = useState<{ familyId: string; familyName: string; inviteId: string } | null>(null);
 
-    const handleLookup = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!code.trim()) return;
-        setLoading(true);
+    // Inline sign-up/sign-in, so a brand-new person never loses the invite by
+    // bouncing to a separate page.
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [isSignUp, setIsSignUp] = useState(true);
+    const [authError, setAuthError] = useState('');
+    const [authLoading, setAuthLoading] = useState(false);
+    const [autoJoin, setAutoJoin] = useState(false);
+
+    const performLookup = async (rawCode: string) => {
+        const trimmed = rawCode.trim();
+        if (!trimmed) return;
+        setLookupLoading(true);
         try {
-            const result = await lookupInviteCode(code.trim());
+            const result = await lookupInviteCode(trimmed);
             if (result) {
                 setFound(result);
             } else {
@@ -30,35 +42,91 @@ export default function Join() {
         } catch (error) {
             showToast('Failed to look up invite code', 'error');
         } finally {
-            setLoading(false);
+            setLookupLoading(false);
         }
+    };
+
+    // A shared invite link (e.g. /join?code=ABC123) should look itself up
+    // automatically instead of making the new person retype the code.
+    useEffect(() => {
+        const fromLink = searchParams.get('code');
+        if (fromLink) {
+            const normalized = fromLink.toUpperCase();
+            setCode(normalized);
+            performLookup(normalized);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const handleLookup = async (e: React.FormEvent) => {
+        e.preventDefault();
+        await performLookup(code);
     };
 
     const handleJoin = async () => {
         if (!found || !user) return;
-        setLoading(true);
+        setJoinLoading(true);
         try {
-            await joinFamily(found.familyId);
-            await markInviteUsed(found.inviteId);
-            showToast(`Joined ${found.familyName}!`, 'success');
-            navigate('/family');
+            try {
+                await joinFamily(found.familyId);
+            } catch (error) {
+                // Already a member (e.g. they joined via an earlier click of this
+                // same link) — treat that as success rather than an error.
+                const message = error instanceof Error ? error.message : '';
+                if (!message.includes('UNIQUE constraint failed')) throw error;
+            }
+
+            setCurrentFamily({ id: found.familyId, name: found.familyName, created_by: '', created_at: '', members: [] });
+
+            // Send them straight into a real trip when the family has one, so
+            // they land somewhere with context instead of an empty dashboard.
+            const { data: familyTrips } = await db
+                .from('trips')
+                .select('*')
+                .eq('family_id', found.familyId)
+                .order('created_at', { ascending: false });
+
+            if (familyTrips && familyTrips.length > 0) {
+                const trip = familyTrips[0];
+                showToast(`Welcome to ${found.familyName}! Say hi in the Feed or check Tasks to see what's next.`, 'success');
+                navigate(`/trips/${trip.id}`);
+            } else {
+                showToast(`Welcome to ${found.familyName}! No trips planned yet — start one to get going.`, 'success');
+                navigate('/trips');
+            }
         } catch (error) {
             showToast('Failed to join family', 'error');
         } finally {
-            setLoading(false);
+            setJoinLoading(false);
         }
     };
 
-    if (!user) {
-        return (
-            <div className="min-h-screen bg-[#0f172a] flex flex-col items-center justify-center p-4 text-center">
-                <Users size={48} className="text-gray-600 mb-4" />
-                <h2 className="text-xl font-bold text-white mb-2">Sign in to join a family</h2>
-                <p className="text-gray-400 mb-4">You need an account to join a family group.</p>
-                <a href="/profile" className="px-6 py-3 bg-brand-teal text-white rounded-lg font-bold">Sign In</a>
-            </div>
-        );
-    }
+    const handleEmailAuth = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setAuthError('');
+        setAuthLoading(true);
+        try {
+            if (isSignUp) {
+                await signUpWithEmail(email, password);
+            } else {
+                await signInWithEmail(email, password);
+            }
+            setAutoJoin(true);
+        } catch (err: unknown) {
+            setAuthError(err instanceof Error ? err.message : 'Failed to authenticate');
+        } finally {
+            setAuthLoading(false);
+        }
+    };
+
+    // Once sign-up/sign-in succeeds, finish the join automatically.
+    useEffect(() => {
+        if (autoJoin && user && found) {
+            setAutoJoin(false);
+            handleJoin();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [autoJoin, user, found]);
 
     return (
         <div className="min-h-screen bg-[#0f172a] flex flex-col items-center justify-center p-4">
@@ -82,14 +150,15 @@ export default function Join() {
                         />
                         <button
                             type="submit"
-                            disabled={loading || code.length < 6}
+                            disabled={lookupLoading || code.length < 6}
                             className="w-full bg-brand-teal text-white font-bold py-4 rounded-xl hover:bg-teal-600 transition-colors disabled:opacity-50"
                         >
-                            {loading ? <Loader2 className="animate-spin mx-auto" /> : 'Look Up Code'}
+                            {lookupLoading ? <Loader2 className="animate-spin mx-auto" /> : 'Look Up Code'}
                         </button>
                     </form>
-                ) : (
+                ) : user ? (
                     <div className="bg-[#1e293b] rounded-2xl p-6 border border-gray-800 text-center">
+                        <PartyPopper size={32} className="text-brand-teal mx-auto mb-3" />
                         <h2 className="text-xl font-bold text-white mb-2">{found.familyName}</h2>
                         <p className="text-gray-400 mb-6">Would you like to join this family group?</p>
                         <div className="flex gap-3">
@@ -101,12 +170,69 @@ export default function Join() {
                             </button>
                             <button
                                 onClick={handleJoin}
-                                disabled={loading}
+                                disabled={joinLoading}
                                 className="flex-1 bg-brand-teal text-white font-bold py-3 rounded-xl hover:bg-teal-600 transition-colors disabled:opacity-50"
                             >
-                                {loading ? <Loader2 className="animate-spin mx-auto" /> : 'Join Family'}
+                                {joinLoading ? <Loader2 className="animate-spin mx-auto" /> : 'Join Family'}
                             </button>
                         </div>
+                    </div>
+                ) : (
+                    <div className="bg-[#1e293b] rounded-2xl p-6 border border-gray-800">
+                        <div className="text-center mb-6">
+                            <PartyPopper size={32} className="text-brand-teal mx-auto mb-3" />
+                            <h2 className="text-xl font-bold text-white mb-1">You're invited to {found.familyName}</h2>
+                            <p className="text-gray-400 text-sm">
+                                {isSignUp ? 'Create an account to join and start planning together.' : 'Sign in to join the family.'}
+                            </p>
+                        </div>
+
+                        <form onSubmit={handleEmailAuth} className="space-y-3">
+                            {authError && <div className="bg-red-500/20 text-red-200 p-2 rounded text-sm">{authError}</div>}
+                            <input
+                                type="email"
+                                placeholder="Email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="w-full p-3 rounded-lg bg-[#0f172a] text-white border border-gray-700 focus:outline-none focus:border-brand-teal"
+                                required
+                            />
+                            <input
+                                type="password"
+                                placeholder="Password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full p-3 rounded-lg bg-[#0f172a] text-white border border-gray-700 focus:outline-none focus:border-brand-teal"
+                                required
+                            />
+                            <button
+                                type="submit"
+                                disabled={authLoading || joinLoading}
+                                className="w-full bg-brand-teal text-white font-bold py-3 rounded-xl hover:bg-teal-600 transition-colors disabled:opacity-50"
+                            >
+                                {authLoading || joinLoading ? (
+                                    <Loader2 className="animate-spin mx-auto" />
+                                ) : isSignUp ? (
+                                    'Create Account & Join'
+                                ) : (
+                                    'Sign In & Join'
+                                )}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => { setIsSignUp(!isSignUp); setAuthError(''); }}
+                                className="w-full text-gray-400 text-sm hover:text-white transition-colors"
+                            >
+                                {isSignUp ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}
+                            </button>
+                        </form>
+
+                        <button
+                            onClick={() => setFound(null)}
+                            className="w-full mt-3 py-2 text-sm text-gray-500 hover:text-gray-300 transition-colors"
+                        >
+                            Wrong code? Start over
+                        </button>
                     </div>
                 )}
             </div>

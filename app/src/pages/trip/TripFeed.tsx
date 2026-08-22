@@ -422,6 +422,7 @@ export default function TripFeed() {
                             <div className="text-center py-12 text-gray-500">
                                 <MessageCircle size={32} className="mx-auto mb-2 opacity-50" />
                                 <p>No comments yet. Start the conversation!</p>
+                                <p className="text-xs mt-1 text-gray-600">Say hi, or ask what everyone's excited about.</p>
                             </div>
                         ) : (
                             topLevelComments.map((comment, index) => {
@@ -662,6 +663,7 @@ export default function TripFeed() {
                         <div className="text-center py-12 text-gray-500">
                             <Activity size={32} className="mx-auto mb-2 opacity-50" />
                             <p>No activity yet. Start planning!</p>
+                            <p className="text-xs mt-1 text-gray-600">Add a task, event, or poll and it'll show up here.</p>
                         </div>
                     ) : (
                         activity.map(entry => {

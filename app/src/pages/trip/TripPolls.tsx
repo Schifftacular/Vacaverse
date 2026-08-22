@@ -146,7 +146,10 @@ export default function TripPolls() {
                     <BarChart2 size={48} className="text-gray-600 mb-4" />
                     <h3 className="text-lg font-medium text-white mb-2">No polls yet</h3>
                     <p className="text-gray-400 text-sm">Create a poll to vote on trip decisions with your family.</p>
-                    <p className="text-gray-500 text-xs mt-1">e.g. "Boat tour or zip line?"</p>
+                    <p className="text-gray-500 text-xs mt-1 mb-4">e.g. "Boat tour or zip line?"</p>
+                    <button onClick={() => setShowModal(true)} className="text-brand-teal font-bold hover:underline">
+                        Create the first poll
+                    </button>
                 </div>
             ) : (
                 <div className="space-y-4">

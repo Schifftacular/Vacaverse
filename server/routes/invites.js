@@ -18,17 +18,20 @@ router.post('/', requireAuth, (req, res) => {
     res.status(201).json({ data: { code }, error: null });
 });
 
+// Note: invites are intentionally multi-use until they expire — a family invite
+// is meant to be shared with several relatives, not consumed by the first person
+// who clicks it.
 router.get('/lookup/:code', (req, res) => {
     const code = req.params.code.toUpperCase();
     const invite = db
         .prepare(`
-            SELECT invites.id as invite_id, invites.family_id, invites.expires_at, invites.used, families.name as family_name
+            SELECT invites.id as invite_id, invites.family_id, invites.expires_at, families.name as family_name
             FROM invites JOIN families ON families.id = invites.family_id
             WHERE invites.code = ?
         `)
         .get(code);
 
-    if (!invite || invite.used || new Date(invite.expires_at) < new Date()) {
+    if (!invite || new Date(invite.expires_at) < new Date()) {
         return res.json({ data: null, error: null });
     }
 
@@ -36,11 +39,6 @@ router.get('/lookup/:code', (req, res) => {
         data: { familyId: invite.family_id, familyName: invite.family_name, inviteId: invite.invite_id },
         error: null,
     });
-});
-
-router.post('/:id/use', requireAuth, (req, res) => {
-    db.prepare('UPDATE invites SET used = 1 WHERE id = ?').run(req.params.id);
-    res.json({ data: null, error: null });
 });
 
 export default router;

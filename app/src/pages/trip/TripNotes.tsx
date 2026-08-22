@@ -421,9 +421,12 @@ export default function TripNotes() {
                 <div className="flex flex-col items-center justify-center py-20 text-center">
                     <FileText size={48} className="text-gray-600 mb-4" />
                     <h3 className="text-lg font-medium text-[var(--color-text-primary)] mb-2">No notes yet</h3>
-                    <p className="text-[var(--color-text-secondary)] text-sm">
+                    <p className="text-[var(--color-text-secondary)] text-sm mb-4">
                         Create packing lists, itinerary notes, or free-form pages for this trip.
                     </p>
+                    <button onClick={handleCreateNote} className="text-brand-teal font-bold hover:underline">
+                        Create your first note
+                    </button>
                 </div>
             ) : (
                 <div className="space-y-3">

@@ -17,7 +17,3 @@ export const createFamilyInvite = async (familyId: string, _createdBy: string): 
 export const lookupInviteCode = async (code: string): Promise<{ familyId: string; familyName: string; inviteId: string } | null> => {
     return apiFetch(`/invites/lookup/${encodeURIComponent(code)}`);
 };
-
-export const markInviteUsed = async (inviteId: string): Promise<void> => {
-    await apiFetch(`/invites/${inviteId}/use`, { method: 'POST' });
-};

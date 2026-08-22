@@ -3,7 +3,7 @@ import { useFamily } from '../contexts/FamilyContext';
 import { useAuth } from '../contexts/AuthContext';
 import { createFamilyInvite } from '../services/inviteService';
 import { useUserProfiles } from '../hooks/useUserProfiles';
-import { Users, Plus, X, Check, Copy, Loader2 } from 'lucide-react';
+import { Users, Plus, X, Check, Copy, Link2, Loader2 } from 'lucide-react';
 
 export default function Family() {
     const { families, currentFamily, setCurrentFamily, createFamily, loading } = useFamily();
@@ -14,6 +14,7 @@ export default function Family() {
     const [inviteCode, setInviteCode] = useState<string | null>(null);
     const [inviteLoading, setInviteLoading] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [linkCopied, setLinkCopied] = useState(false);
 
     const memberIds = currentFamily?.members ?? [];
     const { profiles } = useUserProfiles(memberIds);
@@ -51,6 +52,13 @@ export default function Family() {
         navigator.clipboard.writeText(inviteCode);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+    };
+
+    const handleCopyLink = () => {
+        if (!inviteCode) return;
+        navigator.clipboard.writeText(`${window.location.origin}/join?code=${inviteCode}`);
+        setLinkCopied(true);
+        setTimeout(() => setLinkCopied(false), 2000);
     };
 
     if (loading) {
@@ -145,14 +153,23 @@ export default function Family() {
                             <div className="text-4xl font-mono font-bold text-[var(--color-text-primary)] tracking-widest mb-3">
                                 {inviteCode}
                             </div>
-                            <p className="text-xs text-gray-500 mb-4">Expires in 7 days</p>
-                            <button
-                                onClick={handleCopyCode}
-                                className="flex items-center gap-2 mx-auto px-4 py-2 bg-brand-teal/20 text-brand-teal rounded-lg text-sm font-medium hover:bg-brand-teal/30 transition-colors"
-                            >
-                                <Copy size={14} />
-                                {copied ? 'Copied!' : 'Copy Code'}
-                            </button>
+                            <p className="text-xs text-gray-500 mb-4">Expires in 7 days · anyone with the code or link can join</p>
+                            <div className="flex items-center justify-center gap-2">
+                                <button
+                                    onClick={handleCopyCode}
+                                    className="flex items-center gap-2 px-4 py-2 bg-brand-teal/20 text-brand-teal rounded-lg text-sm font-medium hover:bg-brand-teal/30 transition-colors"
+                                >
+                                    <Copy size={14} />
+                                    {copied ? 'Copied!' : 'Copy Code'}
+                                </button>
+                                <button
+                                    onClick={handleCopyLink}
+                                    className="flex items-center gap-2 px-4 py-2 bg-brand-teal/20 text-brand-teal rounded-lg text-sm font-medium hover:bg-brand-teal/30 transition-colors"
+                                >
+                                    <Link2 size={14} />
+                                    {linkCopied ? 'Copied!' : 'Copy Link'}
+                                </button>
+                            </div>
                         </div>
                     )}
 

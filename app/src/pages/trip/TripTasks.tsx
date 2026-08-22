@@ -5,7 +5,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFamily } from '../../contexts/FamilyContext';
 import { useUserProfiles } from '../../hooks/useUserProfiles';
-import { Plus, Loader2, X, ChevronRight, ChevronDown } from 'lucide-react';
+import { Plus, Loader2, X, ChevronRight, ChevronDown, ListChecks } from 'lucide-react';
 import { GridSkeleton } from '../../components/ui/Skeletons';
 import type { Trip, Task } from '../../types';
 
@@ -229,8 +229,10 @@ export default function TripTasks() {
             </div>
 
             {tasks.length === 0 ? (
-                <div className="text-center py-20 text-gray-500">
-                    <p className="mb-4">No tasks yet.</p>
+                <div className="flex flex-col items-center justify-center py-20 text-center text-gray-500">
+                    <ListChecks size={48} className="text-gray-600 mb-4" />
+                    <h3 className="text-lg font-medium text-white mb-2">No tasks yet</h3>
+                    <p className="text-gray-400 text-sm mb-4">Keep track of packing, bookings, and to-dos as a family.</p>
                     <button onClick={() => setIsModalOpen(true)} className="text-brand-teal font-bold hover:underline">
                         Add your first task
                     </button>
