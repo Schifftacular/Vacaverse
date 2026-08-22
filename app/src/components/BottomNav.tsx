@@ -37,7 +37,7 @@ export function BottomNav() {
                     {tripNavItems.map(({ icon: Icon, label, path, end }) => (
                         <NavLink
                             key={path}
-                            to={`/trips/${tripId}/${path}`}
+                            to={path ? `/trips/${tripId}/${path}` : `/trips/${tripId}`}
                             end={end}
                             title={label}
                             aria-label={label}
