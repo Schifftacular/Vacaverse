@@ -431,11 +431,6 @@ export default function TripNotes() {
                     icon={<FileText size={48} />}
                     title="No notes yet"
                     hint="Create packing lists, itinerary notes, or free-form pages for this trip."
-                    action={
-                        <button onClick={handleCreateNote} className="text-brand-teal font-bold hover:underline">
-                            Create your first note
-                        </button>
-                    }
                 />
             ) : (
                 <div className="space-y-3">

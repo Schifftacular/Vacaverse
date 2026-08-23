@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { MessageSquarePlus, X, Send, Loader2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useFeedback } from '../contexts/FeedbackContext';
 import { db } from '../lib/client';
 
 export function FeedbackWidget() {
     const { user } = useAuth();
-    const [isOpen, setIsOpen] = useState(false);
+    const { isOpen, open, close } = useFeedback();
     const [text, setText] = useState('');
     const [type, setType] = useState<'bug' | 'idea' | 'general'>('general');
     const [sending, setSending] = useState(false);
@@ -32,7 +33,7 @@ export function FeedbackWidget() {
             setText('');
             setTimeout(() => {
                 setSent(false);
-                setIsOpen(false);
+                close();
             }, 2000);
         } catch (error) {
             console.error('Failed to submit feedback:', error);
@@ -46,7 +47,7 @@ export function FeedbackWidget() {
             {/* Trigger button */}
             {!isOpen && (
                 <button
-                    onClick={() => setIsOpen(true)}
+                    onClick={open}
                     className="fixed bottom-20 left-4 z-40 w-12 h-12 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-full flex items-center justify-center text-[var(--color-text-secondary)] hover:text-brand-teal hover:border-brand-teal transition-colors shadow-lg"
                     aria-label="Send feedback"
                 >
@@ -59,7 +60,7 @@ export function FeedbackWidget() {
                 <div className="fixed bottom-20 left-4 z-50 w-80 max-w-[calc(100vw-32px)] bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl shadow-2xl overflow-hidden">
                     <div className="flex items-center justify-between p-4 border-b border-[var(--color-border)]">
                         <h3 className="font-semibold text-[var(--color-text-primary)]">Beta Feedback</h3>
-                        <button onClick={() => setIsOpen(false)} className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]">
+                        <button onClick={close} className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]">
                             <X size={18} />
                         </button>
                     </div>

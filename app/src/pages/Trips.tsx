@@ -1,11 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Plus, ChevronRight, X, Loader2, Image as ImageIcon, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { differenceInDays, format, parseISO } from 'date-fns';
 import { useAuth } from '../contexts/AuthContext';
 import { useFamily } from '../contexts/FamilyContext';
+import { useTrip } from '../contexts/TripContext';
 import { createTrip, deleteTrip } from '../services/tripService';
-import { db, storage } from '../lib/client';
+import { storage } from '../lib/client';
+import { resolveTripFamilyId } from '../lib/tripAccess';
 
 import { useToast } from '../contexts/ToastContext';
 import { GridSkeleton } from '../components/ui/Skeletons';
@@ -25,11 +27,12 @@ function TripHeroSlide({ trip, onDelete }: { trip: Trip; onDelete: (id: string, 
     return (
         <Link to={`/trips/${trip.id}`} className="block group">
             <Panel raked className="cx-lit overflow-hidden relative">
-                {/* Delete Button (visible on hover) */}
+                {/* Delete Button — visible by default on touch, hover-revealed on desktop only */}
                 <button
                     onClick={(e) => onDelete(trip.id, e)}
-                    className="absolute top-3 right-3 z-10 p-2 bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[var(--color-vermilion)]/80"
+                    className="absolute top-3 right-3 z-10 w-11 h-11 flex items-center justify-center bg-black/50 text-white rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity hover:bg-[var(--color-vermilion)]/80"
                     title="Delete Trip"
+                    aria-label="Delete trip"
                 >
                     <Trash2 size={16} />
                 </button>
@@ -107,8 +110,9 @@ function TripRackStrip({ trip, onDelete, depth }: { trip: Trip; onDelete: (id: s
                     <span className="cx-label text-[10px] text-brand-teal shrink-0">{daysLabel}</span>
                     <button
                         onClick={(e) => { e.preventDefault(); onDelete(trip.id, e); }}
-                        className="shrink-0 p-2 -m-1 text-[var(--color-text-muted)] opacity-0 group-hover:opacity-100 transition-opacity hover:text-[var(--color-vermilion)]"
+                        className="shrink-0 w-11 h-11 flex items-center justify-center text-[var(--color-text-muted)] opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity hover:text-[var(--color-vermilion)]"
                         title="Delete Trip"
+                        aria-label="Delete trip"
                     >
                         <Trash2 size={14} />
                     </button>
@@ -120,10 +124,9 @@ function TripRackStrip({ trip, onDelete, depth }: { trip: Trip; onDelete: (id: s
 
 export default function Trips() {
     const { user } = useAuth();
-    const { currentFamily, families, loading: familiesLoading } = useFamily();
+    const { families } = useFamily();
     const { showToast } = useToast();
-    const [trips, setTrips] = useState<Trip[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { trips, loading, refetch } = useTrip();
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     // Form State
@@ -134,47 +137,9 @@ export default function Trips() {
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [createLoading, setCreateLoading] = useState(false);
-
-    const fetchTrips = async () => {
-        if (!user) {
-            setTrips([]);
-            setLoading(false);
-            return;
-        }
-        // Wait for FamilyContext's own fetch to finish so a joined (non-owning)
-        // family member's trips aren't missed — see TripContext.tsx for the
-        // same fix and why eq('user_id') alone isn't enough.
-        if (familiesLoading) return;
-        try {
-            const familyIds = families.map(f => f.id);
-            const { data: ownTrips, error: ownError } = await db
-                .from('trips')
-                .select('*')
-                .eq('user_id', user.id);
-            if (ownError) throw ownError;
-
-            let familyTrips: Trip[] = [];
-            if (familyIds.length) {
-                const { data, error } = await db.from('trips').select('*').in('family_id', familyIds);
-                if (error) throw error;
-                familyTrips = data || [];
-            }
-
-            const byId = new Map<string, Trip>();
-            for (const t of [...(ownTrips || []), ...familyTrips]) byId.set(t.id, t);
-            const merged = Array.from(byId.values()).sort((a, b) => b.created_at.localeCompare(a.created_at));
-            setTrips(merged);
-        } catch (error) {
-            console.error('Failed to fetch trips', error);
-            showToast('Failed to load trips', 'error');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchTrips();
-    }, [user, families, familiesLoading]);
+    // Only asked when the user belongs to more than one family — with zero
+    // or one, resolveTripFamilyId decides it without a prompt.
+    const [selectedFamilyId, setSelectedFamilyId] = useState<string | null>(null);
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -190,7 +155,7 @@ export default function Trips() {
 
         try {
             await deleteTrip(id);
-            setTrips(prev => prev.filter(t => t.id !== id));
+            await refetch();
             showToast('Trip deleted successfully', 'success');
         } catch (error) {
             console.error(error);
@@ -201,6 +166,10 @@ export default function Trips() {
     const handleCreateTrip = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!user || !newTripTitle || !newTripStartDate || !newTripEndDate) return;
+        if (families.length > 1 && !selectedFamilyId) {
+            showToast('Choose which family this trip belongs to', 'error');
+            return;
+        }
 
         setCreateLoading(true);
         try {
@@ -221,9 +190,9 @@ export default function Trips() {
                 end_date: newTripEndDate,
                 image: imageUrl,
                 budget: parseFloat(newTripBudget) || 0,
-                family_id: currentFamily?.id ?? null,
+                family_id: resolveTripFamilyId(families, selectedFamilyId),
             });
-            await fetchTrips();
+            await refetch();
             showToast('Trip created successfully!', 'success');
 
             // Reset form
@@ -234,6 +203,7 @@ export default function Trips() {
             setNewTripBudget('');
             setSelectedImage(null);
             setImagePreview(null);
+            setSelectedFamilyId(null);
         } catch (error) {
             console.error('Failed to create trip', error);
             showToast('Failed to create trip. Please try again.', 'error');
@@ -255,7 +225,7 @@ export default function Trips() {
             <div className="flex flex-col items-center justify-center min-h-[60vh] p-4 text-center">
                 <h2 className="cx-h2 text-[var(--color-text-primary)] mb-2">Sign in to view your trips</h2>
                 <p className="text-[var(--color-text-secondary)] mb-6">You need an account to plan and save your trips.</p>
-                <Link to="/profile" className="px-6 py-3 bg-brand-teal text-[var(--color-carbon)] rounded-lg font-bold">
+                <Link to="/login" className="px-6 py-3 bg-brand-teal text-[var(--color-carbon)] rounded-lg font-bold">
                     Go to Login
                 </Link>
             </div>
@@ -287,20 +257,13 @@ export default function Trips() {
                         )}
                     </div>
                 )}
-
-                <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="cx-slide cx-rake w-full mt-4 p-6 flex items-center justify-center gap-3 text-brand-teal hover:border-brand-teal/60 transition-colors"
-                >
-                    <Plus size={22} />
-                    <span className="cx-label text-sm">Plan a New Trip</span>
-                </button>
             </div>
 
-            {/* FAB */}
+            {/* FAB — the sole "plan a trip" action; avoid duplicating it inline */}
             <button
                 onClick={() => setIsModalOpen(true)}
                 className="fixed bottom-24 right-4 w-14 h-14 bg-brand-teal rounded-full flex items-center justify-center shadow-lg text-[var(--color-carbon)] hover:brightness-110 transition-all z-20 cx-lit"
+                aria-label="Plan a new trip"
             >
                 <Plus size={32} />
             </button>
@@ -366,6 +329,23 @@ export default function Trips() {
                                     className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
                                 />
                             </div>
+
+                            {families.length > 1 && (
+                                <div>
+                                    <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Family</label>
+                                    <select
+                                        value={selectedFamilyId ?? ''}
+                                        onChange={(e) => setSelectedFamilyId(e.target.value || null)}
+                                        className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
+                                        required
+                                    >
+                                        <option value="" disabled>Which family is this trip for?</option>
+                                        {families.map(f => (
+                                            <option key={f.id} value={f.id}>{f.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
 
                             <div>
                                 <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Cover Image</label>

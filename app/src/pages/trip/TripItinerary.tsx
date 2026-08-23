@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { addTripItem, getTripItems } from '../../services/tripService';
 import { db } from '../../lib/client';
+import { formatEventTime } from '../../lib/time';
 import { useToast } from '../../contexts/ToastContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useUserProfiles } from '../../hooks/useUserProfiles';
@@ -185,7 +186,7 @@ export default function TripItinerary() {
                                         <div className="absolute -left-[25px] top-6 w-4 h-4 rounded-full bg-brand-teal border-4 border-[var(--color-bg-primary)]" />
 
                                         <div className="w-20 pt-1 shrink-0">
-                                            <div className="cx-label text-sm tabular-nums text-[var(--color-text-primary)]">{event.time}</div>
+                                            <div className="cx-label text-sm tabular-nums text-[var(--color-text-primary)]">{formatEventTime(event.time)}</div>
                                         </div>
                                         <div className="flex-1 border-l border-[var(--color-border)] pl-4 ml-2 min-w-0">
                                             <h3 className="font-medium text-[var(--color-text-primary)] text-lg">{event.title}</h3>

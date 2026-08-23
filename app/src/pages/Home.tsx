@@ -1,26 +1,32 @@
 import { useAuth } from '../contexts/AuthContext';
 import { useTrip } from '../contexts/TripContext';
+import { useFamily } from '../contexts/FamilyContext';
 import { differenceInDays, format, parseISO } from 'date-fns';
 import { Link } from 'react-router-dom';
-import { Briefcase, Plus } from 'lucide-react';
+import { Briefcase, Plus, Users } from 'lucide-react';
 import { Panel } from '../components/ui/Concourse';
+import { isNewAccount } from '../lib/account';
 
 export default function Home() {
     const { user } = useAuth();
     const { trips, loading } = useTrip();
+    const { families, loading: familiesLoading } = useFamily();
 
     const upcomingTrip = trips
         .filter(t => differenceInDays(parseISO(t.start_date), new Date()) > 0)
         .sort((a, b) => parseISO(a.start_date).getTime() - parseISO(b.start_date).getTime())[0];
 
     const displayName = user?.display_name || user?.email?.split('@')[0] || 'Traveler';
+    const greeting = user && isNewAccount(user.created_at, new Date())
+        ? `Welcome, ${displayName}`
+        : `Welcome back, ${displayName}`;
 
     return (
         <div className="pb-8">
             {/* Header */}
             <div className="flex justify-between items-center p-4 bg-[var(--color-bg-primary)] sticky top-0 z-10">
                 <div>
-                    <h1 className="cx-h1 text-[var(--color-text-primary)]">Welcome back, {displayName}</h1>
+                    <h1 className="cx-h1 text-[var(--color-text-primary)]">{greeting}</h1>
                     <p className="cx-label text-[11px] text-brand-teal mt-0.5">VacaVerse</p>
                 </div>
                 <div className="w-10 h-10 rounded-full bg-[var(--color-bg-secondary)] flex items-center justify-center overflow-hidden border-2 border-brand-teal shrink-0">
@@ -31,6 +37,23 @@ export default function Home() {
                     )}
                 </div>
             </div>
+
+            {/* Either order (trip-first or family-first) is fine — this is the
+                bridge between them, not a gate: a nudge, not a block. */}
+            {!familiesLoading && families.length === 0 && (
+                <div className="px-4 pt-4">
+                    <Link to="/family">
+                        <Panel className="p-3 flex items-center gap-3 hover:border-brand-teal/50 transition-colors">
+                            <div className="w-9 h-9 rounded-full bg-brand-teal/15 text-brand-teal flex items-center justify-center shrink-0">
+                                <Users size={18} />
+                            </div>
+                            <div className="text-sm text-[var(--color-text-secondary)]">
+                                Bring your family in — create or join a family to plan trips together.
+                            </div>
+                        </Panel>
+                    </Link>
+                </div>
+            )}
 
             <div className="px-4 mt-4">
                 {loading ? (
@@ -75,15 +98,16 @@ export default function Home() {
                         <Briefcase size={48} className="text-[var(--color-text-muted)] mb-4" />
                         <h2 className="cx-h2 text-[var(--color-text-primary)] mb-2">No upcoming trips</h2>
                         <p className="text-[var(--color-text-secondary)] mb-6">Start planning your next family adventure!</p>
-                        <Link to="/trips" className="px-6 py-3 bg-brand-teal text-[var(--color-carbon)] rounded-lg font-bold">
-                            Plan a Trip
-                        </Link>
                     </div>
                 )}
             </div>
 
-            {/* FAB */}
-            <Link to="/trips" className="fixed bottom-20 right-4 w-14 h-14 bg-brand-teal rounded-full flex items-center justify-center shadow-lg text-[var(--color-carbon)] hover:brightness-110 transition-all cx-lit">
+            {/* FAB — the sole "plan a trip" action; avoid duplicating it inline */}
+            <Link
+                to="/trips"
+                className="fixed bottom-20 right-4 w-14 h-14 bg-brand-teal rounded-full flex items-center justify-center shadow-lg text-[var(--color-carbon)] hover:brightness-110 transition-all cx-lit"
+                aria-label="Plan a trip"
+            >
                 <Plus size={32} />
             </Link>
         </div>

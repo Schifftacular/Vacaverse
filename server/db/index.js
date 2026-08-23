@@ -20,4 +20,31 @@ if (!commentColumns.includes('edited_at')) {
     db.exec('ALTER TABLE comments ADD COLUMN edited_at TEXT');
 }
 
+const familyMemberColumns = db.prepare('PRAGMA table_info(family_members)').all().map(c => c.name);
+if (!familyMemberColumns.includes('parent_id')) {
+    db.exec('ALTER TABLE family_members ADD COLUMN parent_id TEXT REFERENCES users(id) ON DELETE SET NULL');
+}
+if (!familyMemberColumns.includes('partner_id')) {
+    db.exec('ALTER TABLE family_members ADD COLUMN partner_id TEXT REFERENCES users(id) ON DELETE SET NULL');
+}
+
+// Backfill trips created before this app required a family_id (see issue #3).
+// Only touches the unambiguous case — a creator who belongs to exactly one
+// family — since guessing among several would be wrong as often as right;
+// those stay null for the in-app "attach to family" prompt to fix instead.
+// Runs on every boot; cheap even so (a handful of rows at most in this
+// app's scale) — but a trip stuck in the ambiguous case is re-scanned and
+// re-checked forever, it never truly converges to a no-op.
+const orphanedTrips = db.prepare('SELECT id, user_id FROM trips WHERE family_id IS NULL').all();
+if (orphanedTrips.length) {
+    const familiesOf = db.prepare('SELECT family_id FROM family_members WHERE user_id = ?');
+    const attachFamily = db.prepare('UPDATE trips SET family_id = ? WHERE id = ?');
+    for (const trip of orphanedTrips) {
+        const memberships = familiesOf.all(trip.user_id);
+        if (memberships.length === 1) {
+            attachFamily.run(memberships[0].family_id, trip.id);
+        }
+    }
+}
+
 export default db;
