@@ -34,10 +34,10 @@ router.post('/login', (req, res) => {
     const { email, password } = req.body || {};
     const user = verifyPassword(email || '', password || '');
     if (!user) return res.status(401).json({ error: 'Invalid email or password' });
+    if (user.is_suspended) return res.status(403).json({ error: 'This account has been suspended' });
     const session = createSession(user.id);
     setSessionCookie(res, session);
-    const { password_hash, ...safeUser } = user;
-    res.json({ data: { user: safeUser }, error: null });
+    res.json({ data: { user }, error: null });
 });
 
 router.post('/logout', (req, res) => {

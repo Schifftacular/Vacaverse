@@ -175,6 +175,20 @@ CREATE TABLE IF NOT EXISTS feedback (
     created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
 
+-- Every mutating action taken from the admin panel (server/routes/admin.js),
+-- kept separate from the trip-scoped `activity` table above and deliberately
+-- NOT in tables.js's allowlist, so it's only ever written server-side by
+-- admin routes and never reachable through the generic /api/db/:table layer.
+CREATE TABLE IF NOT EXISTS admin_audit_log (
+    id TEXT PRIMARY KEY,
+    admin_id TEXT NOT NULL REFERENCES users(id),
+    action TEXT NOT NULL,
+    target_type TEXT NOT NULL,
+    target_id TEXT,
+    detail TEXT,
+    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+
 -- Full-text search over comments, tasks, and notes (trip Search tab).
 -- Standalone FTS5 table (not "external content") because our source PKs are
 -- TEXT, not rowids, so it duplicates the searchable text and is kept in sync
