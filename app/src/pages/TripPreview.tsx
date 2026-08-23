@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { db } from '../lib/client';
+import { formatEventTime } from '../lib/time';
 import { MapPin, Calendar, Users, LogIn } from 'lucide-react';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { Panel, EmptyState } from '../components/ui/Concourse';
@@ -125,7 +126,7 @@ export default function TripPreview() {
                                 {eventsByDate[dateKey].map(event => (
                                     <Panel key={event.id} className="p-4">
                                         <div className="flex items-start gap-3">
-                                            <div className="cx-label text-xs text-brand-teal w-14 shrink-0 tabular-nums">{event.time}</div>
+                                            <div className="cx-label text-xs text-brand-teal w-16 shrink-0 tabular-nums">{formatEventTime(event.time)}</div>
                                             <div>
                                                 <div className="font-medium text-[var(--color-text-primary)]">{event.title}</div>
                                                 {event.location && (

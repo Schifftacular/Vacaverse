@@ -75,15 +75,16 @@ export default function Home() {
                         <Briefcase size={48} className="text-[var(--color-text-muted)] mb-4" />
                         <h2 className="cx-h2 text-[var(--color-text-primary)] mb-2">No upcoming trips</h2>
                         <p className="text-[var(--color-text-secondary)] mb-6">Start planning your next family adventure!</p>
-                        <Link to="/trips" className="px-6 py-3 bg-brand-teal text-[var(--color-carbon)] rounded-lg font-bold">
-                            Plan a Trip
-                        </Link>
                     </div>
                 )}
             </div>
 
-            {/* FAB */}
-            <Link to="/trips" className="fixed bottom-20 right-4 w-14 h-14 bg-brand-teal rounded-full flex items-center justify-center shadow-lg text-[var(--color-carbon)] hover:brightness-110 transition-all cx-lit">
+            {/* FAB — the sole "plan a trip" action; avoid duplicating it inline */}
+            <Link
+                to="/trips"
+                className="fixed bottom-20 right-4 w-14 h-14 bg-brand-teal rounded-full flex items-center justify-center shadow-lg text-[var(--color-carbon)] hover:brightness-110 transition-all cx-lit"
+                aria-label="Plan a trip"
+            >
                 <Plus size={32} />
             </Link>
         </div>

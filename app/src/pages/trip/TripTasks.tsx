@@ -233,11 +233,6 @@ export default function TripTasks() {
                     icon={<ListChecks size={48} />}
                     title="No tasks yet"
                     hint="Keep track of packing, bookings, and to-dos as a family."
-                    action={
-                        <button onClick={() => setIsModalOpen(true)} className="cx-label text-sm text-brand-teal hover:underline">
-                            Add your first task
-                        </button>
-                    }
                 />
             ) : (
                 <>

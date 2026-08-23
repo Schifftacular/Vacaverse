@@ -26,11 +26,12 @@ function TripHeroSlide({ trip, onDelete }: { trip: Trip; onDelete: (id: string, 
     return (
         <Link to={`/trips/${trip.id}`} className="block group">
             <Panel raked className="cx-lit overflow-hidden relative">
-                {/* Delete Button (visible on hover) */}
+                {/* Delete Button — visible by default on touch, hover-revealed on desktop only */}
                 <button
                     onClick={(e) => onDelete(trip.id, e)}
-                    className="absolute top-3 right-3 z-10 p-2 bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[var(--color-vermilion)]/80"
+                    className="absolute top-3 right-3 z-10 w-11 h-11 flex items-center justify-center bg-black/50 text-white rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity hover:bg-[var(--color-vermilion)]/80"
                     title="Delete Trip"
+                    aria-label="Delete trip"
                 >
                     <Trash2 size={16} />
                 </button>
@@ -108,8 +109,9 @@ function TripRackStrip({ trip, onDelete, depth }: { trip: Trip; onDelete: (id: s
                     <span className="cx-label text-[10px] text-brand-teal shrink-0">{daysLabel}</span>
                     <button
                         onClick={(e) => { e.preventDefault(); onDelete(trip.id, e); }}
-                        className="shrink-0 p-2 -m-1 text-[var(--color-text-muted)] opacity-0 group-hover:opacity-100 transition-opacity hover:text-[var(--color-vermilion)]"
+                        className="shrink-0 w-11 h-11 flex items-center justify-center text-[var(--color-text-muted)] opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity hover:text-[var(--color-vermilion)]"
                         title="Delete Trip"
+                        aria-label="Delete trip"
                     >
                         <Trash2 size={14} />
                     </button>
@@ -246,20 +248,13 @@ export default function Trips() {
                         )}
                     </div>
                 )}
-
-                <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="cx-slide cx-rake w-full mt-4 p-6 flex items-center justify-center gap-3 text-brand-teal hover:border-brand-teal/60 transition-colors"
-                >
-                    <Plus size={22} />
-                    <span className="cx-label text-sm">Plan a New Trip</span>
-                </button>
             </div>
 
-            {/* FAB */}
+            {/* FAB — the sole "plan a trip" action; avoid duplicating it inline */}
             <button
                 onClick={() => setIsModalOpen(true)}
                 className="fixed bottom-24 right-4 w-14 h-14 bg-brand-teal rounded-full flex items-center justify-center shadow-lg text-[var(--color-carbon)] hover:brightness-110 transition-all z-20 cx-lit"
+                aria-label="Plan a new trip"
             >
                 <Plus size={32} />
             </button>
