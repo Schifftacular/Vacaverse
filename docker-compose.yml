@@ -39,13 +39,28 @@ services:
       # Must match wherever the browser actually reaches this — the raw
       # VPS IP + published port, since there's no domain in front of it.
       CLIENT_ORIGIN: "http://187.127.255.209:8095"
+      # Points server/db/index.js at the volume mount below, kept OUTSIDE
+      # /app/server/db (see the volumes comment) so app code there is never
+      # shadowed by the volume.
+      DB_DIR: "/app/data"
     ports:
       - "0.0.0.0:8095:8080"
     volumes:
-      # Named volumes (not bind mounts) so first-run creation copies the
-      # image's baked-in server/db/schema.sql into the volume — a bind mount
-      # would start empty and shadow it, breaking schema init on first boot.
-      - vacaverse-db:/app/server/db
+      # Deliberately NOT mounted at /app/server/db: that path also holds
+      # index.js/schema.sql baked into the image. A named volume only
+      # copies the image's directory content into itself on the volume's
+      # FIRST ever use — every deploy after that, the volume's own frozen
+      # copies silently shadow whatever the new image actually ships,
+      # permanently freezing app code at whichever version happened to be
+      # live when the volume was created. (Discovered when the admin panel
+      # migration in db/index.js never ran, despite being in every image
+      # pulled since — the volume was still serving an index.js from
+      # months earlier.) Mounting at /app/data instead means only the
+      # sqlite file lives on the volume; DB_DIR above tells the app to
+      # look there. schema.sql is read from the code path and exec'd
+      # against whatever's on the volume, so an empty /app/data still
+      # initializes correctly on first boot.
+      - vacaverse-db:/app/data
       - vacaverse-uploads:/app/server/uploads
 
 volumes:
