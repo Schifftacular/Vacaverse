@@ -7,6 +7,7 @@ import { useFamily } from '../contexts/FamilyContext';
 import { useTrip } from '../contexts/TripContext';
 import { createTrip, deleteTrip } from '../services/tripService';
 import { storage } from '../lib/client';
+import { resolveTripFamilyId } from '../lib/tripAccess';
 
 import { useToast } from '../contexts/ToastContext';
 import { GridSkeleton } from '../components/ui/Skeletons';
@@ -123,7 +124,7 @@ function TripRackStrip({ trip, onDelete, depth }: { trip: Trip; onDelete: (id: s
 
 export default function Trips() {
     const { user } = useAuth();
-    const { currentFamily } = useFamily();
+    const { families } = useFamily();
     const { showToast } = useToast();
     const { trips, loading, refetch } = useTrip();
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -136,6 +137,9 @@ export default function Trips() {
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [createLoading, setCreateLoading] = useState(false);
+    // Only asked when the user belongs to more than one family — with zero
+    // or one, resolveTripFamilyId decides it without a prompt.
+    const [selectedFamilyId, setSelectedFamilyId] = useState<string | null>(null);
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -162,6 +166,10 @@ export default function Trips() {
     const handleCreateTrip = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!user || !newTripTitle || !newTripStartDate || !newTripEndDate) return;
+        if (families.length > 1 && !selectedFamilyId) {
+            showToast('Choose which family this trip belongs to', 'error');
+            return;
+        }
 
         setCreateLoading(true);
         try {
@@ -182,7 +190,7 @@ export default function Trips() {
                 end_date: newTripEndDate,
                 image: imageUrl,
                 budget: parseFloat(newTripBudget) || 0,
-                family_id: currentFamily?.id ?? null,
+                family_id: resolveTripFamilyId(families, selectedFamilyId),
             });
             await refetch();
             showToast('Trip created successfully!', 'success');
@@ -195,6 +203,7 @@ export default function Trips() {
             setNewTripBudget('');
             setSelectedImage(null);
             setImagePreview(null);
+            setSelectedFamilyId(null);
         } catch (error) {
             console.error('Failed to create trip', error);
             showToast('Failed to create trip. Please try again.', 'error');
@@ -320,6 +329,23 @@ export default function Trips() {
                                     className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
                                 />
                             </div>
+
+                            {families.length > 1 && (
+                                <div>
+                                    <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Family</label>
+                                    <select
+                                        value={selectedFamilyId ?? ''}
+                                        onChange={(e) => setSelectedFamilyId(e.target.value || null)}
+                                        className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
+                                        required
+                                    >
+                                        <option value="" disabled>Which family is this trip for?</option>
+                                        {families.map(f => (
+                                            <option key={f.id} value={f.id}>{f.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
 
                             <div>
                                 <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Cover Image</label>

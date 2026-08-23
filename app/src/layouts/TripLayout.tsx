@@ -86,6 +86,24 @@ export default function TripLayout() {
     }, [trip?.family_id]);
     const { profiles } = useUserProfiles(familyMemberIds);
 
+    // Trips created before a family existed (or before this ticket) have no
+    // family_id, and there was previously no way to fix that after the
+    // fact — see issue #3. Owner-only: attaching a trip to a family grants
+    // every member of that family access to it.
+    const [attachingFamilyId, setAttachingFamilyId] = useState<string | null>(null);
+    const handleAttachFamily = async (familyId: string) => {
+        if (!tripId) return;
+        setAttachingFamilyId(familyId);
+        try {
+            await updateTrip(tripId, { family_id: familyId });
+            await refetch();
+        } catch (error) {
+            console.error('Failed to attach trip to family:', error);
+        } finally {
+            setAttachingFamilyId(null);
+        }
+    };
+
     const handleShare = async () => {
         if (!trip || !tripId) return;
 
@@ -226,6 +244,30 @@ export default function TripLayout() {
                                     {familyMemberIds.length > 3 ? ` +${familyMemberIds.length - 3} more` : ''} in this trip
                                 </>
                             )}
+                        </div>
+                    </Panel>
+                </div>
+            )}
+
+            {/* Attach-to-family prompt — trips can go without one (e.g. before any
+                family existed); this is the "fix it after the fact" path from #3. */}
+            {!trip.family_id && user?.id === trip.user_id && families.length > 0 && (
+                <div className="px-4 -mt-3 relative z-10">
+                    <Panel className="p-3 flex items-center gap-3 flex-wrap">
+                        <div className="text-sm text-[var(--color-text-secondary)] flex-1 min-w-[180px]">
+                            This trip isn't attached to a family yet — the rest of the family can't see it.
+                        </div>
+                        <div className="flex gap-2 flex-wrap">
+                            {families.map(f => (
+                                <button
+                                    key={f.id}
+                                    onClick={() => handleAttachFamily(f.id)}
+                                    disabled={attachingFamilyId !== null}
+                                    className="cx-label text-xs px-3 py-2 rounded-lg bg-brand-teal text-[var(--color-carbon)] disabled:opacity-50"
+                                >
+                                    {attachingFamilyId === f.id ? 'Attaching…' : `Attach to ${f.name}`}
+                                </button>
+                            ))}
                         </div>
                     </Panel>
                 </div>

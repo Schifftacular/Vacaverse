@@ -18,3 +18,17 @@ export function classifyTripAccess(
     if (row.family_id && memberFamilyIds.includes(row.family_id)) return 'has-access';
     return 'denied';
 }
+
+// Access model (see issue #3): a trip belongs to exactly one family. With
+// exactly one family there's nothing to decide, so attach silently. With
+// more than one, the creator must pick — `selectedFamilyId` is whatever
+// they've chosen in the UI so far (null until they do). With none, the trip
+// stays unattached until a family exists to attach it to (see issue #6).
+export function resolveTripFamilyId(
+    families: { id: string }[],
+    selectedFamilyId: string | null
+): string | null {
+    if (families.length === 1) return families[0].id;
+    if (families.length > 1) return selectedFamilyId;
+    return null;
+}
