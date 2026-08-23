@@ -39,6 +39,9 @@ services:
       # Must match wherever the browser actually reaches this — the raw
       # VPS IP + published port, since there's no domain in front of it.
       CLIENT_ORIGIN: "http://187.127.255.209:8095"
+      # Bootstraps the first admin(s) on boot (see server/db/index.js) —
+      # comma-separated, case-insensitive. Safe to leave set permanently.
+      ADMIN_EMAILS: "mschiff05@gmail.com"
     ports:
       - "0.0.0.0:8095:8080"
     volumes:
