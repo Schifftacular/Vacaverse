@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Plus, ChevronRight, X, Loader2, Image as ImageIcon, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { differenceInDays, format, parseISO } from 'date-fns';
 import { useAuth } from '../contexts/AuthContext';
 import { useFamily } from '../contexts/FamilyContext';
+import { useTrip } from '../contexts/TripContext';
 import { createTrip, deleteTrip } from '../services/tripService';
-import { db, storage } from '../lib/client';
+import { storage } from '../lib/client';
 
 import { useToast } from '../contexts/ToastContext';
 import { GridSkeleton } from '../components/ui/Skeletons';
@@ -120,10 +121,9 @@ function TripRackStrip({ trip, onDelete, depth }: { trip: Trip; onDelete: (id: s
 
 export default function Trips() {
     const { user } = useAuth();
-    const { currentFamily, families, loading: familiesLoading } = useFamily();
+    const { currentFamily } = useFamily();
     const { showToast } = useToast();
-    const [trips, setTrips] = useState<Trip[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { trips, loading, refetch } = useTrip();
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     // Form State
@@ -134,47 +134,6 @@ export default function Trips() {
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [createLoading, setCreateLoading] = useState(false);
-
-    const fetchTrips = async () => {
-        if (!user) {
-            setTrips([]);
-            setLoading(false);
-            return;
-        }
-        // Wait for FamilyContext's own fetch to finish so a joined (non-owning)
-        // family member's trips aren't missed — see TripContext.tsx for the
-        // same fix and why eq('user_id') alone isn't enough.
-        if (familiesLoading) return;
-        try {
-            const familyIds = families.map(f => f.id);
-            const { data: ownTrips, error: ownError } = await db
-                .from('trips')
-                .select('*')
-                .eq('user_id', user.id);
-            if (ownError) throw ownError;
-
-            let familyTrips: Trip[] = [];
-            if (familyIds.length) {
-                const { data, error } = await db.from('trips').select('*').in('family_id', familyIds);
-                if (error) throw error;
-                familyTrips = data || [];
-            }
-
-            const byId = new Map<string, Trip>();
-            for (const t of [...(ownTrips || []), ...familyTrips]) byId.set(t.id, t);
-            const merged = Array.from(byId.values()).sort((a, b) => b.created_at.localeCompare(a.created_at));
-            setTrips(merged);
-        } catch (error) {
-            console.error('Failed to fetch trips', error);
-            showToast('Failed to load trips', 'error');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchTrips();
-    }, [user, families, familiesLoading]);
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -190,7 +149,7 @@ export default function Trips() {
 
         try {
             await deleteTrip(id);
-            setTrips(prev => prev.filter(t => t.id !== id));
+            await refetch();
             showToast('Trip deleted successfully', 'success');
         } catch (error) {
             console.error(error);
@@ -223,7 +182,7 @@ export default function Trips() {
                 budget: parseFloat(newTripBudget) || 0,
                 family_id: currentFamily?.id ?? null,
             });
-            await fetchTrips();
+            await refetch();
             showToast('Trip created successfully!', 'success');
 
             // Reset form

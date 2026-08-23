@@ -1,10 +1,13 @@
 import { Outlet, NavLink, Link, useParams } from 'react-router-dom';
 import { ArrowLeft, Calendar, Share2, Copy, Check } from 'lucide-react';
 import { useTrip } from '../contexts/TripContext';
+import { useAuth } from '../contexts/AuthContext';
+import { useFamily } from '../contexts/FamilyContext';
 import { useEffect, useMemo, useState } from 'react';
 import { differenceInDays, format, parseISO } from 'date-fns';
 import { updateTrip } from '../services/tripService';
 import { db } from '../lib/client';
+import { classifyTripAccess, type TripAccessResult } from '../lib/tripAccess';
 import { useUserProfiles } from '../hooks/useUserProfiles';
 import { Panel } from '../components/ui/Concourse';
 
@@ -21,13 +24,49 @@ const tabs = [
 
 export default function TripLayout() {
     const { tripId } = useParams<{ tripId: string }>();
-    const { trips, loading } = useTrip();
+    const { trips, loading, refetch } = useTrip();
+    const { user } = useAuth();
+    const { families } = useFamily();
     const [showSharePopup, setShowSharePopup] = useState(false);
     const [copied, setCopied] = useState(false);
     const [shareUrl, setShareUrl] = useState<string | null>(null);
     const [sharingLoading, setSharingLoading] = useState(false);
 
     const trip = useMemo(() => trips.find(t => t.id === tripId), [trips, tripId]);
+
+    // The trip list this user can see is refetched whenever `families`
+    // changes, but that refetch is async — a trip can legitimately belong to
+    // this user (fresh join, fresh creation) while `trips` is still catching
+    // up. Resolve that ambiguity with a direct-by-id check instead of
+    // showing a bare "not found" for what's really a loading state.
+    const [accessCheck, setAccessCheck] = useState<TripAccessResult | 'checking' | null>(null);
+    useEffect(() => {
+        if (loading || trip || !tripId || !user) { setAccessCheck(null); return; }
+        let cancelled = false;
+        let retried = false;
+        setAccessCheck('checking');
+
+        const check = async () => {
+            const { data: rows } = await db.from('trips').eq('id', tripId).select('*');
+            if (cancelled) return;
+            const row = rows?.[0] ?? null;
+            const result = classifyTripAccess(row, user.id, families.map(f => f.id));
+            if (result === 'has-access' && !retried) {
+                // Membership/ownership is real but the shared trip list hasn't
+                // caught up yet — trigger a refetch and give it one more pass
+                // before falling back to treating it as resolved.
+                retried = true;
+                await refetch();
+                if (!cancelled) check();
+                return;
+            }
+            setAccessCheck(result === 'has-access' ? 'checking' : result);
+        };
+        check();
+
+        return () => { cancelled = true; };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [loading, trip, tripId, user]);
 
     // Who else is in this trip's family, so a new joiner's first screen answers
     // "who else is here" rather than showing an empty-feeling shell. Queried
@@ -78,7 +117,7 @@ export default function TripLayout() {
         setTimeout(() => setCopied(false), 2000);
     };
 
-    if (loading) {
+    if (loading || accessCheck === 'checking' || (accessCheck === null && !trip && !!tripId && !!user)) {
         return (
             <div className="p-8 text-center">
                 <div className="w-8 h-8 border-2 border-brand-teal border-t-transparent rounded-full animate-spin mx-auto" />
@@ -88,9 +127,17 @@ export default function TripLayout() {
     }
 
     if (!trip) {
+        const denied = accessCheck === 'denied';
         return (
             <div className="p-8 text-center">
-                <p className="text-[var(--color-text-secondary)]">Trip not found</p>
+                <p className="text-[var(--color-text-secondary)]">
+                    {denied ? "You don't have access to this trip" : 'Trip not found'}
+                </p>
+                {denied && (
+                    <p className="text-[var(--color-text-muted)] text-sm mt-2">
+                        Ask whoever created it to add you to the trip's family.
+                    </p>
+                )}
                 <Link to="/trips" className="text-brand-teal mt-4 inline-block font-semibold">Back to Trips</Link>
             </div>
         );
