@@ -28,35 +28,6 @@ if (!familyMemberColumns.includes('partner_id')) {
     db.exec('ALTER TABLE family_members ADD COLUMN partner_id TEXT REFERENCES users(id) ON DELETE SET NULL');
 }
 
-// Admin panel: site-wide role/status flags on users, and a triage status on
-// feedback. Both default to the pre-admin-panel behavior (regular user,
-// active, untriaged) so existing rows need no backfill beyond the ALTER.
-const userColumns = db.prepare('PRAGMA table_info(users)').all().map(c => c.name);
-if (!userColumns.includes('is_admin')) {
-    db.exec('ALTER TABLE users ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0');
-}
-if (!userColumns.includes('is_suspended')) {
-    db.exec('ALTER TABLE users ADD COLUMN is_suspended INTEGER NOT NULL DEFAULT 0');
-}
-
-const feedbackColumns = db.prepare('PRAGMA table_info(feedback)').all().map(c => c.name);
-if (!feedbackColumns.includes('status')) {
-    db.exec("ALTER TABLE feedback ADD COLUMN status TEXT NOT NULL DEFAULT 'new'");
-}
-
-// Bootstrap the first admin(s) from an env var, since there's no UI path to
-// grant admin before an admin account exists. Runs on every boot — cheap,
-// and idempotent (only flips the flag on, never off), so it's safe to leave
-// ADMIN_EMAILS set permanently rather than treating it as a one-shot script.
-const adminEmails = (process.env.ADMIN_EMAILS || '')
-    .split(',')
-    .map(e => e.trim().toLowerCase())
-    .filter(Boolean);
-if (adminEmails.length) {
-    const placeholders = adminEmails.map(() => '?').join(',');
-    db.prepare(`UPDATE users SET is_admin = 1 WHERE lower(email) IN (${placeholders})`).run(...adminEmails);
-}
-
 // Backfill trips created before this app required a family_id (see issue #3).
 // Only touches the unambiguous case — a creator who belongs to exactly one
 // family — since guessing among several would be wrong as often as right;
