@@ -4,8 +4,8 @@
     "description": "Plan Apart. Play Together. Family vacation planning for every generation.",
     "start_url": "/",
     "display": "standalone",
-    "background_color": "#15100a",
-    "theme_color": "#dda233",
+    "background_color": "#0a2e35",
+    "theme_color": "#0a2e35",
     "icons": [
         {
             "src": "/icon-192.png",

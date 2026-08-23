@@ -1,56 +1,65 @@
-@import url('https://fonts.googleapis.com/css2?family=Archivo+Condensed:wght@500;600;700;800&display=swap');
 @import "tailwindcss";
 
 /*
   CONCOURSE — VacaVerse's design system.
-  A lit departures-board language: warm goldenrod ground, tinted glass panels
-  in carbon / ivory / vermilion / bottle-green, one prose size ranked by
-  weight/case/rule, panels raked off a shared axis. Dark mode is the board
-  unlit at night (carbon ground, amber-lit panel edges), not an inverted
-  palette. See index.html's opening comment for the full direction contract.
+  A lit departures-board language: tinted glass panels raked off a shared
+  axis, one prose size ranked by weight/case/rule, one light sweeping the
+  active position. Repainted in VacaVerse's own tropical brand — deep ocean
+  teal, aqua, sun-gold, cream — sampled from the app's logo, with a rounded
+  display face and spring-based motion (see src/lib/motion.ts) standing in
+  for Concourse's original condensed/amber identity. Dark mode is the ocean
+  at night, not an inverted palette. See index.html's opening comment for
+  the underlying direction contract this repaints.
 */
 
+@font-face {
+    font-family: "Fredoka";
+    src: url("/fonts/fredoka-variable.woff2") format("woff2-variations");
+    font-weight: 300 700;
+    font-display: swap;
+}
+
 @theme {
-    --font-display: "Archivo Condensed", "Arial Narrow", sans-serif;
+    --font-display: "Fredoka", ui-rounded, var(--font-sans);
 
     /* Raw palette roles — used directly for state colors that must read the
        same regardless of theme (success/danger fills, family-member tags). */
-    --color-carbon: #17130f;
-    --color-ivory: #f7ecd9;
-    --color-goldenrod: #d99a1f;
-    --color-vermilion: #d1502c;
-    --color-bottle-green: #1f6f4a;
+    --color-carbon: #0a2e35;
+    --color-ivory: #fff8ec;
+    --color-goldenrod: #ffc72c;
+    --color-vermilion: #ef5350;
+    --color-bottle-green: #22c55e;
 
     /* Kept as `brand-teal` / `brand-dark` so every existing text-/bg-/border-
        brand-teal utility across the app repoints automatically; both now
-       carry Concourse's amber, tuned per theme below, not literal teal. */
-    --color-brand-teal: #b0700f;
-    --color-brand-dark: #17130f;
+       carry the logo's aqua, tuned per theme below. */
+    --color-brand-teal: #2dd4c8;
+    --color-brand-dark: #0a2e35;
 }
 
-/* Light mode — the board lit, daytime */
+/* Light mode — cream sky, sunlit */
 html[data-theme="light"] {
-    --color-bg-primary: #f6ecd3;
-    --color-bg-secondary: #eeddb4;
-    --color-bg-card: #fffcf4;
-    --color-border: #dcc596;
-    --color-text-primary: #201a12;
-    --color-text-secondary: #5b4d38;
-    --color-text-muted: #8a7a5d;
-    --color-brand-teal: #9c5c17;
-    --shadow-tint: 32 22 8;
+    --color-bg-primary: #fff8ec;
+    --color-bg-secondary: #f2f9f7;
+    --color-bg-card: #ffffff;
+    --color-border: #d9ece8;
+    --color-text-primary: #0a2e35;
+    --color-text-secondary: #3d6067;
+    --color-text-muted: #7c9a9a;
+    --color-brand-teal: #0e7490;
+    --shadow-tint: 10 40 45;
 }
 
-/* Dark mode (default) — the board at night, panels lit from within */
+/* Dark mode (default) — the deep ocean at night, panels lit from within */
 html, html[data-theme="dark"] {
-    --color-bg-primary: #15100a;
-    --color-bg-secondary: #1d160d;
-    --color-bg-card: #221a10;
-    --color-border: #3c2e18;
-    --color-text-primary: #f7ecd9;
-    --color-text-secondary: #cbb897;
-    --color-text-muted: #8c7d63;
-    --color-brand-teal: #dda233;
+    --color-bg-primary: #0a2e35;
+    --color-bg-secondary: #0f3c44;
+    --color-bg-card: #123f47;
+    --color-border: color-mix(in srgb, #7de8de 22%, transparent);
+    --color-text-primary: #fff8ec;
+    --color-text-secondary: #bfe4e0;
+    --color-text-muted: #7fa8a5;
+    --color-brand-teal: #2dd4c8;
     --shadow-tint: 0 0 0;
 }
 
@@ -161,6 +170,22 @@ html {
     @media (prefers-reduced-motion: reduce) {
         .cx-lit::after {
             animation: none;
+        }
+    }
+
+    /* Edge-to-edge glass chrome for BottomNav/Sidebar — same tinted-blur
+       recipe as cx-slide, without the rounded corners or rake (these bars
+       sit flush against the viewport edge, not floating as a panel). Glass
+       is for chrome, not content: nav bars get it, list/content cards stay
+       solid. */
+    .cx-glass-nav {
+        background-color: color-mix(in srgb, var(--color-bg-card) 68%, transparent);
+        backdrop-filter: blur(20px) saturate(160%);
+        -webkit-backdrop-filter: blur(20px) saturate(160%);
+    }
+    @supports not (backdrop-filter: blur(1px)) {
+        .cx-glass-nav {
+            background-color: var(--color-bg-card);
         }
     }
 

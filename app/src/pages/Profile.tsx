@@ -13,7 +13,7 @@ export default function Profile() {
     const { user, logout, updateProfile } = useAuth();
     const { trips } = useTrip();
     const { families } = useFamily();
-    const { theme, toggleTheme } = useTheme();
+    const { effectiveTheme, toggleTheme } = useTheme();
     const { open: openFeedback } = useFeedback();
 
     const [isEditing, setIsEditing] = useState(false);
@@ -91,16 +91,16 @@ export default function Profile() {
                         className="w-full flex items-center justify-between p-4 hover:bg-[var(--color-bg-secondary)] transition-colors border-b border-[var(--color-border)]"
                     >
                         <div className="flex items-center gap-3">
-                            {theme === 'dark' ? <Moon size={20} className="text-brand-teal" /> : <Sun size={20} className="text-brand-teal" />}
+                            {effectiveTheme === 'dark' ? <Moon size={20} className="text-brand-teal" /> : <Sun size={20} className="text-brand-teal" />}
                             <span className="text-[var(--color-text-primary)]">
-                                {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
+                                {effectiveTheme === 'dark' ? 'Dark Mode' : 'Light Mode'}
                             </span>
                         </div>
                         <div
-                            className={`w-12 h-6 rounded-full p-0.5 border transition-colors ${theme === 'light' ? 'bg-brand-teal border-brand-teal cx-lit' : 'bg-[var(--color-bg-secondary)] border-[var(--color-border)]'
+                            className={`w-12 h-6 rounded-full p-0.5 border transition-colors ${effectiveTheme === 'light' ? 'bg-brand-teal border-brand-teal cx-lit' : 'bg-[var(--color-bg-secondary)] border-[var(--color-border)]'
                                 }`}
                         >
-                            <div className={`w-5 h-5 rounded-full bg-[var(--color-ivory)] shadow-sm transition-transform ${theme === 'light' ? 'translate-x-6' : ''}`} />
+                            <div className={`w-5 h-5 rounded-full bg-[var(--color-ivory)] shadow-sm transition-transform ${effectiveTheme === 'light' ? 'translate-x-6' : ''}`} />
                         </div>
                     </button>
 

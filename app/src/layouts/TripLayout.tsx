@@ -10,6 +10,7 @@ import { db } from '../lib/client';
 import { classifyTripAccess, type TripAccessResult } from '../lib/tripAccess';
 import { useUserProfiles } from '../hooks/useUserProfiles';
 import { Panel } from '../components/ui/Concourse';
+import { Sheet } from '../components/ui/Sheet';
 import { TripTabs } from '../components/TripTabs';
 
 // BottomNav is always the app-wide 4 (Home/Family/Trips/Profile), even
@@ -165,7 +166,7 @@ export default function TripLayout() {
         <div className="pb-8 min-h-screen bg-[var(--color-bg-primary)]">
             {/* Hero — the trip's own lit slide, raked at the bottom edge */}
             <div className="relative h-52 bg-[var(--color-carbon)] cx-rake-b overflow-hidden">
-                <div className="absolute inset-0 bg-[image:linear-gradient(160deg,_var(--color-carbon),_#2a1f10_70%)]" />
+                <div className="absolute inset-0 bg-[image:linear-gradient(160deg,_var(--color-carbon),_#123f47_70%)]" />
                 <Link to="/trips" className="absolute top-4 left-4 p-2 bg-black/40 rounded-full z-20 backdrop-blur-sm">
                     <ArrowLeft size={22} className="text-[var(--color-ivory)]" />
                 </Link>
@@ -272,38 +273,24 @@ export default function TripLayout() {
             )}
 
             {/* Share Popup */}
-            {showSharePopup && shareUrl && (
-                <div className="fixed inset-0 z-50 flex items-end justify-center p-4 bg-black/50" onClick={() => setShowSharePopup(false)}>
-                    <div
-                        className="cx-slide p-6 w-full max-w-md"
-                        onClick={e => e.stopPropagation()}
+            <Sheet open={showSharePopup && !!shareUrl} onOpenChange={setShowSharePopup} variant="bottom" title="Share Trip">
+                <p className="text-sm text-[var(--color-text-secondary)] mb-4">
+                    Anyone with this link can view the itinerary without signing in.
+                </p>
+                <div className="flex items-center gap-2 bg-[var(--color-bg-primary)] rounded-xl p-3 border border-[var(--color-border)]">
+                    <span className="text-xs text-[var(--color-text-secondary)] flex-1 truncate">{shareUrl}</span>
+                    <button
+                        onClick={handleCopy}
+                        className="shrink-0 p-2 rounded-lg bg-brand-teal text-[var(--color-carbon)]"
+                        aria-label="Copy link"
                     >
-                        <h3 className="cx-label text-lg text-[var(--color-text-primary)] mb-1">Share Trip</h3>
-                        <p className="text-sm text-[var(--color-text-secondary)] mb-4">
-                            Anyone with this link can view the itinerary without signing in.
-                        </p>
-                        <div className="flex items-center gap-2 bg-[var(--color-bg-primary)] rounded-xl p-3 border border-[var(--color-border)]">
-                            <span className="text-xs text-[var(--color-text-secondary)] flex-1 truncate">{shareUrl}</span>
-                            <button
-                                onClick={handleCopy}
-                                className="shrink-0 p-2 rounded-lg bg-brand-teal text-[var(--color-carbon)]"
-                                aria-label="Copy link"
-                            >
-                                {copied ? <Check size={16} /> : <Copy size={16} />}
-                            </button>
-                        </div>
-                        {copied && (
-                            <p className="text-xs text-brand-teal mt-2 text-center font-semibold">Link copied!</p>
-                        )}
-                        <button
-                            onClick={() => setShowSharePopup(false)}
-                            className="mt-4 w-full py-2 text-sm text-[var(--color-text-secondary)]"
-                        >
-                            Close
-                        </button>
-                    </div>
+                        {copied ? <Check size={16} /> : <Copy size={16} />}
+                    </button>
                 </div>
-            )}
+                {copied && (
+                    <p className="text-xs text-brand-teal mt-2 text-center font-semibold">Link copied!</p>
+                )}
+            </Sheet>
 
             {/* Stats Summary Row */}
             <div className="grid grid-cols-2 gap-3 p-4">
