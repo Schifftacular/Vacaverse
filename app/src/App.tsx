@@ -7,7 +7,9 @@ import { ToastProvider } from './contexts/ToastContext';
 import { FeedbackProvider } from './contexts/FeedbackContext';
 
 import { MainLayout } from './layouts/MainLayout';
+import { AdminLayout } from './layouts/AdminLayout';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { AdminRoute } from './components/AdminRoute';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import TripLayout from './layouts/TripLayout';
 import Home from './pages/Home';
@@ -25,6 +27,11 @@ import Profile from './pages/Profile';
 import Login from './pages/Login';
 import Join from './pages/Join';
 import TripPreview from './pages/TripPreview';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminTrips from './pages/admin/AdminTrips';
+import AdminFeedback from './pages/admin/AdminFeedback';
+import AdminAuditLog from './pages/admin/AdminAuditLog';
 
 export default function App() {
     return (
@@ -61,6 +68,17 @@ export default function App() {
                                                         <Route path="documents" element={<TripDocuments />} />
                                                         <Route path="polls" element={<TripPolls />} />
                                                     </Route>
+                                                </Route>
+                                            </Route>
+
+                                            {/* Admin — gated on user.is_admin, own layout (no BottomNav/FeedbackWidget) */}
+                                            <Route element={<AdminRoute />}>
+                                                <Route path="/admin" element={<AdminLayout />}>
+                                                    <Route index element={<AdminDashboard />} />
+                                                    <Route path="users" element={<AdminUsers />} />
+                                                    <Route path="trips" element={<AdminTrips />} />
+                                                    <Route path="feedback" element={<AdminFeedback />} />
+                                                    <Route path="audit-log" element={<AdminAuditLog />} />
                                                 </Route>
                                             </Route>
                                         </Routes>
