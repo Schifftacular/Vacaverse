@@ -166,7 +166,7 @@ export default function TripLayout() {
         <div className="pb-8 min-h-screen bg-[var(--color-bg-primary)]">
             {/* Hero — the trip's own lit slide, raked at the bottom edge */}
             <div className="relative h-52 bg-[var(--color-carbon)] cx-rake-b overflow-hidden">
-                <div className="absolute inset-0 bg-[image:linear-gradient(160deg,_var(--color-carbon),_#2a1f10_70%)]" />
+                <div className="absolute inset-0 bg-[image:linear-gradient(160deg,_var(--color-carbon),_#123f47_70%)]" />
                 <Link to="/trips" className="absolute top-4 left-4 p-2 bg-black/40 rounded-full z-20 backdrop-blur-sm">
                     <ArrowLeft size={22} className="text-[var(--color-ivory)]" />
                 </Link>
