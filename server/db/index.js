@@ -20,6 +20,14 @@ if (!commentColumns.includes('edited_at')) {
     db.exec('ALTER TABLE comments ADD COLUMN edited_at TEXT');
 }
 
+const familyMemberColumns = db.prepare('PRAGMA table_info(family_members)').all().map(c => c.name);
+if (!familyMemberColumns.includes('parent_id')) {
+    db.exec('ALTER TABLE family_members ADD COLUMN parent_id TEXT REFERENCES users(id) ON DELETE SET NULL');
+}
+if (!familyMemberColumns.includes('partner_id')) {
+    db.exec('ALTER TABLE family_members ADD COLUMN partner_id TEXT REFERENCES users(id) ON DELETE SET NULL');
+}
+
 // Backfill trips created before this app required a family_id (see issue #3).
 // Only touches the unambiguous case — a creator who belongs to exactly one
 // family — since guessing among several would be wrong as often as right;

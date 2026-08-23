@@ -3,12 +3,17 @@ import { useFamily } from '../contexts/FamilyContext';
 import { useAuth } from '../contexts/AuthContext';
 import { createFamilyInvite } from '../services/inviteService';
 import { useUserProfiles } from '../hooks/useUserProfiles';
-import { Users, Plus, X, Check, Copy, Link2, Loader2 } from 'lucide-react';
+import { db } from '../lib/client';
+import { wouldCreateCycle } from '../lib/familyTree';
+import { useToast } from '../contexts/ToastContext';
+import { Users, Plus, X, Check, Copy, Link2, Loader2, List, GitBranch } from 'lucide-react';
 import { Button, Panel, EmptyState } from '../components/ui/Concourse';
+import { FamilyTree } from '../components/FamilyTree';
 
 export default function Family() {
-    const { families, currentFamily, setCurrentFamily, createFamily, loading } = useFamily();
+    const { families, currentFamily, setCurrentFamily, createFamily, loading, refetch } = useFamily();
     const { user } = useAuth();
+    const { showToast } = useToast();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newFamilyName, setNewFamilyName] = useState('');
     const [createLoading, setCreateLoading] = useState(false);
@@ -16,7 +21,18 @@ export default function Family() {
     const [inviteLoading, setInviteLoading] = useState(false);
     const [copied, setCopied] = useState(false);
     const [linkCopied, setLinkCopied] = useState(false);
+    // Coexists with the member list rather than replacing it (see issue #11)
+    // — defaults to the list so nothing about the existing, working flow changes.
+    const [viewMode, setViewMode] = useState<'list' | 'tree'>('list');
+    const [editingPersonId, setEditingPersonId] = useState<string | null>(null);
+    const [editParentId, setEditParentId] = useState('');
+    const [editPartnerId, setEditPartnerId] = useState('');
+    const [savingRelations, setSavingRelations] = useState(false);
 
+    // The live family record (with up-to-date memberRelations), not the
+    // possibly-stale copy in currentFamily — see Join.tsx, which sets
+    // currentFamily directly without the relations FamilyContext fetches.
+    const liveFamily = families.find(f => f.id === currentFamily?.id) ?? currentFamily;
     const memberIds = currentFamily?.members ?? [];
     const { profiles } = useUserProfiles(memberIds);
 
@@ -60,6 +76,44 @@ export default function Family() {
         navigator.clipboard.writeText(`${window.location.origin}/join?code=${inviteCode}`);
         setLinkCopied(true);
         setTimeout(() => setLinkCopied(false), 2000);
+    };
+
+    const openEditRelations = (userId: string) => {
+        const relation = liveFamily?.memberRelations.find(m => m.user_id === userId);
+        setEditParentId(relation?.parent_id ?? '');
+        setEditPartnerId(relation?.partner_id ?? '');
+        setEditingPersonId(userId);
+    };
+
+    const handleSaveRelations = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!currentFamily || !editingPersonId) return;
+
+        if (editParentId && liveFamily && wouldCreateCycle(liveFamily.memberRelations, editingPersonId, editParentId)) {
+            showToast("That would make someone their own ancestor — pick a different parent.", 'error');
+            return;
+        }
+        if (editPartnerId && editPartnerId === editingPersonId) {
+            showToast("Someone can't be their own partner.", 'error');
+            return;
+        }
+
+        setSavingRelations(true);
+        try {
+            const { error } = await db
+                .from('family_members')
+                .eq('family_id', currentFamily.id)
+                .eq('user_id', editingPersonId)
+                .update({ parent_id: editParentId || null, partner_id: editPartnerId || null });
+            if (error) throw error;
+            await refetch();
+            setEditingPersonId(null);
+        } catch (error) {
+            console.error('Failed to save family relationships:', error);
+            showToast('Failed to save. Please try again.', 'error');
+        } finally {
+            setSavingRelations(false);
+        }
     };
 
     if (loading) {
@@ -136,16 +190,34 @@ export default function Family() {
             {/* Members section for selected family */}
             {currentFamily && (
                 <div className="mt-6">
-                    <div className="flex justify-between items-center mb-4">
+                    <div className="flex justify-between items-center mb-4 gap-3 flex-wrap">
                         <h2 className="cx-label text-sm text-[var(--color-text-muted)]">Members</h2>
-                        <button
-                            onClick={handleGenerateInvite}
-                            disabled={inviteLoading}
-                            className="text-sm text-brand-teal flex items-center gap-1 disabled:opacity-50"
-                        >
-                            {inviteLoading ? <Loader2 size={14} className="animate-spin" /> : null}
-                            Get Invite Code
-                        </button>
+                        <div className="flex items-center gap-3">
+                            <div className="flex items-center bg-[var(--color-bg-secondary)] rounded-lg p-0.5">
+                                <button
+                                    onClick={() => setViewMode('list')}
+                                    aria-pressed={viewMode === 'list'}
+                                    className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium transition-colors ${viewMode === 'list' ? 'bg-brand-teal text-[var(--color-carbon)]' : 'text-[var(--color-text-secondary)]'}`}
+                                >
+                                    <List size={14} /> List
+                                </button>
+                                <button
+                                    onClick={() => setViewMode('tree')}
+                                    aria-pressed={viewMode === 'tree'}
+                                    className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium transition-colors ${viewMode === 'tree' ? 'bg-brand-teal text-[var(--color-carbon)]' : 'text-[var(--color-text-secondary)]'}`}
+                                >
+                                    <GitBranch size={14} /> Tree
+                                </button>
+                            </div>
+                            <button
+                                onClick={handleGenerateInvite}
+                                disabled={inviteLoading}
+                                className="text-sm text-brand-teal flex items-center gap-1 disabled:opacity-50"
+                            >
+                                {inviteLoading ? <Loader2 size={14} className="animate-spin" /> : null}
+                                Get Invite Code
+                            </button>
+                        </div>
                     </div>
 
                     {/* Invite code display */}
@@ -176,7 +248,7 @@ export default function Family() {
                     )}
 
                     {/* Member list */}
-                    {currentFamily.members.map(uid => {
+                    {viewMode === 'list' && currentFamily.members.map(uid => {
                         const profile = profiles.get(uid);
                         return (
                             <div key={uid} className="flex items-center gap-3 cx-slide p-3 mb-2">
@@ -196,6 +268,23 @@ export default function Family() {
                             </div>
                         );
                     })}
+
+                    {viewMode === 'tree' && liveFamily && (
+                        liveFamily.members.length > 0 ? (
+                            <Panel className="p-2">
+                                <FamilyTree
+                                    memberRelations={liveFamily.memberRelations}
+                                    profiles={profiles}
+                                    onEditPerson={openEditRelations}
+                                />
+                                <p className="text-xs text-[var(--color-text-secondary)] text-center px-4 pb-2">
+                                    Tap anyone to set their parent or partner.
+                                </p>
+                            </Panel>
+                        ) : (
+                            <p className="text-sm text-[var(--color-text-secondary)] text-center py-6">No members yet.</p>
+                        )
+                    )}
                 </div>
             )}
 
@@ -221,6 +310,56 @@ export default function Family() {
                             </div>
                             <Button type="submit" variant="primary" size="lg" disabled={createLoading}>
                                 {createLoading ? 'Creating...' : 'Create Family'}
+                            </Button>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit relationships modal */}
+            {editingPersonId && currentFamily && (
+                <div className="fixed inset-0 bg-black/80 z-50 flex items-end sm:items-center justify-center p-4" onClick={() => setEditingPersonId(null)}>
+                    <div className="cx-slide w-full max-w-md p-6 relative" onClick={e => e.stopPropagation()}>
+                        <button onClick={() => setEditingPersonId(null)} className="absolute top-4 right-4 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]">
+                            <X size={24} />
+                        </button>
+                        <h2 className="cx-h2 text-[var(--color-text-primary)] mb-1">
+                            {profiles.get(editingPersonId)?.display_name || 'This person'}
+                        </h2>
+                        <p className="text-sm text-[var(--color-text-secondary)] mb-6">How are they related to the family?</p>
+                        <form onSubmit={handleSaveRelations} className="space-y-4">
+                            <div>
+                                <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Parent</label>
+                                <select
+                                    value={editParentId}
+                                    onChange={(e) => setEditParentId(e.target.value)}
+                                    className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
+                                >
+                                    <option value="">None</option>
+                                    {currentFamily.members
+                                        .filter(uid => uid !== editingPersonId)
+                                        .map(uid => (
+                                            <option key={uid} value={uid}>{profiles.get(uid)?.display_name || uid}</option>
+                                        ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Partner</label>
+                                <select
+                                    value={editPartnerId}
+                                    onChange={(e) => setEditPartnerId(e.target.value)}
+                                    className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
+                                >
+                                    <option value="">None</option>
+                                    {currentFamily.members
+                                        .filter(uid => uid !== editingPersonId)
+                                        .map(uid => (
+                                            <option key={uid} value={uid}>{profiles.get(uid)?.display_name || uid}</option>
+                                        ))}
+                                </select>
+                            </div>
+                            <Button type="submit" variant="primary" size="lg" disabled={savingRelations}>
+                                {savingRelations ? 'Saving...' : 'Save'}
                             </Button>
                         </form>
                     </div>
