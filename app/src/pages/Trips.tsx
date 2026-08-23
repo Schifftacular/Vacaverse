@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Plus, ChevronRight, X, Loader2, Image as ImageIcon, Trash2 } from 'lucide-react';
+import { Plus, ChevronRight, Loader2, Image as ImageIcon, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { motion } from 'motion/react';
 import { differenceInDays, format, parseISO } from 'date-fns';
 import { useAuth } from '../contexts/AuthContext';
 import { useFamily } from '../contexts/FamilyContext';
@@ -12,6 +13,8 @@ import { resolveTripFamilyId } from '../lib/tripAccess';
 import { useToast } from '../contexts/ToastContext';
 import { GridSkeleton } from '../components/ui/Skeletons';
 import { Panel } from '../components/ui/Concourse';
+import { Sheet } from '../components/ui/Sheet';
+import { springPress } from '../lib/motion';
 import type { Trip } from '../types';
 
 // The hero slide: the one trip at the near edge of the rack, lit and full
@@ -260,123 +263,112 @@ export default function Trips() {
             </div>
 
             {/* FAB — the sole "plan a trip" action; avoid duplicating it inline */}
-            <button
+            <motion.button
                 onClick={() => setIsModalOpen(true)}
+                whileTap={{ scale: 0.92 }}
+                transition={springPress}
                 className="fixed bottom-24 right-4 w-14 h-14 bg-brand-teal rounded-full flex items-center justify-center shadow-lg text-[var(--color-carbon)] hover:brightness-110 transition-all z-20 cx-lit"
                 aria-label="Plan a new trip"
             >
                 <Plus size={32} />
-            </button>
+            </motion.button>
 
             {/* Create Trip Modal */}
-            {isModalOpen && (
-                <div className="fixed inset-0 bg-black/80 z-50 flex items-end sm:items-center justify-center p-4">
-                    <div className="cx-slide w-full max-w-md p-6 relative animate-in slide-in-from-bottom-10 fade-in">
-                        <button
-                            onClick={() => setIsModalOpen(false)}
-                            className="absolute top-4 right-4 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
-                        >
-                            <X size={24} />
-                        </button>
+            <Sheet open={isModalOpen} onOpenChange={setIsModalOpen} title="Plan a New Trip">
+                <form onSubmit={handleCreateTrip} className="space-y-4">
+                    <div>
+                        <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Trip Title</label>
+                        <input
+                            type="text"
+                            value={newTripTitle}
+                            onChange={(e) => setNewTripTitle(e.target.value)}
+                            placeholder="e.g., Summer in Italy"
+                            className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
+                            required
+                        />
+                    </div>
 
-                        <h2 className="cx-h2 text-[var(--color-text-primary)] mb-6">Plan a New Trip</h2>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Start Date</label>
+                            <input
+                                type="date"
+                                value={newTripStartDate}
+                                onChange={(e) => setNewTripStartDate(e.target.value)}
+                                className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm text-[var(--color-text-secondary)] mb-1">End Date</label>
+                            <input
+                                type="date"
+                                value={newTripEndDate}
+                                onChange={(e) => setNewTripEndDate(e.target.value)}
+                                className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
+                                required
+                            />
+                        </div>
+                    </div>
 
-                        <form onSubmit={handleCreateTrip} className="space-y-4">
-                            <div>
-                                <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Trip Title</label>
-                                <input
-                                    type="text"
-                                    value={newTripTitle}
-                                    onChange={(e) => setNewTripTitle(e.target.value)}
-                                    placeholder="e.g., Summer in Italy"
-                                    className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
-                                    required
-                                />
-                            </div>
+                    <div>
+                        <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Trip Budget ($)</label>
+                        <input
+                            type="number"
+                            value={newTripBudget}
+                            onChange={(e) => setNewTripBudget(e.target.value)}
+                            placeholder="5000"
+                            min="0"
+                            step="1"
+                            className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
+                        />
+                    </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Start Date</label>
-                                    <input
-                                        type="date"
-                                        value={newTripStartDate}
-                                        onChange={(e) => setNewTripStartDate(e.target.value)}
-                                        className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm text-[var(--color-text-secondary)] mb-1">End Date</label>
-                                    <input
-                                        type="date"
-                                        value={newTripEndDate}
-                                        onChange={(e) => setNewTripEndDate(e.target.value)}
-                                        className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
-                                        required
-                                    />
-                                </div>
-                            </div>
+                    {families.length > 1 && (
+                        <div>
+                            <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Family</label>
+                            <select
+                                value={selectedFamilyId ?? ''}
+                                onChange={(e) => setSelectedFamilyId(e.target.value || null)}
+                                className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
+                                required
+                            >
+                                <option value="" disabled>Which family is this trip for?</option>
+                                {families.map(f => (
+                                    <option key={f.id} value={f.id}>{f.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
 
-                            <div>
-                                <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Trip Budget ($)</label>
-                                <input
-                                    type="number"
-                                    value={newTripBudget}
-                                    onChange={(e) => setNewTripBudget(e.target.value)}
-                                    placeholder="5000"
-                                    min="0"
-                                    step="1"
-                                    className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
-                                />
-                            </div>
-
-                            {families.length > 1 && (
-                                <div>
-                                    <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Family</label>
-                                    <select
-                                        value={selectedFamilyId ?? ''}
-                                        onChange={(e) => setSelectedFamilyId(e.target.value || null)}
-                                        className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
-                                        required
-                                    >
-                                        <option value="" disabled>Which family is this trip for?</option>
-                                        {families.map(f => (
-                                            <option key={f.id} value={f.id}>{f.name}</option>
-                                        ))}
-                                    </select>
+                    <div>
+                        <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Cover Image</label>
+                        <div className="border border-[var(--color-border)] rounded-xl p-3 bg-[var(--color-bg-primary)] flex items-center space-x-4">
+                            {imagePreview ? (
+                                <img src={imagePreview} alt="Preview" className="w-16 h-16 rounded-lg object-cover" />
+                            ) : (
+                                <div className="w-16 h-16 rounded-lg bg-[var(--color-bg-secondary)] flex items-center justify-center text-[var(--color-text-muted)]">
+                                    <ImageIcon size={24} />
                                 </div>
                             )}
-
-                            <div>
-                                <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Cover Image</label>
-                                <div className="border border-[var(--color-border)] rounded-xl p-3 bg-[var(--color-bg-primary)] flex items-center space-x-4">
-                                    {imagePreview ? (
-                                        <img src={imagePreview} alt="Preview" className="w-16 h-16 rounded-lg object-cover" />
-                                    ) : (
-                                        <div className="w-16 h-16 rounded-lg bg-[var(--color-bg-secondary)] flex items-center justify-center text-[var(--color-text-muted)]">
-                                            <ImageIcon size={24} />
-                                        </div>
-                                    )}
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleImageChange}
-                                        className="text-sm text-[var(--color-text-secondary)] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-teal file:text-[var(--color-carbon)] hover:file:brightness-90"
-                                    />
-                                </div>
-                            </div>
-
-                            <button
-                                type="submit"
-                                disabled={createLoading}
-                                className="w-full bg-brand-teal text-[var(--color-carbon)] font-bold py-4 rounded-xl mt-4 hover:brightness-110 transition-all disabled:opacity-50"
-                            >
-                                {createLoading ? <Loader2 className="animate-spin mx-auto" /> : 'Create Trip'}
-                            </button>
-                        </form>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageChange}
+                                className="text-sm text-[var(--color-text-secondary)] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-teal file:text-[var(--color-carbon)] hover:file:brightness-90"
+                            />
+                        </div>
                     </div>
-                </div>
-            )}
+
+                    <button
+                        type="submit"
+                        disabled={createLoading}
+                        className="w-full bg-brand-teal text-[var(--color-carbon)] font-bold py-4 rounded-xl mt-4 hover:brightness-110 transition-all disabled:opacity-50"
+                    >
+                        {createLoading ? <Loader2 className="animate-spin mx-auto" /> : 'Create Trip'}
+                    </button>
+                </form>
+            </Sheet>
         </div>
     );
 }

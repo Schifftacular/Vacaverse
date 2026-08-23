@@ -1,10 +1,14 @@
-import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
+import { motion, type HTMLMotionProps } from 'motion/react';
 import { twMerge } from 'tailwind-merge';
+import { springPress } from '../../lib/motion';
 
 /**
  * Shared Concourse primitives — the departures-board design system.
  * Every page should reach for these instead of hand-rolling card/button
- * markup, so the raked-panel + amber-lit language stays consistent app-wide.
+ * markup, so the raked-panel language stays consistent app-wide. Repainted
+ * in VacaVerse's tropical brand (ocean/aqua/sun/cream) with spring-based
+ * press feedback — see src/index.css's header comment.
  */
 
 export function Button({
@@ -12,7 +16,7 @@ export function Button({
     size = 'md',
     className,
     ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & {
+}: HTMLMotionProps<'button'> & {
     variant?: 'primary' | 'ghost' | 'danger' | 'outline';
     size?: 'md' | 'lg' | 'icon';
 }) {
@@ -29,7 +33,12 @@ export function Button({
         danger: 'bg-[var(--color-vermilion)] text-white hover:brightness-110',
     };
     return (
-        <button className={twMerge(base, sizes[size], variants[variant], className)} {...props} />
+        <motion.button
+            whileTap={{ scale: 0.96 }}
+            transition={springPress}
+            className={twMerge(base, sizes[size], variants[variant], className)}
+            {...props}
+        />
     );
 }
 

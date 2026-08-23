@@ -14,7 +14,7 @@ export function Sidebar() {
     const items = tripId ? allTripNavItems : mainNavItems;
 
     return (
-        <nav className="hidden lg:flex flex-col w-56 shrink-0 h-screen sticky top-0 bg-[var(--color-bg-card)] border-r border-[var(--color-border)] py-6 px-3">
+        <nav className="hidden lg:flex flex-col w-56 shrink-0 h-screen sticky top-0 cx-glass-nav border-r border-[var(--color-border)] py-6 px-3">
             <div className="px-3 mb-6">
                 <span className="cx-h1 text-lg text-[var(--color-text-primary)]">VacaVerse</span>
             </div>

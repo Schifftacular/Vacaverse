@@ -1,6 +1,8 @@
 import { NavLink } from 'react-router-dom';
+import { motion } from 'motion/react';
 import { twMerge } from 'tailwind-merge';
 import { mainNavItems } from '../config/navItems';
+import { springListItem } from '../lib/motion';
 
 // Mobile only — Sidebar takes over at the lg breakpoint (see issue #9).
 // Always the same 4 global destinations, even inside a trip — trip-specific
@@ -8,7 +10,7 @@ import { mainNavItems } from '../config/navItems';
 
 export function BottomNav() {
     return (
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-[var(--color-bg-card)] border-t border-[var(--color-border)] pb-[env(safe-area-inset-bottom)]">
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 cx-glass-nav border-t border-[var(--color-border)] pb-[env(safe-area-inset-bottom)]">
             <div className="flex justify-around items-center h-16">
                 {mainNavItems.map(({ icon: Icon, label, path, end }) => (
                     <NavLink
@@ -24,7 +26,13 @@ export function BottomNav() {
                     >
                         {({ isActive }) => (
                             <>
-                                {isActive && <span className="absolute top-0 h-0.5 w-6 bg-brand-teal rounded-full" />}
+                                {isActive && (
+                                    <motion.span
+                                        layoutId="bottom-nav-active"
+                                        transition={springListItem}
+                                        className="absolute top-0 h-0.5 w-6 bg-brand-teal rounded-full"
+                                    />
+                                )}
                                 <Icon size={24} />
                                 <span className="cx-label text-[10px]">{label}</span>
                             </>

@@ -58,7 +58,7 @@ export default function Login() {
                 lit on the board, rather than a generic centered form stack. */}
             <div className="w-full max-w-xs relative">
                 <Panel raked className="p-6 pt-8 relative overflow-visible">
-                    <span className="cx-label absolute top-4 right-4 text-[10px] text-[var(--color-text-muted)]">Concourse</span>
+                    <span className="cx-label absolute top-4 right-4 text-[10px] text-[var(--color-text-muted)]">VacaVerse</span>
                     <div className="w-14 h-14 bg-brand-teal/15 border border-brand-teal/30 rounded-full flex items-center justify-center mb-5 text-brand-teal">
                         <LogIn size={26} />
                     </div>

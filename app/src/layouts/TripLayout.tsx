@@ -10,6 +10,7 @@ import { db } from '../lib/client';
 import { classifyTripAccess, type TripAccessResult } from '../lib/tripAccess';
 import { useUserProfiles } from '../hooks/useUserProfiles';
 import { Panel } from '../components/ui/Concourse';
+import { Sheet } from '../components/ui/Sheet';
 import { TripTabs } from '../components/TripTabs';
 
 // BottomNav is always the app-wide 4 (Home/Family/Trips/Profile), even
@@ -272,38 +273,24 @@ export default function TripLayout() {
             )}
 
             {/* Share Popup */}
-            {showSharePopup && shareUrl && (
-                <div className="fixed inset-0 z-50 flex items-end justify-center p-4 bg-black/50" onClick={() => setShowSharePopup(false)}>
-                    <div
-                        className="cx-slide p-6 w-full max-w-md"
-                        onClick={e => e.stopPropagation()}
+            <Sheet open={showSharePopup && !!shareUrl} onOpenChange={setShowSharePopup} variant="bottom" title="Share Trip">
+                <p className="text-sm text-[var(--color-text-secondary)] mb-4">
+                    Anyone with this link can view the itinerary without signing in.
+                </p>
+                <div className="flex items-center gap-2 bg-[var(--color-bg-primary)] rounded-xl p-3 border border-[var(--color-border)]">
+                    <span className="text-xs text-[var(--color-text-secondary)] flex-1 truncate">{shareUrl}</span>
+                    <button
+                        onClick={handleCopy}
+                        className="shrink-0 p-2 rounded-lg bg-brand-teal text-[var(--color-carbon)]"
+                        aria-label="Copy link"
                     >
-                        <h3 className="cx-label text-lg text-[var(--color-text-primary)] mb-1">Share Trip</h3>
-                        <p className="text-sm text-[var(--color-text-secondary)] mb-4">
-                            Anyone with this link can view the itinerary without signing in.
-                        </p>
-                        <div className="flex items-center gap-2 bg-[var(--color-bg-primary)] rounded-xl p-3 border border-[var(--color-border)]">
-                            <span className="text-xs text-[var(--color-text-secondary)] flex-1 truncate">{shareUrl}</span>
-                            <button
-                                onClick={handleCopy}
-                                className="shrink-0 p-2 rounded-lg bg-brand-teal text-[var(--color-carbon)]"
-                                aria-label="Copy link"
-                            >
-                                {copied ? <Check size={16} /> : <Copy size={16} />}
-                            </button>
-                        </div>
-                        {copied && (
-                            <p className="text-xs text-brand-teal mt-2 text-center font-semibold">Link copied!</p>
-                        )}
-                        <button
-                            onClick={() => setShowSharePopup(false)}
-                            className="mt-4 w-full py-2 text-sm text-[var(--color-text-secondary)]"
-                        >
-                            Close
-                        </button>
-                    </div>
+                        {copied ? <Check size={16} /> : <Copy size={16} />}
+                    </button>
                 </div>
-            )}
+                {copied && (
+                    <p className="text-xs text-brand-teal mt-2 text-center font-semibold">Link copied!</p>
+                )}
+            </Sheet>
 
             {/* Stats Summary Row */}
             <div className="grid grid-cols-2 gap-3 p-4">

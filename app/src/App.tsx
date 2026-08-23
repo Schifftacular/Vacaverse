@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { MotionConfig } from 'motion/react';
 import { AuthProvider } from './contexts/AuthContext';
 import { FamilyProvider } from './contexts/FamilyContext';
 import { TripProvider } from './contexts/TripContext';
@@ -28,46 +29,48 @@ import TripPreview from './pages/TripPreview';
 export default function App() {
     return (
         <ErrorBoundary>
-            <ToastProvider>
-                <AuthProvider>
-                    <FamilyProvider>
-                        <TripProvider>
-                            <FeedbackProvider>
-                                <BrowserRouter>
-                                    <Routes>
-                                        {/* Public routes */}
-                                        <Route path="/login" element={<MainLayout />}>
-                                            <Route index element={<Login />} />
-                                        </Route>
-                                        <Route path="/join" element={<Join />} />
-                                        <Route path="/trip/preview/:shareToken" element={<TripPreview />} />
+            <MotionConfig reducedMotion="user">
+                <ToastProvider>
+                    <AuthProvider>
+                        <FamilyProvider>
+                            <TripProvider>
+                                <FeedbackProvider>
+                                    <BrowserRouter>
+                                        <Routes>
+                                            {/* Public routes */}
+                                            <Route path="/login" element={<MainLayout />}>
+                                                <Route index element={<Login />} />
+                                            </Route>
+                                            <Route path="/join" element={<Join />} />
+                                            <Route path="/trip/preview/:shareToken" element={<TripPreview />} />
 
-                                        {/* Protected routes */}
-                                        <Route element={<ProtectedRoute />}>
-                                            <Route path="/" element={<MainLayout />}>
-                                                <Route index element={<Home />} />
-                                                <Route path="family" element={<Family />} />
-                                                <Route path="trips" element={<Trips />} />
-                                                <Route path="profile" element={<Profile />} />
-                                                <Route path="trips/:tripId" element={<TripLayout />}>
-                                                    <Route index element={<TripItinerary />} />
-                                                    <Route path="tasks" element={<TripTasks />} />
-                                                    <Route path="budget" element={<TripBudget />} />
-                                                    <Route path="feed" element={<TripFeed />} />
-                                                    <Route path="notes" element={<TripNotes />} />
-                                                    <Route path="search" element={<TripSearch />} />
-                                                    <Route path="documents" element={<TripDocuments />} />
-                                                    <Route path="polls" element={<TripPolls />} />
+                                            {/* Protected routes */}
+                                            <Route element={<ProtectedRoute />}>
+                                                <Route path="/" element={<MainLayout />}>
+                                                    <Route index element={<Home />} />
+                                                    <Route path="family" element={<Family />} />
+                                                    <Route path="trips" element={<Trips />} />
+                                                    <Route path="profile" element={<Profile />} />
+                                                    <Route path="trips/:tripId" element={<TripLayout />}>
+                                                        <Route index element={<TripItinerary />} />
+                                                        <Route path="tasks" element={<TripTasks />} />
+                                                        <Route path="budget" element={<TripBudget />} />
+                                                        <Route path="feed" element={<TripFeed />} />
+                                                        <Route path="notes" element={<TripNotes />} />
+                                                        <Route path="search" element={<TripSearch />} />
+                                                        <Route path="documents" element={<TripDocuments />} />
+                                                        <Route path="polls" element={<TripPolls />} />
+                                                    </Route>
                                                 </Route>
                                             </Route>
-                                        </Route>
-                                    </Routes>
-                                </BrowserRouter>
-                            </FeedbackProvider>
-                        </TripProvider>
-                    </FamilyProvider>
-                </AuthProvider>
-            </ToastProvider>
+                                        </Routes>
+                                    </BrowserRouter>
+                                </FeedbackProvider>
+                            </TripProvider>
+                        </FamilyProvider>
+                    </AuthProvider>
+                </ToastProvider>
+            </MotionConfig>
         </ErrorBoundary>
     );
 }

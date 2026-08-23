@@ -8,7 +8,7 @@ import { GridSkeleton } from '../../components/ui/Skeletons';
 import { Panel, EmptyState } from '../../components/ui/Concourse';
 import type { Trip } from '../../types';
 
-const COLORS = ['#b5603a', 'var(--color-goldenrod)', '#4a3420', '#e0982a', 'var(--color-bottle-green)', 'var(--color-vermilion)', '#c9a227'];
+const COLORS = ['#2dd4c8', 'var(--color-goldenrod)', '#14616e', '#ffd85e', 'var(--color-bottle-green)', 'var(--color-vermilion)', '#7de8de'];
 
 import type { Expense } from '../../types';
 
