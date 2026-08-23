@@ -119,7 +119,7 @@ export default function TripPreview() {
                     Object.keys(eventsByDate).sort().map(dateKey => (
                         <div key={dateKey} className="mb-6">
                             <h3 className="cx-label text-xs text-brand-teal mb-3">
-                                {new Date(dateKey).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+                                {format(parseISO(dateKey), 'EEEE, MMMM d')}
                             </h3>
                             <div className="space-y-2">
                                 {eventsByDate[dateKey].map(event => (
