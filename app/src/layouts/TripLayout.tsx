@@ -10,10 +10,11 @@ import { db } from '../lib/client';
 import { classifyTripAccess, type TripAccessResult } from '../lib/tripAccess';
 import { useUserProfiles } from '../hooks/useUserProfiles';
 import { Panel } from '../components/ui/Concourse';
+import { TripTabs } from '../components/TripTabs';
 
-// BottomNav is now the sole in-trip navigation system (see issue #7) — the
-// top tab strip that used to duplicate the same 8 destinations in a
-// different order, and overflowed the 390px viewport, is gone.
+// BottomNav is always the app-wide 4 (Home/Family/Trips/Profile), even
+// inside a trip — TripTabs below is the in-trip navigation instead,
+// icon-only so all 8 destinations fit one row on a 390px viewport.
 
 export default function TripLayout() {
     const { tripId } = useParams<{ tripId: string }>();
@@ -316,6 +317,11 @@ export default function TripLayout() {
                         {daysAway > 0 ? daysAway : 'In progress'}
                     </div>
                 </Panel>
+            </div>
+
+            {/* Trip Tabs — icon-only in-trip navigation (mobile only; Sidebar covers desktop) */}
+            <div className="px-4 pt-4">
+                <TripTabs tripId={trip.id} />
             </div>
 
             {/* Content Area */}
