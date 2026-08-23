@@ -27,6 +27,11 @@ CREATE TABLE IF NOT EXISTS family_members (
     family_id TEXT NOT NULL REFERENCES families(id) ON DELETE CASCADE,
     user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     role TEXT NOT NULL DEFAULT 'member',
+    -- Family tree relationships (see issue #11) — both optional, both point
+    -- at another user_id within the same family. parent_id gives the tree
+    -- its generations; partner_id pairs two members at the same generation.
+    parent_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+    partner_id TEXT REFERENCES users(id) ON DELETE SET NULL,
     created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
     PRIMARY KEY (family_id, user_id)
 );

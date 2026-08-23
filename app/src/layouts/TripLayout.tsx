@@ -1,33 +1,69 @@
-import { Outlet, NavLink, Link, useParams } from 'react-router-dom';
+import { Outlet, Link, useParams } from 'react-router-dom';
 import { ArrowLeft, Calendar, Share2, Copy, Check } from 'lucide-react';
 import { useTrip } from '../contexts/TripContext';
+import { useAuth } from '../contexts/AuthContext';
+import { useFamily } from '../contexts/FamilyContext';
 import { useEffect, useMemo, useState } from 'react';
 import { differenceInDays, format, parseISO } from 'date-fns';
 import { updateTrip } from '../services/tripService';
 import { db } from '../lib/client';
+import { classifyTripAccess, type TripAccessResult } from '../lib/tripAccess';
 import { useUserProfiles } from '../hooks/useUserProfiles';
 import { Panel } from '../components/ui/Concourse';
 
-const tabs = [
-    { name: 'Itinerary', path: '' },
-    { name: 'Budget', path: 'budget' },
-    { name: 'Tasks', path: 'tasks' },
-    { name: 'Feed', path: 'feed' },
-    { name: 'Notes', path: 'notes' },
-    { name: 'Search', path: 'search' },
-    { name: 'Files', path: 'documents' },
-    { name: 'Polls', path: 'polls' },
-];
+// BottomNav is now the sole in-trip navigation system (see issue #7) — the
+// top tab strip that used to duplicate the same 8 destinations in a
+// different order, and overflowed the 390px viewport, is gone.
 
 export default function TripLayout() {
     const { tripId } = useParams<{ tripId: string }>();
-    const { trips, loading } = useTrip();
+    const { trips, loading, refetch } = useTrip();
+    const { user } = useAuth();
+    const { families } = useFamily();
     const [showSharePopup, setShowSharePopup] = useState(false);
     const [copied, setCopied] = useState(false);
     const [shareUrl, setShareUrl] = useState<string | null>(null);
     const [sharingLoading, setSharingLoading] = useState(false);
 
     const trip = useMemo(() => trips.find(t => t.id === tripId), [trips, tripId]);
+
+    // The trip list this user can see is refetched whenever `families`
+    // changes, but that refetch is async — a trip can legitimately belong to
+    // this user (fresh join, fresh creation) while `trips` is still catching
+    // up. Resolve that ambiguity with a direct-by-id check instead of
+    // showing a bare "not found" for what's really a loading state.
+    const [accessCheck, setAccessCheck] = useState<TripAccessResult | 'checking' | null>(null);
+    useEffect(() => {
+        if (loading || trip || !tripId || !user) { setAccessCheck(null); return; }
+        let cancelled = false;
+        let retried = false;
+        setAccessCheck('checking');
+
+        const check = async () => {
+            const { data: rows } = await db.from('trips').eq('id', tripId).select('*');
+            if (cancelled) return;
+            const row = rows?.[0] ?? null;
+            const result = classifyTripAccess(row, user.id, families.map(f => f.id));
+            if (result === 'has-access' && !retried) {
+                // Membership/ownership is real but the shared trip list hasn't
+                // caught up yet — trigger a refetch and give it one more pass
+                // before falling back to treating it as resolved.
+                retried = true;
+                await refetch();
+                if (!cancelled) check();
+                return;
+            }
+            setAccessCheck(result === 'has-access' ? 'checking' : result);
+        };
+        check();
+
+        return () => { cancelled = true; };
+        // families.length (not the full families array — its reference
+        // changes on every FamilyContext fetch, which would re-run this on
+        // every render) so a denied verdict can recover if the user is
+        // added to the owning family while this page stays mounted.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [loading, trip, tripId, user, families.length]);
 
     // Who else is in this trip's family, so a new joiner's first screen answers
     // "who else is here" rather than showing an empty-feeling shell. Queried
@@ -46,6 +82,24 @@ export default function TripLayout() {
         return () => { cancelled = true; };
     }, [trip?.family_id]);
     const { profiles } = useUserProfiles(familyMemberIds);
+
+    // Trips created before a family existed (or before this ticket) have no
+    // family_id, and there was previously no way to fix that after the
+    // fact — see issue #3. Owner-only: attaching a trip to a family grants
+    // every member of that family access to it.
+    const [attachingFamilyId, setAttachingFamilyId] = useState<string | null>(null);
+    const handleAttachFamily = async (familyId: string) => {
+        if (!tripId) return;
+        setAttachingFamilyId(familyId);
+        try {
+            await updateTrip(tripId, { family_id: familyId });
+            await refetch();
+        } catch (error) {
+            console.error('Failed to attach trip to family:', error);
+        } finally {
+            setAttachingFamilyId(null);
+        }
+    };
 
     const handleShare = async () => {
         if (!trip || !tripId) return;
@@ -78,7 +132,7 @@ export default function TripLayout() {
         setTimeout(() => setCopied(false), 2000);
     };
 
-    if (loading) {
+    if (loading || accessCheck === 'checking' || (accessCheck === null && !trip && !!tripId && !!user)) {
         return (
             <div className="p-8 text-center">
                 <div className="w-8 h-8 border-2 border-brand-teal border-t-transparent rounded-full animate-spin mx-auto" />
@@ -88,9 +142,17 @@ export default function TripLayout() {
     }
 
     if (!trip) {
+        const denied = accessCheck === 'denied';
         return (
             <div className="p-8 text-center">
-                <p className="text-[var(--color-text-secondary)]">Trip not found</p>
+                <p className="text-[var(--color-text-secondary)]">
+                    {denied ? "You don't have access to this trip" : 'Trip not found'}
+                </p>
+                {denied && (
+                    <p className="text-[var(--color-text-muted)] text-sm mt-2">
+                        Ask whoever created it to add you to the trip's family.
+                    </p>
+                )}
                 <Link to="/trips" className="text-brand-teal mt-4 inline-block font-semibold">Back to Trips</Link>
             </div>
         );
@@ -184,6 +246,30 @@ export default function TripLayout() {
                 </div>
             )}
 
+            {/* Attach-to-family prompt — trips can go without one (e.g. before any
+                family existed); this is the "fix it after the fact" path from #3. */}
+            {!trip.family_id && user?.id === trip.user_id && families.length > 0 && (
+                <div className="px-4 -mt-3 relative z-10">
+                    <Panel className="p-3 flex items-center gap-3 flex-wrap">
+                        <div className="text-sm text-[var(--color-text-secondary)] flex-1 min-w-[180px]">
+                            This trip isn't attached to a family yet — the rest of the family can't see it.
+                        </div>
+                        <div className="flex gap-2 flex-wrap">
+                            {families.map(f => (
+                                <button
+                                    key={f.id}
+                                    onClick={() => handleAttachFamily(f.id)}
+                                    disabled={attachingFamilyId !== null}
+                                    className="cx-label text-xs px-3 py-2 rounded-lg bg-brand-teal text-[var(--color-carbon)] disabled:opacity-50"
+                                >
+                                    {attachingFamilyId === f.id ? 'Attaching…' : `Attach to ${f.name}`}
+                                </button>
+                            ))}
+                        </div>
+                    </Panel>
+                </div>
+            )}
+
             {/* Share Popup */}
             {showSharePopup && shareUrl && (
                 <div className="fixed inset-0 z-50 flex items-end justify-center p-4 bg-black/50" onClick={() => setShowSharePopup(false)}>
@@ -230,23 +316,6 @@ export default function TripLayout() {
                         {daysAway > 0 ? daysAway : 'In progress'}
                     </div>
                 </Panel>
-            </div>
-
-            {/* Tabs */}
-            <div className="flex border-b border-[var(--color-border)] px-4 sticky top-0 bg-[var(--color-bg-primary)] z-30 overflow-x-auto no-scrollbar">
-                {tabs.map((tab) => (
-                    <NavLink
-                        key={tab.name}
-                        to={tab.path}
-                        end={tab.path === ''}
-                        className={({ isActive }) => `cx-label px-4 py-3 mt-1 text-xs rounded-t-lg border-b-2 transition-colors whitespace-nowrap ${isActive
-                                ? 'text-brand-teal border-brand-teal cx-lit'
-                                : 'text-[var(--color-text-muted)] border-transparent hover:text-[var(--color-text-secondary)]'
-                            }`}
-                    >
-                        {tab.name}
-                    </NavLink>
-                ))}
             </div>
 
             {/* Content Area */}

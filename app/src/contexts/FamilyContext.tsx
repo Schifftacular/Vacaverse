@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { db } from '../lib/client';
 import { useAuth } from './AuthContext';
+import type { MemberRelation } from '../lib/familyTree';
 
 interface Family {
     id: string;
@@ -8,6 +9,8 @@ interface Family {
     created_by: string;
     created_at: string;
     members: string[];
+    // parent_id/partner_id per member, for the family tree view (see #11).
+    memberRelations: MemberRelation[];
 }
 
 interface FamilyContextType {
@@ -17,6 +20,7 @@ interface FamilyContextType {
     createFamily: (name: string) => Promise<void>;
     joinFamily: (familyId: string) => Promise<void>;
     loading: boolean;
+    refetch: () => Promise<void>;
 }
 
 const FamilyContext = createContext<FamilyContextType | undefined>(undefined);
@@ -43,18 +47,25 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             .select('*')
             .in('id', familyIds);
 
-        // Get members for each family
+        // Get members (plus tree relations) for each family
         const { data: allMembers } = await db
             .from('family_members')
-            .select('family_id, user_id')
+            .select('family_id, user_id, parent_id, partner_id')
             .in('family_id', familyIds);
 
-        const familiesWithMembers: Family[] = (familyRows || []).map((f: Omit<Family, 'members'>) => ({
-            ...f,
-            members: (allMembers || [])
-                .filter((m: { family_id: string; user_id: string }) => m.family_id === f.id)
-                .map((m: { user_id: string }) => m.user_id),
-        }));
+        type MemberRow = { family_id: string; user_id: string; parent_id: string | null; partner_id: string | null };
+        const familiesWithMembers: Family[] = (familyRows || []).map((f: Omit<Family, 'members' | 'memberRelations'>) => {
+            const rows = (allMembers || []).filter((m: MemberRow) => m.family_id === f.id);
+            return {
+                ...f,
+                members: rows.map((m: MemberRow) => m.user_id),
+                memberRelations: rows.map((m: MemberRow) => ({
+                    user_id: m.user_id,
+                    parent_id: m.parent_id,
+                    partner_id: m.partner_id,
+                })),
+            };
+        });
 
         setFamilies(familiesWithMembers);
         setLoading(false);
@@ -92,7 +103,7 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
 
     return (
-        <FamilyContext.Provider value={{ families, currentFamily, setCurrentFamily, createFamily, joinFamily, loading }}>
+        <FamilyContext.Provider value={{ families, currentFamily, setCurrentFamily, createFamily, joinFamily, loading, refetch: fetchFamilies }}>
             {children}
         </FamilyContext.Provider>
     );

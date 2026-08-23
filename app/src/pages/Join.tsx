@@ -84,7 +84,7 @@ export default function Join() {
                 .select('*')
                 .eq('family_id', found.familyId);
             const memberIds = (memberRows ?? []).map((m: { user_id: string }) => m.user_id);
-            setCurrentFamily({ id: found.familyId, name: found.familyName, created_by: '', created_at: '', members: memberIds });
+            setCurrentFamily({ id: found.familyId, name: found.familyName, created_by: '', created_at: '', members: memberIds, memberRelations: [] });
 
             // Send them straight into a real trip when the family has one, so
             // they land somewhere with context instead of an empty dashboard.

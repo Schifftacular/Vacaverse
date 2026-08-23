@@ -6,8 +6,10 @@ import {
     destroySession,
     setSessionCookie,
     clearSessionCookie,
+    updateDisplayName,
     SESSION_COOKIE,
     attachUser,
+    requireAuth,
 } from '../auth.js';
 
 const router = Router();
@@ -47,6 +49,15 @@ router.post('/logout', (req, res) => {
 
 router.get('/me', (req, res) => {
     res.json({ data: { user: req.user }, error: null });
+});
+
+router.patch('/me', requireAuth, (req, res) => {
+    const displayName = String(req.body?.display_name || '').trim();
+    if (!displayName) {
+        return res.status(400).json({ error: 'display_name is required' });
+    }
+    const user = updateDisplayName(req.user.id, displayName);
+    res.json({ data: { user }, error: null });
 });
 
 export default router;

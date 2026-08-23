@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { db } from '../lib/client';
+import { formatEventTime } from '../lib/time';
 import { MapPin, Calendar, Users, LogIn } from 'lucide-react';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { Panel, EmptyState } from '../components/ui/Concourse';
@@ -66,7 +67,7 @@ export default function TripPreview() {
             <div className="min-h-screen bg-[var(--color-bg-primary)] flex flex-col items-center justify-center p-4 text-center">
                 <h1 className="cx-h1 text-[var(--color-text-primary)] mb-2">Trip not found</h1>
                 <p className="text-[var(--color-text-secondary)] mb-6">This link may have expired or been removed.</p>
-                <Link to="/profile" className="px-6 py-3 bg-brand-teal text-[var(--color-carbon)] rounded-lg font-bold hover:brightness-110 transition-all">Sign In</Link>
+                <Link to="/login" className="px-6 py-3 bg-brand-teal text-[var(--color-carbon)] rounded-lg font-bold hover:brightness-110 transition-all">Sign In</Link>
             </div>
         );
     }
@@ -106,7 +107,7 @@ export default function TripPreview() {
                     <Users size={16} className="text-brand-teal" />
                     <span className="text-[var(--color-text-secondary)]">Sign in to RSVP and collaborate</span>
                 </div>
-                <Link to="/profile" className="cx-label text-brand-teal text-xs py-3 px-3 -my-3 -mr-3">Sign In</Link>
+                <Link to="/login" className="cx-label text-brand-teal text-xs py-3 px-3 -my-3 -mr-3">Sign In</Link>
             </div>
 
             {/* Read-only Itinerary */}
@@ -125,7 +126,7 @@ export default function TripPreview() {
                                 {eventsByDate[dateKey].map(event => (
                                     <Panel key={event.id} className="p-4">
                                         <div className="flex items-start gap-3">
-                                            <div className="cx-label text-xs text-brand-teal w-14 shrink-0 tabular-nums">{event.time}</div>
+                                            <div className="cx-label text-xs text-brand-teal w-16 shrink-0 tabular-nums">{formatEventTime(event.time)}</div>
                                             <div>
                                                 <div className="font-medium text-[var(--color-text-primary)]">{event.title}</div>
                                                 {event.location && (
@@ -147,7 +148,7 @@ export default function TripPreview() {
             {/* Bottom CTA */}
             <div className="sticky bottom-0 bg-[var(--color-bg-primary)] border-t border-[var(--color-border)] p-4">
                 <Link
-                    to="/profile"
+                    to="/login"
                     className="cx-lit flex items-center justify-center w-full bg-brand-teal text-[var(--color-carbon)] text-center font-bold py-4 rounded-xl hover:brightness-110 transition-all"
                 >
                     <LogIn size={18} className="mr-2" />

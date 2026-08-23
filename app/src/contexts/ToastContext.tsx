@@ -35,7 +35,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     return (
         <ToastContext.Provider value={{ showToast }}>
             {children}
-            <div className="fixed bottom-4 right-4 z-[9999] flex flex-col gap-2">
+            {/* bottom-40 clears both the BottomNav (h-16 + safe-area) and the
+                bottom-20/24 FABs used across trip surfaces, so a toast never
+                collides with either. */}
+            <div className="fixed bottom-40 right-4 z-[9999] flex flex-col gap-2">
                 {toasts.map(toast => (
                     <div
                         key={toast.id}
