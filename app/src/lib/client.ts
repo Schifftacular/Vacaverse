@@ -213,6 +213,9 @@ export const auth = {
     async signOut() {
         return apiFetch('/auth/logout', { method: 'POST' });
     },
+    async updateProfile(display_name: string) {
+        return apiFetch('/auth/me', { method: 'PATCH', body: JSON.stringify({ display_name }) });
+    },
     async me(): Promise<AppUser | null> {
         const { data } = await apiFetch('/auth/me');
         return data?.user ?? null;

@@ -31,6 +31,11 @@ export function getUserById(id) {
     return db.prepare('SELECT id, email, display_name, photo_url, created_at FROM users WHERE id = ?').get(id);
 }
 
+export function updateDisplayName(id, display_name) {
+    db.prepare('UPDATE users SET display_name = ? WHERE id = ?').run(display_name, id);
+    return getUserById(id);
+}
+
 export function createSession(userId) {
     const id = nanoid(32);
     const expiresAt = new Date(Date.now() + SESSION_TTL_MS).toISOString();

@@ -7,6 +7,7 @@ interface AuthContextType {
     signInWithEmail: (email: string, password: string) => Promise<void>;
     signUpWithEmail: (email: string, password: string, displayName?: string) => Promise<void>;
     logout: () => Promise<void>;
+    updateProfile: (displayName: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -40,8 +41,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(null);
     };
 
+    const updateProfile = async (displayName: string) => {
+        const { data, error } = await auth.updateProfile(displayName);
+        if (error) throw error;
+        setUser(data.user);
+    };
+
     return (
-        <AuthContext.Provider value={{ user, loading, signInWithEmail, signUpWithEmail, logout }}>
+        <AuthContext.Provider value={{ user, loading, signInWithEmail, signUpWithEmail, logout, updateProfile }}>
             {!loading && children}
         </AuthContext.Provider>
     );

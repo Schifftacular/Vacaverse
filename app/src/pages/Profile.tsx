@@ -1,35 +1,51 @@
-import { Settings, ChevronRight, Bell, CreditCard, HelpCircle, LogOut, Shield, Moon, Sun } from 'lucide-react';
+import { useState } from 'react';
+import { ChevronRight, HelpCircle, LogOut, Moon, Sun, X, Loader2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTrip } from '../contexts/TripContext';
 import { useFamily } from '../contexts/FamilyContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useFeedback } from '../contexts/FeedbackContext';
 import { Button, Panel } from '../components/ui/Concourse';
-
-const menuItems = [
-    { icon: Bell, label: 'Notifications', badge: 3 },
-    { icon: CreditCard, label: 'Payment Methods' },
-    { icon: Shield, label: 'Privacy & Security' },
-    { icon: HelpCircle, label: 'Help & Support' },
-];
 
 export default function Profile() {
     // Route is protected — `user` is always set here; the signed-out sign-in
     // form now lives at the dedicated /login route instead.
-    const { user, logout } = useAuth();
+    const { user, logout, updateProfile } = useAuth();
     const { trips } = useTrip();
     const { families } = useFamily();
     const { theme, toggleTheme } = useTheme();
+    const { open: openFeedback } = useFeedback();
+
+    const [isEditing, setIsEditing] = useState(false);
+    const [nameInput, setNameInput] = useState('');
+    const [saving, setSaving] = useState(false);
 
     if (!user) return null;
+
+    const startEditing = () => {
+        setNameInput(user.display_name || '');
+        setIsEditing(true);
+    };
+
+    const handleSave = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!nameInput.trim()) return;
+        setSaving(true);
+        try {
+            await updateProfile(nameInput.trim());
+            setIsEditing(false);
+        } catch (error) {
+            console.error('Failed to update profile:', error);
+        } finally {
+            setSaving(false);
+        }
+    };
 
     return (
         <div className="pb-8">
             {/* Header */}
             <div className="flex justify-between items-center p-4 bg-[var(--color-bg-primary)] sticky top-0 z-10 border-b border-[var(--color-border)]">
                 <h1 className="cx-h1 text-[var(--color-text-primary)]">Profile</h1>
-                <Button variant="ghost" size="icon">
-                    <Settings size={22} />
-                </Button>
             </div>
 
             {/* Profile Card */}
@@ -47,7 +63,7 @@ export default function Profile() {
                     <div>
                         <h2 className="cx-h2 text-[var(--color-text-primary)]">{user.display_name || user.email?.split('@')[0] || "User"}</h2>
                         <p className="text-[var(--color-text-secondary)]">{user.email}</p>
-                        <button className="text-brand-teal text-sm font-medium mt-2">Edit Profile</button>
+                        <button onClick={startEditing} className="text-brand-teal text-sm font-medium mt-2">Edit Profile</button>
                     </div>
                 </Panel>
             </div>
@@ -88,26 +104,20 @@ export default function Profile() {
                         </div>
                     </button>
 
-                    {menuItems.map((item, idx) => (
-                        <button
-                            key={item.label}
-                            className={`w-full flex items-center justify-between p-4 hover:bg-[var(--color-bg-secondary)] transition-colors ${idx !== menuItems.length - 1 ? 'border-b border-[var(--color-border)]' : ''
-                                }`}
-                        >
-                            <div className="flex items-center gap-3">
-                                <item.icon size={20} className="text-[var(--color-text-secondary)]" />
-                                <span className="text-[var(--color-text-primary)]">{item.label}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                {item.badge && (
-                                    <span className="bg-[var(--color-vermilion)] text-white text-xs px-2 py-0.5 rounded-full">
-                                        {item.badge}
-                                    </span>
-                                )}
-                                <ChevronRight size={20} className="text-[var(--color-text-secondary)]" />
-                            </div>
-                        </button>
-                    ))}
+                    {/* Notifications/Payment Methods/Privacy & Security rows removed —
+                        none had (or currently need) any real functionality behind them
+                        (see issue #8). Help & Support opens the existing feedback panel
+                        instead of duplicating it with a second, separate mechanism. */}
+                    <button
+                        onClick={openFeedback}
+                        className="w-full flex items-center justify-between p-4 hover:bg-[var(--color-bg-secondary)] transition-colors"
+                    >
+                        <div className="flex items-center gap-3">
+                            <HelpCircle size={20} className="text-[var(--color-text-secondary)]" />
+                            <span className="text-[var(--color-text-primary)]">Help & Support</span>
+                        </div>
+                        <ChevronRight size={20} className="text-[var(--color-text-secondary)]" />
+                    </button>
                 </Panel>
             </div>
 
@@ -121,6 +131,35 @@ export default function Profile() {
                     <span>Log Out</span>
                 </button>
             </div>
+
+            {/* Edit Profile modal */}
+            {isEditing && (
+                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50" onClick={() => setIsEditing(false)}>
+                    <div className="cx-slide w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="cx-h2 text-[var(--color-text-primary)]">Edit Profile</h3>
+                            <Button variant="ghost" size="icon" onClick={() => setIsEditing(false)} aria-label="Close">
+                                <X size={20} />
+                            </Button>
+                        </div>
+                        <form onSubmit={handleSave} className="space-y-4">
+                            <div>
+                                <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Name</label>
+                                <input
+                                    type="text"
+                                    value={nameInput}
+                                    onChange={(e) => setNameInput(e.target.value)}
+                                    className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
+                                    required
+                                />
+                            </div>
+                            <Button type="submit" variant="primary" size="lg" disabled={saving}>
+                                {saving ? <Loader2 size={16} className="animate-spin" /> : 'Save'}
+                            </Button>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
