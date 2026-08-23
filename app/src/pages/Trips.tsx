@@ -225,7 +225,7 @@ export default function Trips() {
             <div className="flex flex-col items-center justify-center min-h-[60vh] p-4 text-center">
                 <h2 className="cx-h2 text-[var(--color-text-primary)] mb-2">Sign in to view your trips</h2>
                 <p className="text-[var(--color-text-secondary)] mb-6">You need an account to plan and save your trips.</p>
-                <Link to="/profile" className="px-6 py-3 bg-brand-teal text-[var(--color-carbon)] rounded-lg font-bold">
+                <Link to="/login" className="px-6 py-3 bg-brand-teal text-[var(--color-carbon)] rounded-lg font-bold">
                     Go to Login
                 </Link>
             </div>

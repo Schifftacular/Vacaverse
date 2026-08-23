@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { Settings, ChevronRight, Bell, CreditCard, HelpCircle, LogOut, Shield, Moon, Sun, LogIn } from 'lucide-react';
+import { Settings, ChevronRight, Bell, CreditCard, HelpCircle, LogOut, Shield, Moon, Sun } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTrip } from '../contexts/TripContext';
 import { useFamily } from '../contexts/FamilyContext';
@@ -14,84 +13,14 @@ const menuItems = [
 ];
 
 export default function Profile() {
-    const { user, signInWithEmail, signUpWithEmail, logout } = useAuth();
+    // Route is protected — `user` is always set here; the signed-out sign-in
+    // form now lives at the dedicated /login route instead.
+    const { user, logout } = useAuth();
     const { trips } = useTrip();
     const { families } = useFamily();
     const { theme, toggleTheme } = useTheme();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [isSignUp, setIsSignUp] = useState(false);
-    const [error, setError] = useState('');
 
-    const handleEmailAuth = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
-        try {
-            if (isSignUp) {
-                await signUpWithEmail(email, password);
-            } else {
-                await signInWithEmail(email, password);
-            }
-        } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : 'Failed to authenticate');
-        }
-    };
-
-    if (!user) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[85vh] p-4">
-                {/* The sign-in ticket — a raked glass slide, like a boarding pass
-                    lit on the board, rather than a generic centered form stack. */}
-                <div className="w-full max-w-xs relative">
-                    <Panel raked className="p-6 pt-8 relative overflow-visible">
-                        <span className="cx-label absolute top-4 right-4 text-[10px] text-[var(--color-text-muted)]">Concourse</span>
-                        <div className="w-14 h-14 bg-brand-teal/15 border border-brand-teal/30 rounded-full flex items-center justify-center mb-5 text-brand-teal">
-                            <LogIn size={26} />
-                        </div>
-                        <h2 className="cx-h1 text-2xl text-[var(--color-text-primary)] mb-2">{isSignUp ? 'Create Account' : 'Sign In'}</h2>
-                        <p className="text-[var(--color-text-secondary)] mb-6 text-sm">Manage your trips, collaborate with family, and save your preferences.</p>
-
-                        <form onSubmit={handleEmailAuth} className="flex flex-col gap-3">
-                            {error && (
-                                <div className="bg-[var(--color-vermilion)]/15 text-[var(--color-vermilion)] border border-[var(--color-vermilion)]/30 p-3 rounded-lg text-sm">
-                                    {error}
-                                </div>
-                            )}
-                            <input
-                                type="email"
-                                placeholder="Email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="p-3 rounded-lg bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] border border-[var(--color-border)] focus:outline-none focus:border-brand-teal"
-                                required
-                            />
-                            <input
-                                type="password"
-                                placeholder="Password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="p-3 rounded-lg bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] border border-[var(--color-border)] focus:outline-none focus:border-brand-teal"
-                                required
-                            />
-                            <Button type="submit" variant="primary" size="lg">
-                                {isSignUp ? 'Sign Up' : 'Sign In'}
-                            </Button>
-                        </form>
-                    </Panel>
-                    {/* The stub — torn-ticket companion tab holding the mode switch */}
-                    <div className="cx-slide mt-2 py-3 text-center">
-                        <button
-                            type="button"
-                            onClick={() => setIsSignUp(!isSignUp)}
-                            className="text-[var(--color-text-secondary)] text-sm hover:text-brand-teal transition-colors"
-                        >
-                            {isSignUp ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
+    if (!user) return null;
 
     return (
         <div className="pb-8">
@@ -106,12 +35,14 @@ export default function Profile() {
             {/* Profile Card */}
             <div className="px-4 mb-6 pt-4">
                 <Panel raked className="p-6 flex items-center gap-4">
-                    <div className="w-20 h-20 rounded-full bg-[var(--color-bg-secondary)] overflow-hidden border-4 border-brand-teal shrink-0">
-                        <img
-                            src={user.photo_url || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200"}
-                            alt="Avatar"
-                            className="w-full h-full object-cover"
-                        />
+                    <div className="w-20 h-20 rounded-full bg-[var(--color-bg-secondary)] overflow-hidden border-4 border-brand-teal shrink-0 flex items-center justify-center">
+                        {user.photo_url ? (
+                            <img src={user.photo_url} alt="Avatar" className="w-full h-full object-cover" />
+                        ) : (
+                            <span className="text-[var(--color-text-primary)] text-2xl font-bold">
+                                {(user.display_name || user.email || 'U').charAt(0).toUpperCase()}
+                            </span>
+                        )}
                     </div>
                     <div>
                         <h2 className="cx-h2 text-[var(--color-text-primary)]">{user.display_name || user.email?.split('@')[0] || "User"}</h2>

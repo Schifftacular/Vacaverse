@@ -5,7 +5,7 @@ interface AuthContextType {
     user: AppUser | null;
     loading: boolean;
     signInWithEmail: (email: string, password: string) => Promise<void>;
-    signUpWithEmail: (email: string, password: string) => Promise<void>;
+    signUpWithEmail: (email: string, password: string, displayName?: string) => Promise<void>;
     logout: () => Promise<void>;
 }
 
@@ -28,8 +28,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(data.user);
     };
 
-    const signUpWithEmail = async (email: string, password: string) => {
-        const { data, error } = await auth.signUp(email, password);
+    const signUpWithEmail = async (email: string, password: string, displayName?: string) => {
+        const { data, error } = await auth.signUp(email, password, displayName);
         if (error) throw error;
         setUser(data.user);
     };

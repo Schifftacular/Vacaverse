@@ -20,6 +20,7 @@ import TripNotes from './pages/trip/TripNotes';
 import TripSearch from './pages/trip/TripSearch';
 import TripPolls from './pages/trip/TripPolls';
 import Profile from './pages/Profile';
+import Login from './pages/Login';
 import Join from './pages/Join';
 import TripPreview from './pages/TripPreview';
 
@@ -33,8 +34,8 @@ export default function App() {
                             <BrowserRouter>
                                 <Routes>
                                     {/* Public routes */}
-                                    <Route path="/profile" element={<MainLayout />}>
-                                        <Route index element={<Profile />} />
+                                    <Route path="/login" element={<MainLayout />}>
+                                        <Route index element={<Login />} />
                                     </Route>
                                     <Route path="/join" element={<Join />} />
                                     <Route path="/trip/preview/:shareToken" element={<TripPreview />} />
@@ -45,6 +46,7 @@ export default function App() {
                                             <Route index element={<Home />} />
                                             <Route path="family" element={<Family />} />
                                             <Route path="trips" element={<Trips />} />
+                                            <Route path="profile" element={<Profile />} />
                                             <Route path="trips/:tripId" element={<TripLayout />}>
                                                 <Route index element={<TripItinerary />} />
                                                 <Route path="tasks" element={<TripTasks />} />
