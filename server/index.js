@@ -12,7 +12,6 @@ import profilesRoutes from './routes/profiles.js';
 import invitesRoutes from './routes/invites.js';
 import uploadsRoutes, { uploadsRoot } from './routes/uploads.js';
 import searchRoutes from './routes/search.js';
-import adminRoutes from './routes/admin.js';
 import { attachSockets } from './sockets.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -31,7 +30,6 @@ app.use('/api/profiles', profilesRoutes);
 app.use('/api/invites', invitesRoutes);
 app.use('/api/upload', uploadsRoutes);
 app.use('/api/search', searchRoutes);
-app.use('/api/admin', adminRoutes);
 
 // Production only: serve the built frontend (app/dist) and fall back to
 // index.html for client-side routes, so a single container can run both
