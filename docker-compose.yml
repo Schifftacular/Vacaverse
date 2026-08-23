@@ -25,6 +25,13 @@ name: vacaverse
 services:
   app:
     image: ghcr.io/schifftacular/vacaverse:latest
+    # Every deploy reapplies this same `:latest` tag, and Hostinger's deploy
+    # mechanism (both the GH Action and its underlying VPS API) only pulls an
+    # image when the tag isn't already cached locally — confirmed by two
+    # merges to main in a row that "deployed" successfully but kept serving
+    # the very first image ever pulled here. pull_policy: always forces a
+    # fresh pull (checked against the registry digest) on every reapply.
+    pull_policy: always
     container_name: vacaverse-app
     restart: unless-stopped
     environment:
