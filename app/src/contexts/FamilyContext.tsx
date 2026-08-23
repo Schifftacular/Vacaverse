@@ -19,6 +19,7 @@ interface FamilyContextType {
     setCurrentFamily: (family: Family | null) => void;
     createFamily: (name: string) => Promise<void>;
     joinFamily: (familyId: string) => Promise<void>;
+    deleteFamily: (familyId: string) => Promise<void>;
     loading: boolean;
     refetch: () => Promise<void>;
 }
@@ -102,8 +103,14 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         await fetchFamilies();
     };
 
+    const deleteFamily = async (familyId: string) => {
+        const { error } = await db.from('families').delete().eq('id', familyId);
+        if (error) throw error;
+        await fetchFamilies();
+    };
+
     return (
-        <FamilyContext.Provider value={{ families, currentFamily, setCurrentFamily, createFamily, joinFamily, loading, refetch: fetchFamilies }}>
+        <FamilyContext.Provider value={{ families, currentFamily, setCurrentFamily, createFamily, joinFamily, deleteFamily, loading, refetch: fetchFamilies }}>
             {children}
         </FamilyContext.Provider>
     );

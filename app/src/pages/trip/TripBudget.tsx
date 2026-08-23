@@ -128,7 +128,7 @@ export default function TripBudget() {
             </div>
 
             {/* Chart */}
-            <Panel raked className="p-4 mb-8 h-80">
+            <Panel className="p-4 mb-8 h-96">
                 <h3 className="cx-label text-xs text-[var(--color-text-muted)] mb-4">Expenses by Category</h3>
                 {chartData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
