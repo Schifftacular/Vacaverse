@@ -1,4 +1,4 @@
-import { Outlet, NavLink, Link, useParams } from 'react-router-dom';
+import { Outlet, Link, useParams } from 'react-router-dom';
 import { ArrowLeft, Calendar, Share2, Copy, Check } from 'lucide-react';
 import { useTrip } from '../contexts/TripContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -11,16 +11,9 @@ import { classifyTripAccess, type TripAccessResult } from '../lib/tripAccess';
 import { useUserProfiles } from '../hooks/useUserProfiles';
 import { Panel } from '../components/ui/Concourse';
 
-const tabs = [
-    { name: 'Itinerary', path: '' },
-    { name: 'Budget', path: 'budget' },
-    { name: 'Tasks', path: 'tasks' },
-    { name: 'Feed', path: 'feed' },
-    { name: 'Notes', path: 'notes' },
-    { name: 'Search', path: 'search' },
-    { name: 'Files', path: 'documents' },
-    { name: 'Polls', path: 'polls' },
-];
+// BottomNav is now the sole in-trip navigation system (see issue #7) — the
+// top tab strip that used to duplicate the same 8 destinations in a
+// different order, and overflowed the 390px viewport, is gone.
 
 export default function TripLayout() {
     const { tripId } = useParams<{ tripId: string }>();
@@ -319,23 +312,6 @@ export default function TripLayout() {
                         {daysAway > 0 ? daysAway : 'In progress'}
                     </div>
                 </Panel>
-            </div>
-
-            {/* Tabs */}
-            <div className="flex border-b border-[var(--color-border)] px-4 sticky top-0 bg-[var(--color-bg-primary)] z-30 overflow-x-auto no-scrollbar">
-                {tabs.map((tab) => (
-                    <NavLink
-                        key={tab.name}
-                        to={tab.path}
-                        end={tab.path === ''}
-                        className={({ isActive }) => `cx-label px-4 py-3 mt-1 text-xs rounded-t-lg border-b-2 transition-colors whitespace-nowrap ${isActive
-                                ? 'text-brand-teal border-brand-teal cx-lit'
-                                : 'text-[var(--color-text-muted)] border-transparent hover:text-[var(--color-text-secondary)]'
-                            }`}
-                    >
-                        {tab.name}
-                    </NavLink>
-                ))}
             </div>
 
             {/* Content Area */}
