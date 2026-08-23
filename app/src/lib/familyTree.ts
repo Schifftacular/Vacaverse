@@ -82,7 +82,11 @@ export function buildFamilyTree(members: MemberRelation[]): TreeGenerations {
         consumed.add(member.user_id);
         if (partnerId) consumed.add(partnerId);
 
-        const depth = depthOf(member.user_id);
+        // A couple's generation is the deeper of the two — someone who
+        // married into the family (parent_id null) paired with a blood
+        // descendant should render at the descendant's generation, not
+        // wherever the family_members rows happen to list them first.
+        const depth = partnerId ? Math.max(depthOf(member.user_id), depthOf(partnerId)) : depthOf(member.user_id);
         const unit: TreeUnit = { personId: member.user_id, partnerId };
         if (!unitsByDepth.has(depth)) unitsByDepth.set(depth, []);
         unitsByDepth.get(depth)!.push(unit);

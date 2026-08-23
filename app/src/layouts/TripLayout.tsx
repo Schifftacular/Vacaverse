@@ -58,8 +58,12 @@ export default function TripLayout() {
         check();
 
         return () => { cancelled = true; };
+        // families.length (not the full families array — its reference
+        // changes on every FamilyContext fetch, which would re-run this on
+        // every render) so a denied verdict can recover if the user is
+        // added to the owning family while this page stays mounted.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [loading, trip, tripId, user]);
+    }, [loading, trip, tripId, user, families.length]);
 
     // Who else is in this trip's family, so a new joiner's first screen answers
     // "who else is here" rather than showing an empty-feeling shell. Queried

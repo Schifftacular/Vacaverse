@@ -336,7 +336,7 @@ export default function Family() {
                                     className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
                                 >
                                     <option value="">None</option>
-                                    {currentFamily.members
+                                    {(liveFamily ?? currentFamily).members
                                         .filter(uid => uid !== editingPersonId)
                                         .map(uid => (
                                             <option key={uid} value={uid}>{profiles.get(uid)?.display_name || uid}</option>
@@ -351,7 +351,7 @@ export default function Family() {
                                     className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
                                 >
                                     <option value="">None</option>
-                                    {currentFamily.members
+                                    {(liveFamily ?? currentFamily).members
                                         .filter(uid => uid !== editingPersonId)
                                         .map(uid => (
                                             <option key={uid} value={uid}>{profiles.get(uid)?.display_name || uid}</option>

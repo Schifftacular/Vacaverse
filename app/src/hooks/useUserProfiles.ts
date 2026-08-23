@@ -1,4 +1,4 @@
-import { useState, useEffect, useSyncExternalStore } from 'react';
+import { useState, useEffect, useMemo, useSyncExternalStore } from 'react';
 
 interface UserProfile {
     id: string;
@@ -38,7 +38,7 @@ export function useUserProfiles(userIds: string[]): { profiles: Map<string, User
 
     // Forces a re-render whenever the shared cache changes (e.g. a
     // display_name edit) so already-mounted consumers reflect it below.
-    useSyncExternalStore(subscribe, () => cacheVersion);
+    const version = useSyncExternalStore(subscribe, () => cacheVersion);
 
     useEffect(() => {
         if (userIds.length === 0) { setLoading(false); return; }
@@ -81,13 +81,19 @@ export function useUserProfiles(userIds: string[]): { profiles: Map<string, User
         fetchProfiles();
     }, [userIds.join(',')]);
 
-    // Pure per-render derivation, not its own effect: prefer whatever's
-    // currently cached (freshest, post-edit) over what this hook fetched.
-    const profiles = new Map(fetchedProfiles);
-    for (const id of userIds) {
-        const cached = profileCache.get(id);
-        if (cached) profiles.set(id, cached);
-    }
+    // Memoized so the returned Map keeps a stable identity across unrelated
+    // re-renders (e.g. FamilyTree's layout effect depends on this by
+    // reference) — only recomputed when the fetch result, the id list, or
+    // the cache itself actually changes.
+    const profiles = useMemo(() => {
+        const merged = new Map(fetchedProfiles);
+        for (const id of userIds) {
+            const cached = profileCache.get(id);
+            if (cached) merged.set(id, cached);
+        }
+        return merged;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [fetchedProfiles, userIds.join(','), version]);
 
     return { profiles, loading };
 }

@@ -38,6 +38,21 @@ describe('buildFamilyTree', () => {
         expect(tree).toEqual([[{ personId: 'a', partnerId: 'b' }]]);
     });
 
+    it('places a couple with mismatched depths at the deeper partner\'s generation', () => {
+        // A married in (root), B is a blood grandchild of some third root C.
+        const tree = buildFamilyTree([
+            { user_id: 'c', parent_id: null, partner_id: null },
+            { user_id: 'mid', parent_id: 'c', partner_id: null },
+            { user_id: 'b', parent_id: 'mid', partner_id: 'a' },
+            { user_id: 'a', parent_id: null, partner_id: 'b' },
+        ]);
+        expect(tree).toEqual([
+            [{ personId: 'c', partnerId: null }],
+            [{ personId: 'mid', partnerId: null }],
+            [{ personId: 'b', partnerId: 'a' }],
+        ]);
+    });
+
     it('treats a dangling parent_id (parent not in this family) as a root', () => {
         const tree = buildFamilyTree([
             { user_id: 'a', parent_id: 'nobody-in-this-family', partner_id: null },

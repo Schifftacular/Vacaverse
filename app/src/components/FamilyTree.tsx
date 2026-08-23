@@ -64,25 +64,42 @@ export function FamilyTree({ memberRelations, profiles, onEditPerson }: FamilyTr
 
             const containerRect = container.getBoundingClientRect();
             const segments: LineSeg[] = [];
+            const drawn = new Set<string>();
 
-            for (const [personId, node] of nodeRefs.current) {
-                const relation = relationById.get(personId);
-                const parentId = relation?.parent_id;
-                if (!parentId) continue;
-                const parentUnitKey = personToUnitKey.get(parentId);
-                if (!parentUnitKey) continue;
-                const parentNode = nodeRefs.current.get(parentUnitKey);
-                if (!parentNode) continue;
+            // Each unit's DOM node is registered once, keyed by its
+            // canonical (primary) personId — but a couple's two members can
+            // each have their own, different parent_id (one married in, one
+            // is a blood descendant), so both need checking, not just the
+            // primary. Dedupe by parent-unit/child-unit pair in case both
+            // partners resolve to the same parent unit.
+            for (const gen of generations) {
+                for (const unit of gen) {
+                    const node = nodeRefs.current.get(unit.personId);
+                    if (!node) continue;
 
-                const childRect = node.getBoundingClientRect();
-                const parentRect = parentNode.getBoundingClientRect();
+                    for (const memberId of [unit.personId, unit.partnerId].filter((id): id is string => !!id)) {
+                        const parentId = relationById.get(memberId)?.parent_id;
+                        if (!parentId) continue;
+                        const parentUnitKey = personToUnitKey.get(parentId);
+                        if (!parentUnitKey || parentUnitKey === unit.personId) continue;
+                        const parentNode = nodeRefs.current.get(parentUnitKey);
+                        if (!parentNode) continue;
 
-                segments.push({
-                    x1: parentRect.left + parentRect.width / 2 - containerRect.left + container.scrollLeft,
-                    y1: parentRect.bottom - containerRect.top + container.scrollTop,
-                    x2: childRect.left + childRect.width / 2 - containerRect.left + container.scrollLeft,
-                    y2: childRect.top - containerRect.top + container.scrollTop,
-                });
+                        const dedupeKey = `${parentUnitKey}->${unit.personId}`;
+                        if (drawn.has(dedupeKey)) continue;
+                        drawn.add(dedupeKey);
+
+                        const childRect = node.getBoundingClientRect();
+                        const parentRect = parentNode.getBoundingClientRect();
+
+                        segments.push({
+                            x1: parentRect.left + parentRect.width / 2 - containerRect.left + container.scrollLeft,
+                            y1: parentRect.bottom - containerRect.top + container.scrollTop,
+                            x2: childRect.left + childRect.width / 2 - containerRect.left + container.scrollLeft,
+                            y2: childRect.top - containerRect.top + container.scrollTop,
+                        });
+                    }
+                }
             }
             setLines(segments);
         };
