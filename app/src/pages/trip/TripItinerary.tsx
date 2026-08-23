@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
+import { format, parseISO } from 'date-fns';
 import { addTripItem, getTripItems } from '../../services/tripService';
 import { db } from '../../lib/client';
 import { useToast } from '../../contexts/ToastContext';
@@ -152,7 +153,7 @@ export default function TripItinerary() {
             ) : (
                 sortedDates.map((dateKey) => {
                     const isToday = dateKey === todayKey;
-                    const formattedDate = new Date(dateKey).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+                    const formattedDate = format(parseISO(dateKey), 'EEEE, MMMM d');
                     return (
                     <div key={dateKey} className="mb-8">
                         {isToday ? (
