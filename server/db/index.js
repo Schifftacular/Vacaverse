@@ -4,7 +4,11 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dbPath = path.join(__dirname, 'vacaverse.sqlite');
+// DB_DIR lets deploys point the sqlite file at a volume mount separate from
+// this code directory — see docker-compose.yml. Defaults to this file's own
+// directory so local dev (no Docker, no DB_DIR set) is unaffected.
+const dataDir = process.env.DB_DIR || __dirname;
+const dbPath = path.join(dataDir, 'vacaverse.sqlite');
 
 export const db = new Database(dbPath);
 db.pragma('journal_mode = WAL');
