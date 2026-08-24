@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useFamily } from '../contexts/FamilyContext';
 import { useAuth } from '../contexts/AuthContext';
 import { createFamilyInvite, createFamilyEmailInvite } from '../services/inviteService';
@@ -6,12 +7,12 @@ import { useUserProfiles } from '../hooks/useUserProfiles';
 import { db } from '../lib/client';
 import { wouldCreateCycle } from '../lib/familyTree';
 import { useToast } from '../contexts/ToastContext';
-import { Users, Plus, X, Check, Copy, Link2, Loader2, List, GitBranch } from 'lucide-react';
+import { Users, Plus, X, Check, Copy, Link2, Loader2, List, GitBranch, UserPlus, Trash2 } from 'lucide-react';
 import { Button, Panel, EmptyState } from '../components/ui/Concourse';
 import { FamilyTree } from '../components/FamilyTree';
 
 export default function Family() {
-    const { families, currentFamily, setCurrentFamily, createFamily, loading, refetch } = useFamily();
+    const { families, currentFamily, setCurrentFamily, createFamily, deleteFamily, loading, refetch } = useFamily();
     const { user } = useAuth();
     const { showToast } = useToast();
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,6 +31,7 @@ export default function Family() {
     const [editParentId, setEditParentId] = useState('');
     const [editPartnerId, setEditPartnerId] = useState('');
     const [savingRelations, setSavingRelations] = useState(false);
+    const [deletingFamily, setDeletingFamily] = useState(false);
 
     // The live family record (with up-to-date memberRelations), not the
     // possibly-stale copy in currentFamily — see Join.tsx, which sets
@@ -71,6 +73,22 @@ export default function Family() {
         navigator.clipboard.writeText(inviteCode);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+    };
+
+    const handleDeleteFamily = async () => {
+        if (!currentFamily || !user || currentFamily.created_by !== user.id) return;
+        if (!confirm(`Delete "${currentFamily.name}"? This can't be undone. Trips linked to this family will be kept but unassigned from it.`)) return;
+        setDeletingFamily(true);
+        try {
+            await deleteFamily(currentFamily.id);
+            setCurrentFamily(null);
+            showToast('Family deleted', 'success');
+        } catch (error) {
+            console.error('Failed to delete family:', error);
+            showToast('Failed to delete family', 'error');
+        } finally {
+            setDeletingFamily(false);
+        }
     };
 
     const handleCopyLink = () => {
@@ -152,25 +170,38 @@ export default function Family() {
                     <h1 className="cx-h1 text-[var(--color-text-primary)]">My Families</h1>
                     <p className="text-[var(--color-text-secondary)] text-sm">Manage your family groups</p>
                 </div>
-                <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setIsModalOpen(true)}
-                    className="rounded-full text-brand-teal"
-                >
-                    <Plus size={20} />
-                </Button>
+                <div className="flex items-center gap-2">
+                    <Link to="/join">
+                        <Button variant="outline" size="icon" className="rounded-full text-brand-teal" aria-label="Join a family">
+                            <UserPlus size={20} />
+                        </Button>
+                    </Link>
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setIsModalOpen(true)}
+                        className="rounded-full text-brand-teal"
+                        aria-label="Create a family"
+                    >
+                        <Plus size={20} />
+                    </Button>
+                </div>
             </div>
 
             {families.length === 0 ? (
                 <EmptyState
                     icon={<Users size={48} />}
                     title="No family groups yet"
-                    hint="Create a family group to start planning together."
+                    hint="Create a family group to start planning together, or join one with an invite code."
                     action={
-                        <Button variant="primary" onClick={() => setIsModalOpen(true)}>
-                            Create Family Group
-                        </Button>
+                        <div className="flex gap-3">
+                            <Button variant="primary" onClick={() => setIsModalOpen(true)}>
+                                Create Family Group
+                            </Button>
+                            <Link to="/join">
+                                <Button variant="outline">Join a Family</Button>
+                            </Link>
+                        </div>
                     }
                 />
             ) : (
@@ -234,6 +265,16 @@ export default function Family() {
                                 {inviteLoading ? <Loader2 size={14} className="animate-spin" /> : null}
                                 Get Invite Code
                             </button>
+                            {currentFamily.created_by === user?.id && (
+                                <button
+                                    onClick={handleDeleteFamily}
+                                    disabled={deletingFamily}
+                                    className="text-sm text-[var(--color-vermilion)] flex items-center gap-1 disabled:opacity-50"
+                                >
+                                    {deletingFamily ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                                    Delete Family
+                                </button>
+                            )}
                         </div>
                     </div>
 

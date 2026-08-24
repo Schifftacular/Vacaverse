@@ -1,5 +1,5 @@
 import { Outlet, Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Calendar, Share2, Copy, Check, Mail, Loader2 } from 'lucide-react';
+import { ArrowLeft, Calendar, Share2, Copy, Check, Mail, Pencil, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { useTrip } from '../contexts/TripContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useFamily } from '../contexts/FamilyContext';
@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { differenceInDays, format, parseISO } from 'date-fns';
 import { updateTrip } from '../services/tripService';
 import { createTripEmailInvite } from '../services/inviteService';
-import { db } from '../lib/client';
+import { db, storage } from '../lib/client';
 import { classifyTripAccess, type TripAccessResult } from '../lib/tripAccess';
 import { useUserProfiles } from '../hooks/useUserProfiles';
 import { Panel, Button } from '../components/ui/Concourse';
@@ -31,6 +31,16 @@ export default function TripLayout() {
     const [sharingLoading, setSharingLoading] = useState(false);
     const [inviteEmail, setInviteEmail] = useState('');
     const [inviteSending, setInviteSending] = useState(false);
+
+    // Edit Trip
+    const [showEditSheet, setShowEditSheet] = useState(false);
+    const [editTitle, setEditTitle] = useState('');
+    const [editStartDate, setEditStartDate] = useState('');
+    const [editEndDate, setEditEndDate] = useState('');
+    const [editBudget, setEditBudget] = useState('');
+    const [editImageFile, setEditImageFile] = useState<File | null>(null);
+    const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
+    const [savingTrip, setSavingTrip] = useState(false);
 
     const trip = useMemo(() => trips.find(t => t.id === tripId), [trips, tripId]);
 
@@ -112,6 +122,56 @@ export default function TripLayout() {
             console.error('Failed to attach trip to family:', error);
         } finally {
             setAttachingFamilyId(null);
+        }
+    };
+
+    const openEditSheet = () => {
+        if (!trip) return;
+        setEditTitle(trip.title);
+        setEditStartDate(trip.start_date.slice(0, 10));
+        setEditEndDate(trip.end_date.slice(0, 10));
+        setEditBudget(trip.budget ? String(trip.budget) : '');
+        setEditImageFile(null);
+        setEditImagePreview(null);
+        setShowEditSheet(true);
+    };
+
+    const handleEditImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setEditImageFile(file);
+            setEditImagePreview(URL.createObjectURL(file));
+        }
+    };
+
+    const handleSaveTrip = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!tripId || !user || !editTitle || !editStartDate || !editEndDate) return;
+        setSavingTrip(true);
+        try {
+            const updates: Record<string, unknown> = {
+                title: editTitle,
+                start_date: editStartDate,
+                end_date: editEndDate,
+                budget: parseFloat(editBudget) || 0,
+            };
+
+            if (editImageFile) {
+                const path = `trip-covers/${user.id}/${Date.now()}_${editImageFile.name}`;
+                const { error: uploadError } = await storage.from('trip-documents').upload(path, editImageFile);
+                if (!uploadError) {
+                    const { data: urlData } = storage.from('trip-documents').getPublicUrl(path);
+                    updates.image = urlData.publicUrl;
+                }
+            }
+
+            await updateTrip(tripId, updates);
+            await refetch();
+            setShowEditSheet(false);
+        } catch (error) {
+            console.error('Failed to update trip:', error);
+        } finally {
+            setSavingTrip(false);
         }
     };
 
@@ -197,17 +257,28 @@ export default function TripLayout() {
                 <Link to="/trips" className="absolute top-4 left-4 p-2 bg-black/40 rounded-full z-20 backdrop-blur-sm">
                     <ArrowLeft size={22} className="text-[var(--color-ivory)]" />
                 </Link>
-                <button
-                    onClick={handleShare}
-                    disabled={sharingLoading}
-                    className="absolute top-4 right-4 p-2 bg-black/40 rounded-full z-20 disabled:opacity-50 backdrop-blur-sm"
-                    aria-label="Share trip"
-                >
-                    {sharingLoading
-                        ? <div className="w-5 h-5 border-2 border-[var(--color-ivory)] border-t-transparent rounded-full animate-spin" />
-                        : <Share2 size={22} className="text-[var(--color-ivory)]" />
-                    }
-                </button>
+                <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+                    {user?.id === trip.user_id && (
+                        <button
+                            onClick={openEditSheet}
+                            className="p-2 bg-black/40 rounded-full backdrop-blur-sm"
+                            aria-label="Edit trip"
+                        >
+                            <Pencil size={20} className="text-[var(--color-ivory)]" />
+                        </button>
+                    )}
+                    <button
+                        onClick={handleShare}
+                        disabled={sharingLoading}
+                        className="p-2 bg-black/40 rounded-full disabled:opacity-50 backdrop-blur-sm"
+                        aria-label="Share trip"
+                    >
+                        {sharingLoading
+                            ? <div className="w-5 h-5 border-2 border-[var(--color-ivory)] border-t-transparent rounded-full animate-spin" />
+                            : <Share2 size={22} className="text-[var(--color-ivory)]" />
+                        }
+                    </button>
+                </div>
                 {trip.image && (
                     <img src={trip.image} alt="" className="absolute inset-0 w-full h-full object-cover opacity-50 mix-blend-luminosity" />
                 )}
@@ -336,6 +407,86 @@ export default function TripLayout() {
                         </Button>
                     </form>
                 </div>
+            </Sheet>
+
+            {/* Edit Trip */}
+            <Sheet open={showEditSheet} onOpenChange={setShowEditSheet} title="Edit Trip">
+                <form onSubmit={handleSaveTrip} className="space-y-4">
+                    <div>
+                        <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Trip Title</label>
+                        <input
+                            type="text"
+                            value={editTitle}
+                            onChange={(e) => setEditTitle(e.target.value)}
+                            className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
+                            required
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Start Date</label>
+                            <input
+                                type="date"
+                                value={editStartDate}
+                                onChange={(e) => setEditStartDate(e.target.value)}
+                                className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm text-[var(--color-text-secondary)] mb-1">End Date</label>
+                            <input
+                                type="date"
+                                value={editEndDate}
+                                onChange={(e) => setEditEndDate(e.target.value)}
+                                className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Trip Budget ($)</label>
+                        <input
+                            type="number"
+                            value={editBudget}
+                            onChange={(e) => setEditBudget(e.target.value)}
+                            min="0"
+                            step="1"
+                            className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Cover Image</label>
+                        <div className="border border-[var(--color-border)] rounded-xl p-3 bg-[var(--color-bg-primary)] flex items-center space-x-4">
+                            {editImagePreview ? (
+                                <img src={editImagePreview} alt="Preview" className="w-16 h-16 rounded-lg object-cover" />
+                            ) : trip.image ? (
+                                <img src={trip.image} alt="Current cover" className="w-16 h-16 rounded-lg object-cover" />
+                            ) : (
+                                <div className="w-16 h-16 rounded-lg bg-[var(--color-bg-secondary)] flex items-center justify-center text-[var(--color-text-muted)]">
+                                    <ImageIcon size={24} />
+                                </div>
+                            )}
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleEditImageChange}
+                                className="text-sm text-[var(--color-text-secondary)] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-teal file:text-[var(--color-carbon)] hover:file:brightness-90"
+                            />
+                        </div>
+                    </div>
+
+                    <button
+                        type="submit"
+                        disabled={savingTrip}
+                        className="w-full bg-brand-teal text-[var(--color-carbon)] font-bold py-4 rounded-xl mt-4 hover:brightness-110 transition-all disabled:opacity-50"
+                    >
+                        {savingTrip ? <Loader2 className="animate-spin mx-auto" /> : 'Save Changes'}
+                    </button>
+                </form>
             </Sheet>
 
             {/* Stats Summary Row */}
