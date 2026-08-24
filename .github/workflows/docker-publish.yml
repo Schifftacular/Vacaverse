@@ -52,15 +52,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Substitutes the real Listmonk transactional-API token into the
-      # checked-out docker-compose.yml before it's handed to the Hostinger
-      # deploy action below — never committed to the file itself. This only
-      # edits the runner's local checkout, not the repo.
-      - name: Inject Listmonk API token
-        env:
-          LISTMONK_API_TOKEN: ${{ secrets.LISTMONK_API_TOKEN }}
-        run: sed -i "s|__LISTMONK_API_TOKEN__|${LISTMONK_API_TOKEN}|g" docker-compose.yml
-
+      # hostinger/deploy-on-vps@v2 does NOT deploy this runner's local
+      # checkout — it sends Hostinger a GitHub blob URL for docker-compose.yml
+      # at this pushed commit, and Hostinger fetches that itself. So a real
+      # secret can never reach the VPS by editing the local file (a prior sed
+      # step here did exactly that and silently never worked). The only path
+      # for a secret is this action's own `environment-variables` input,
+      # which Hostinger's API applies server-side as the compose file's
+      # ${VAR} substitutions — the docker-compose.yml itself declares
+      # LISTMONK_API_TOKEN: "${LISTMONK_API_TOKEN}" to be resolved this way.
       - name: Deploy to Hostinger VPS
         uses: hostinger/deploy-on-vps@v2
         with:
@@ -68,3 +68,5 @@ jobs:
           virtual-machine: ${{ vars.HOSTINGER_VM_ID }}
           project-name: vacaverse
           docker-compose-path: docker-compose.yml
+          environment-variables: |
+            LISTMONK_API_TOKEN=${{ secrets.LISTMONK_API_TOKEN }}
