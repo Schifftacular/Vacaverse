@@ -24,6 +24,11 @@ export async function sendInviteEmail({ email, targetType, targetName, joinUrl }
         },
         body: JSON.stringify({
             subscriber_email: email,
+            // Invitees are arbitrary emails, not people who've ever
+            // subscribed in Listmonk — the default subscriber_mode requires
+            // an existing subscriber record and 400s otherwise. "external"
+            // sends straight to the address with no subscriber lookup.
+            subscriber_mode: 'external',
             template_id: Number(LISTMONK_TX_TEMPLATE_ID),
             data: { target_type: targetType, name: targetName, join_url: joinUrl },
         }),
