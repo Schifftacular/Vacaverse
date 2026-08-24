@@ -51,12 +51,20 @@ services:
       # email invites, relayed through Resend on invites.schifftacular.com.
       # LISTMONK_API_USER/LISTMONK_TX_TEMPLATE_ID aren't secret — hardcoded
       # here like CLIENT_ORIGIN/ADMIN_EMAILS above. LISTMONK_API_TOKEN IS a
-      # secret and is never committed here — the placeholder is substituted
-      # by .github/workflows/docker-publish.yml from a GitHub Actions secret
-      # before deploy.
+      # secret and is never committed here — ${LISTMONK_API_TOKEN} is
+      # resolved by Hostinger's deploy mechanism from the `environment-variables`
+      # input on the "Deploy to Hostinger VPS" step in docker-publish.yml.
+      # (A prior sed-based placeholder-substitution approach here silently
+      # never worked: hostinger/deploy-on-vps@v2 doesn't deploy the runner's
+      # local, sed-modified file at all — it sends Hostinger a GitHub blob URL
+      # for this file at the pushed commit, which Hostinger fetches itself,
+      # so only what's actually committed here ever reaches the VPS. Real
+      # secrets have to go through the action's separate `environment-variables`
+      # input instead, exactly like this file's own committed values can't
+      # carry secrets.)
       LISTMONK_URL: "http://187.127.255.209:8096"
       LISTMONK_API_USER: "vacaverse-app"
-      LISTMONK_API_TOKEN: "__LISTMONK_API_TOKEN__"
+      LISTMONK_API_TOKEN: "${LISTMONK_API_TOKEN}"
       LISTMONK_TX_TEMPLATE_ID: "5"
     ports:
       - "0.0.0.0:8095:8080"
