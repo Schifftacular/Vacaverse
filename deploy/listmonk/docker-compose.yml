@@ -1,0 +1,81 @@
+# vacaverse-mail — a self-hosted Listmonk instance dedicated to VacaVerse's
+# transactional invite emails, deployed to /opt/... on the same Hostinger VPS
+# as the vacaverse app itself.
+#
+# Deliberately a SEPARATE stack from the box's other, unrelated Listmonk
+# instance (project "email-delivery" / rns-email-listmonk, a different
+# business's newsletter sender) — different containers, different Postgres
+# volume, different port. Do not merge these.
+#
+# No Traefik/domain, matching the vacaverse app's own root docker-compose.yml:
+# there's no DNS record for a vacaverse-branded host on this box, so this
+# stack is reachable via a direct published port instead, exactly like
+# vacaverse-app's 8095:8080.
+#
+# PINNED PROJECT NAME — same reason as every other stack on this box: Compose
+# defaults the project name to the directory name, which collides with other
+# projects and makes `docker compose down` remove containers by the wrong
+# label. Always name the stack explicitly.
+#
+# Unlike the vacaverse app, this stack is NOT part of the automated
+# docker-publish.yml -> Hostinger deploy pipeline (that pipeline targets the
+# "vacaverse" project only). Bring this up with a one-time manual step:
+#   scp -r deploy/listmonk root@<vps>:~/vacaverse-mail
+#   # then on the VPS, with a real .env alongside this file (see .env.example):
+#   docker compose --project-directory ~/vacaverse-mail up -d
+#
+# SMTP (Resend) is configured after install through Listmonk's own admin UI
+# (Settings -> SMTP), not via compose env vars — it persists in Postgres and
+# survives container recreation, so it doesn't need to live here.
+name: vacaverse-mail
+
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: vacaverse-mail-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: listmonk
+      POSTGRES_PASSWORD: ${LISTMONK_DB_PASSWORD}
+      POSTGRES_DB: listmonk
+    volumes:
+      - vacaverse-mail-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U listmonk -d listmonk"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  listmonk:
+    image: listmonk/listmonk:latest
+    container_name: vacaverse-mail-listmonk
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      LISTMONK_app__address: "0.0.0.0:9000"
+      LISTMONK_db__host: db
+      LISTMONK_db__port: "5432"
+      LISTMONK_db__user: listmonk
+      LISTMONK_db__password: ${LISTMONK_DB_PASSWORD}
+      LISTMONK_db__database: listmonk
+      LISTMONK_db__ssl_mode: disable
+      # Auto-provisions / refreshes the super-admin login on every boot.
+      LISTMONK_ADMIN_USER: ${LISTMONK_ADMIN_USER}
+      LISTMONK_ADMIN_PASSWORD: ${LISTMONK_ADMIN_PASSWORD}
+    ports:
+      # Chosen free at plan time (existing published ports on this VPS: 8095
+      # vacaverse, 8793 and 8791 127.0.0.1-only) — re-verify free before
+      # deploying, another stack may have claimed it since.
+      - "0.0.0.0:8096:9000"
+    volumes:
+      # Without this, Listmonk's media library lives only inside the
+      # container and every uploaded image 404s the moment it's recreated.
+      - vacaverse-mail-uploads:/listmonk/uploads
+    # Idempotent: installs schema on first run, upgrades on image bumps, then serves.
+    command: [sh, -c, "./listmonk --install --idempotent --yes --config '' && ./listmonk --upgrade --yes --config '' && ./listmonk --config ''"]
+
+volumes:
+  vacaverse-mail-db:
+  vacaverse-mail-uploads:

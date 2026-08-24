@@ -25,6 +25,16 @@ describe('classifyTripAccess', () => {
         const row = { id: 't1', user_id: 'someone-else', family_id: null };
         expect(classifyTripAccess(row, 'user-1', ['fam-1'])).toBe('denied');
     });
+
+    it('reports has-access when the trip id is in memberTripIds, even with no owning/family match', () => {
+        const row = { id: 't1', user_id: 'someone-else', family_id: null };
+        expect(classifyTripAccess(row, 'user-1', [], ['t1'])).toBe('has-access');
+    });
+
+    it('reports denied when memberTripIds is non-empty but does not include this trip', () => {
+        const row = { id: 't1', user_id: 'someone-else', family_id: null };
+        expect(classifyTripAccess(row, 'user-1', [], ['t9'])).toBe('denied');
+    });
 });
 
 describe('resolveTripFamilyId', () => {

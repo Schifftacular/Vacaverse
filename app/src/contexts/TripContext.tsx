@@ -51,8 +51,17 @@ export const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children
             ? (await db.from('trips').select('*').in('family_id', familyIds)).data
             : [];
 
+        // A third source, alongside ownership and family: trips this user was
+        // added to directly via an email invite (trip_members), independent
+        // of whether the trip has a family_id at all.
+        const { data: memberRows } = await db.from('trip_members').select('trip_id').eq('user_id', user.id);
+        const memberTripIds = (memberRows || []).map((m: { trip_id: string }) => m.trip_id);
+        const memberTrips = memberTripIds.length
+            ? (await db.from('trips').select('*').in('id', memberTripIds)).data
+            : [];
+
         const byId = new Map<string, Trip>();
-        for (const t of [...(ownTrips || []), ...(familyTrips || [])]) byId.set(t.id, t);
+        for (const t of [...(ownTrips || []), ...(familyTrips || []), ...(memberTrips || [])]) byId.set(t.id, t);
         const merged = Array.from(byId.values()).sort((a, b) => b.created_at.localeCompare(a.created_at));
 
         setTrips(merged);

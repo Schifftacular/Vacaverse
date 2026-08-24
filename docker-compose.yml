@@ -46,6 +46,20 @@ services:
       # Bootstraps the first admin(s) on boot (see server/db/index.js) —
       # comma-separated, case-insensitive. Safe to leave set permanently.
       ADMIN_EMAILS: "mschiff05@gmail.com"
+      # Points server/lib/listmonk.js at the separate vacaverse-mail Listmonk
+      # instance (deploy/listmonk/docker-compose.yml) for sending trip/family
+      # email invites. LISTMONK_API_USER/LISTMONK_TX_TEMPLATE_ID aren't
+      # secret — hardcoded here like CLIENT_ORIGIN/ADMIN_EMAILS above, once
+      # that stack's API user and transactional template exist (TODO: update
+      # these two placeholder values after completing the Listmonk/Resend
+      # infra setup in the project plan). LISTMONK_API_TOKEN IS a secret and
+      # is never committed here — the placeholder is substituted by
+      # .github/workflows/docker-publish.yml from a GitHub Actions secret
+      # before deploy.
+      LISTMONK_URL: "http://187.127.255.209:8096"
+      LISTMONK_API_USER: "TODO-listmonk-api-user"
+      LISTMONK_API_TOKEN: "__LISTMONK_API_TOKEN__"
+      LISTMONK_TX_TEMPLATE_ID: "TODO-listmonk-template-id"
     ports:
       - "0.0.0.0:8095:8080"
     volumes:

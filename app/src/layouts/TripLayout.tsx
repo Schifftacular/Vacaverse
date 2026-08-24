@@ -1,15 +1,17 @@
 import { Outlet, Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Calendar, Share2, Copy, Check } from 'lucide-react';
+import { ArrowLeft, Calendar, Share2, Copy, Check, Mail, Loader2 } from 'lucide-react';
 import { useTrip } from '../contexts/TripContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useFamily } from '../contexts/FamilyContext';
+import { useToast } from '../contexts/ToastContext';
 import { useEffect, useMemo, useState } from 'react';
 import { differenceInDays, format, parseISO } from 'date-fns';
 import { updateTrip } from '../services/tripService';
+import { createTripEmailInvite } from '../services/inviteService';
 import { db } from '../lib/client';
 import { classifyTripAccess, type TripAccessResult } from '../lib/tripAccess';
 import { useUserProfiles } from '../hooks/useUserProfiles';
-import { Panel } from '../components/ui/Concourse';
+import { Panel, Button } from '../components/ui/Concourse';
 import { Sheet } from '../components/ui/Sheet';
 import { TripTabs } from '../components/TripTabs';
 
@@ -22,10 +24,13 @@ export default function TripLayout() {
     const { trips, loading, refetch } = useTrip();
     const { user } = useAuth();
     const { families } = useFamily();
+    const { showToast } = useToast();
     const [showSharePopup, setShowSharePopup] = useState(false);
     const [copied, setCopied] = useState(false);
     const [shareUrl, setShareUrl] = useState<string | null>(null);
     const [sharingLoading, setSharingLoading] = useState(false);
+    const [inviteEmail, setInviteEmail] = useState('');
+    const [inviteSending, setInviteSending] = useState(false);
 
     const trip = useMemo(() => trips.find(t => t.id === tripId), [trips, tripId]);
 
@@ -45,7 +50,14 @@ export default function TripLayout() {
             const { data: rows } = await db.from('trips').eq('id', tripId).select('*');
             if (cancelled) return;
             const row = rows?.[0] ?? null;
-            const result = classifyTripAccess(row, user.id, families.map(f => f.id));
+            const { data: memberRows } = await db
+                .from('trip_members')
+                .select('trip_id')
+                .eq('user_id', user.id)
+                .eq('trip_id', tripId);
+            if (cancelled) return;
+            const memberTripIds = (memberRows || []).map((m: { trip_id: string }) => m.trip_id);
+            const result = classifyTripAccess(row, user.id, families.map(f => f.id), memberTripIds);
             if (result === 'has-access' && !retried) {
                 // Membership/ownership is real but the shared trip list hasn't
                 // caught up yet — trigger a refetch and give it one more pass
@@ -132,6 +144,21 @@ export default function TripLayout() {
         await navigator.clipboard.writeText(shareUrl);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+    };
+
+    const handleInviteByEmail = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!tripId || !inviteEmail.trim()) return;
+        setInviteSending(true);
+        try {
+            await createTripEmailInvite(tripId, inviteEmail.trim());
+            showToast(`Invite sent to ${inviteEmail.trim()}`, 'success');
+            setInviteEmail('');
+        } catch (error) {
+            showToast(error instanceof Error ? error.message : 'Failed to send invite', 'error');
+        } finally {
+            setInviteSending(false);
+        }
     };
 
     if (loading || accessCheck === 'checking' || (accessCheck === null && !trip && !!tripId && !!user)) {
@@ -290,6 +317,25 @@ export default function TripLayout() {
                 {copied && (
                     <p className="text-xs text-brand-teal mt-2 text-center font-semibold">Link copied!</p>
                 )}
+
+                <div className="mt-6 pt-6 border-t border-[var(--color-border)]">
+                    <p className="text-sm text-[var(--color-text-secondary)] mb-3">
+                        Or invite someone by email — they'll join this trip as soon as they click the link.
+                    </p>
+                    <form onSubmit={handleInviteByEmail} className="flex items-center gap-2">
+                        <input
+                            type="email"
+                            value={inviteEmail}
+                            onChange={(e) => setInviteEmail(e.target.value)}
+                            placeholder="name@example.com"
+                            className="flex-1 min-w-0 bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-sm text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
+                            required
+                        />
+                        <Button type="submit" variant="primary" size="icon" disabled={inviteSending}>
+                            {inviteSending ? <Loader2 size={16} className="animate-spin" /> : <Mail size={16} />}
+                        </Button>
+                    </form>
+                </div>
             </Sheet>
 
             {/* Stats Summary Row */}
