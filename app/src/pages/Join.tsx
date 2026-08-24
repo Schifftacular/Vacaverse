@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useFamily } from '../contexts/FamilyContext';
-import { lookupInviteCode } from '../services/inviteService';
+import { useTrip } from '../contexts/TripContext';
+import { lookupInviteCode, lookupEmailInvite, acceptEmailInvite, type EmailInviteLookup } from '../services/inviteService';
 import { useToast } from '../contexts/ToastContext';
 import { db } from '../lib/client';
 import { Users, Loader2, PartyPopper } from 'lucide-react';
@@ -11,14 +12,22 @@ import { Button, Panel } from '../components/ui/Concourse';
 export default function Join() {
     const { user, signInWithEmail, signUpWithEmail } = useAuth();
     const { setCurrentFamily, joinFamily } = useFamily();
+    const { refetch: refetchTrips } = useTrip();
     const { showToast } = useToast();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
+    const tokenParam = searchParams.get('token');
 
     const [code, setCode] = useState('');
     const [lookupLoading, setLookupLoading] = useState(false);
     const [joinLoading, setJoinLoading] = useState(false);
     const [found, setFound] = useState<{ familyId: string; familyName: string; inviteId: string } | null>(null);
+
+    // Email-invite (?token=) flow — separate from the code (?code=) flow
+    // above, mutually exclusive by which query param is present.
+    const [tokenLookupLoading, setTokenLookupLoading] = useState(false);
+    const [foundEmailInvite, setFoundEmailInvite] = useState<EmailInviteLookup | null>(null);
+    const [emailJoinLoading, setEmailJoinLoading] = useState(false);
 
     // Inline sign-up/sign-in, so a brand-new person never loses the invite by
     // bouncing to a separate page.
@@ -56,6 +65,24 @@ export default function Join() {
             setCode(normalized);
             performLookup(normalized);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Email-invite link (e.g. /join?token=...) — single-use, targeted at a
+    // trip or a family, looked up the same way the code is above.
+    useEffect(() => {
+        if (!tokenParam) return;
+        setTokenLookupLoading(true);
+        lookupEmailInvite(tokenParam)
+            .then(result => {
+                if (result) {
+                    setFoundEmailInvite(result);
+                } else {
+                    showToast('This invite link is invalid or has expired', 'error');
+                }
+            })
+            .catch(() => showToast('Failed to look up invite', 'error'))
+            .finally(() => setTokenLookupLoading(false));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -109,6 +136,59 @@ export default function Join() {
         }
     };
 
+    const handleEmailJoin = async () => {
+        if (!foundEmailInvite || !user || !tokenParam) return;
+        setEmailJoinLoading(true);
+        try {
+            const result = await acceptEmailInvite(tokenParam);
+
+            if (result.targetType === 'trip' && result.tripId) {
+                // Trips a member joined via email invite live outside any
+                // family — refetch so the trip list (and thus access checks
+                // on the trip page) pick up the new trip_members row now,
+                // not on whatever unrelated trigger would refetch it later.
+                await refetchTrips();
+                showToast(`You're in! Welcome to ${foundEmailInvite.name}.`, 'success');
+                navigate(`/trips/${result.tripId}`);
+                return;
+            }
+
+            if (result.targetType === 'family' && result.familyId) {
+                const { data: memberRows } = await db
+                    .from('family_members')
+                    .select('*')
+                    .eq('family_id', result.familyId);
+                const memberIds = (memberRows ?? []).map((m: { user_id: string }) => m.user_id);
+                setCurrentFamily({
+                    id: result.familyId,
+                    name: foundEmailInvite.name,
+                    created_by: '',
+                    created_at: '',
+                    members: memberIds,
+                    memberRelations: [],
+                });
+
+                const { data: familyTrips } = await db
+                    .from('trips')
+                    .select('*')
+                    .eq('family_id', result.familyId)
+                    .order('created_at', { ascending: false });
+
+                if (familyTrips && familyTrips.length > 0) {
+                    showToast(`Welcome to ${foundEmailInvite.name}! Say hi in the Feed or check Tasks to see what's next.`, 'success');
+                    navigate(`/trips/${familyTrips[0].id}`);
+                } else {
+                    showToast(`Welcome to ${foundEmailInvite.name}! No trips planned yet — start one to get going.`, 'success');
+                    navigate('/trips');
+                }
+            }
+        } catch (error) {
+            showToast(error instanceof Error ? error.message : 'Failed to accept invite', 'error');
+        } finally {
+            setEmailJoinLoading(false);
+        }
+    };
+
     const handleEmailAuth = async (e: React.FormEvent) => {
         e.preventDefault();
         setAuthError('');
@@ -127,14 +207,112 @@ export default function Join() {
         }
     };
 
-    // Once sign-up/sign-in succeeds, finish the join automatically.
+    // Once sign-up/sign-in succeeds, finish whichever join is in flight —
+    // the code flow (`found`) or the email-invite flow (`foundEmailInvite`).
     useEffect(() => {
-        if (autoJoin && user && found) {
+        if (!autoJoin || !user) return;
+        if (found) {
             setAutoJoin(false);
             handleJoin();
+        } else if (foundEmailInvite) {
+            setAutoJoin(false);
+            handleEmailJoin();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [autoJoin, user, found]);
+    }, [autoJoin, user, found, foundEmailInvite]);
+
+    if (tokenParam) {
+        return (
+            <div className="min-h-screen bg-[var(--color-bg-primary)] flex flex-col items-center justify-center p-4">
+                <div className="w-full max-w-md">
+                    <div className="text-center mb-8">
+                        <Users size={48} className="text-brand-teal mx-auto mb-4" />
+                        <h1 className="cx-h1 text-[var(--color-text-primary)]">You're Invited</h1>
+                    </div>
+
+                    {tokenLookupLoading ? (
+                        <div className="flex justify-center">
+                            <Loader2 className="animate-spin text-brand-teal" size={32} />
+                        </div>
+                    ) : !foundEmailInvite ? (
+                        <Panel raked className="p-6 text-center">
+                            <p className="text-[var(--color-text-secondary)]">This invite link is invalid or has expired.</p>
+                        </Panel>
+                    ) : user ? (
+                        <Panel raked className="p-6 text-center">
+                            <PartyPopper size={32} className="text-brand-teal mx-auto mb-3" />
+                            <h2 className="cx-h2 text-[var(--color-text-primary)] mb-2">{foundEmailInvite.name}</h2>
+                            <p className="text-[var(--color-text-secondary)] mb-6">
+                                {foundEmailInvite.targetType === 'trip'
+                                    ? 'Would you like to join this trip?'
+                                    : 'Would you like to join this family group?'}
+                            </p>
+                            <div className="flex gap-3">
+                                <Button type="button" variant="outline" size="lg" onClick={() => navigate('/trips')}>
+                                    Cancel
+                                </Button>
+                                <Button type="button" variant="primary" size="lg" onClick={handleEmailJoin} disabled={emailJoinLoading}>
+                                    {emailJoinLoading ? (
+                                        <Loader2 className="animate-spin" />
+                                    ) : foundEmailInvite.targetType === 'trip' ? (
+                                        'Join Trip'
+                                    ) : (
+                                        'Join Family'
+                                    )}
+                                </Button>
+                            </div>
+                        </Panel>
+                    ) : (
+                        <Panel raked className="p-6">
+                            <div className="text-center mb-6">
+                                <PartyPopper size={32} className="text-brand-teal mx-auto mb-3" />
+                                <h2 className="cx-h2 text-[var(--color-text-primary)] mb-1">You're invited to {foundEmailInvite.name}</h2>
+                                <p className="text-[var(--color-text-secondary)] text-sm">
+                                    {isSignUp ? 'Create an account to join and start planning together.' : 'Sign in to join.'}
+                                </p>
+                            </div>
+
+                            <form onSubmit={handleEmailAuth} className="space-y-3">
+                                {authError && <div className="bg-[var(--color-vermilion)]/15 text-[var(--color-vermilion)] p-2 rounded text-sm">{authError}</div>}
+                                <input
+                                    type="email"
+                                    placeholder="Email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="w-full p-3 rounded-lg bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] border border-[var(--color-border)] focus:outline-none focus:border-brand-teal"
+                                    required
+                                />
+                                <input
+                                    type="password"
+                                    placeholder="Password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full p-3 rounded-lg bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] border border-[var(--color-border)] focus:outline-none focus:border-brand-teal"
+                                    required
+                                />
+                                <Button type="submit" variant="primary" size="lg" disabled={authLoading || emailJoinLoading}>
+                                    {authLoading || emailJoinLoading ? (
+                                        <Loader2 className="animate-spin" />
+                                    ) : isSignUp ? (
+                                        'Create Account & Join'
+                                    ) : (
+                                        'Sign In & Join'
+                                    )}
+                                </Button>
+                                <button
+                                    type="button"
+                                    onClick={() => { setIsSignUp(!isSignUp); setAuthError(''); }}
+                                    className="w-full text-[var(--color-text-secondary)] text-sm hover:text-[var(--color-text-primary)] transition-colors"
+                                >
+                                    {isSignUp ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}
+                                </button>
+                            </form>
+                        </Panel>
+                    )}
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-[var(--color-bg-primary)] flex flex-col items-center justify-center p-4">

@@ -1,0 +1,2 @@
+# Real secrets for the Listmonk mail stack — see deploy/listmonk/.env.example.
+deploy/listmonk/.env

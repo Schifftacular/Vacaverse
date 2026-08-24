@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useFamily } from '../contexts/FamilyContext';
 import { useAuth } from '../contexts/AuthContext';
-import { createFamilyInvite } from '../services/inviteService';
+import { createFamilyInvite, createFamilyEmailInvite } from '../services/inviteService';
 import { useUserProfiles } from '../hooks/useUserProfiles';
 import { db } from '../lib/client';
 import { wouldCreateCycle } from '../lib/familyTree';
@@ -22,6 +22,8 @@ export default function Family() {
     const [inviteLoading, setInviteLoading] = useState(false);
     const [copied, setCopied] = useState(false);
     const [linkCopied, setLinkCopied] = useState(false);
+    const [inviteEmail, setInviteEmail] = useState('');
+    const [emailInviteSending, setEmailInviteSending] = useState(false);
     // Coexists with the member list rather than replacing it (see issue #11)
     // — defaults to the list so nothing about the existing, working flow changes.
     const [viewMode, setViewMode] = useState<'list' | 'tree'>('list');
@@ -94,6 +96,21 @@ export default function Family() {
         navigator.clipboard.writeText(`${window.location.origin}/join?code=${inviteCode}`);
         setLinkCopied(true);
         setTimeout(() => setLinkCopied(false), 2000);
+    };
+
+    const handleSendEmailInvite = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!currentFamily || !inviteEmail.trim()) return;
+        setEmailInviteSending(true);
+        try {
+            await createFamilyEmailInvite(currentFamily.id, inviteEmail.trim());
+            showToast(`Invite sent to ${inviteEmail.trim()}`, 'success');
+            setInviteEmail('');
+        } catch (error) {
+            showToast(error instanceof Error ? error.message : 'Failed to send invite', 'error');
+        } finally {
+            setEmailInviteSending(false);
+        }
     };
 
     const openEditRelations = (userId: string) => {
@@ -287,6 +304,24 @@ export default function Family() {
                             </div>
                         </Panel>
                     )}
+
+                    {/* Invite by email */}
+                    <Panel className="p-4 mb-4">
+                        <p className="text-sm text-[var(--color-text-secondary)] mb-3">Or invite by email</p>
+                        <form onSubmit={handleSendEmailInvite} className="flex items-center gap-2">
+                            <input
+                                type="email"
+                                value={inviteEmail}
+                                onChange={(e) => setInviteEmail(e.target.value)}
+                                placeholder="name@example.com"
+                                className="flex-1 min-w-0 bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-xl p-3 text-sm text-[var(--color-text-primary)] focus:outline-none focus:border-brand-teal"
+                                required
+                            />
+                            <Button type="submit" variant="primary" disabled={emailInviteSending}>
+                                {emailInviteSending ? <Loader2 size={14} className="animate-spin" /> : 'Send Email Invite'}
+                            </Button>
+                        </form>
+                    </Panel>
 
                     {/* Member list */}
                     {viewMode === 'list' && currentFamily.members.map(uid => {

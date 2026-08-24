@@ -46,6 +46,34 @@ CREATE TABLE IF NOT EXISTS invites (
     created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
 
+-- Single-use, email-targeted invites for trips and families. Kept as a
+-- parallel table to `invites` (not an extension of it) because
+-- invites.family_id is NOT NULL and SQLite can't relax that without a full
+-- table rebuild, and because the lifecycles differ: `invites` is
+-- multi-use/shareable-code, this is single-use/targeted/status-tracked.
+-- Deliberately NOT in tables.js's allowlist (see admin_audit_log's comment
+-- above for the same precedent) since GET /api/db/:table has no auth check
+-- and would leak every invite token + invited email; all access goes
+-- through server/routes/invites.js's dedicated /email routes instead.
+CREATE TABLE IF NOT EXISTS email_invites (
+    id TEXT PRIMARY KEY,
+    token TEXT NOT NULL UNIQUE,
+    target_type TEXT NOT NULL CHECK (target_type IN ('trip', 'family')),
+    trip_id TEXT REFERENCES trips(id) ON DELETE CASCADE,
+    family_id TEXT REFERENCES families(id) ON DELETE CASCADE,
+    email TEXT NOT NULL,
+    invited_by TEXT NOT NULL REFERENCES users(id),
+    status TEXT NOT NULL DEFAULT 'sent' CHECK (status IN ('sent', 'accepted')),
+    accepted_by TEXT REFERENCES users(id),
+    accepted_at TEXT,
+    expires_at TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    CHECK (
+        (target_type = 'trip' AND trip_id IS NOT NULL AND family_id IS NULL) OR
+        (target_type = 'family' AND family_id IS NOT NULL AND trip_id IS NULL)
+    )
+);
+
 CREATE TABLE IF NOT EXISTS trips (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL REFERENCES users(id),

@@ -52,6 +52,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Substitutes the real Listmonk transactional-API token into the
+      # checked-out docker-compose.yml before it's handed to the Hostinger
+      # deploy action below — never committed to the file itself. This only
+      # edits the runner's local checkout, not the repo.
+      - name: Inject Listmonk API token
+        env:
+          LISTMONK_API_TOKEN: ${{ secrets.LISTMONK_API_TOKEN }}
+        run: sed -i "s|__LISTMONK_API_TOKEN__|${LISTMONK_API_TOKEN}|g" docker-compose.yml
+
       - name: Deploy to Hostinger VPS
         uses: hostinger/deploy-on-vps@v2
         with:
